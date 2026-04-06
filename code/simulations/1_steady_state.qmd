@@ -1,0 +1,153 @@
+---
+title: "Competition for Transport Constrains Respiratory IgA Longevity 1:"
+subtitle: "Total IgA antibody titre oscillates around a fixed point at steady-state"
+author: Cora, Susi, Rustom, Hasan, Carl...
+date: "`r Sys.Date()`"
+format: html
+bibliography: ../../assets/bibFiles/references.bib
+csl: ../../assets/bibFiles/apa.csl
+---
+
+```{r setup}
+#install.package(ggplot2)
+library(ggplot2)
+
+#install.package(gridExtra)
+library(gridExtra)
+
+#install.packages(tidyverse)
+library(tidyverse)
+```
+
+# Purpose 
+
+To determine the extent to which competition with pre-existing IgA antibodies would impede the ability of newly generated, pathogen-specific antibodies to cross epithelial cells into infected lumina, we must first investigate how the steady-state concentration of total IgA depends on the rate at which IgA decays. 
+
+In this document, we develop a model of total IgA titres at steady-state, assuming a constant rate of IgA generating infections per year and a fixed magnitude of response. 
+
+We then explore how the ratio of pathogen-specific to pathogen non-specific IgA during a response is dependent upon the rate at which IgA decays. 
+
+# Total IgA at steady state is the sum of a series of exponential decay functions
+
+Assuming that we experience a near consistent rate of adaptive immune responses over the course of a year, we expect our total antibody titre to reach a steady-state after the first few years of life. 
+
+If this is not immediately intuitive, consider the following two scenarios: 
+
+1) Our immune systems are constantly outputting antibody. At any given point in time (in years), our total antibody titre increases by some fixed amount, $c$, and the total titre decays exponentially with some rate, $k$: 
+
+$$
+  \frac{dA}{dt} = c - kA \\
+$$
+$$
+  A = \frac{c-e^{-kt}}{k}
+$${#eq-constantinputmodel}
+
+at large $t$, the total titer given by @eq-constantinputmodel becomes: 
+
+$$ 
+\bar{A} = \frac{c}{k}
+$$
+
+2) We experience $\frac{1}{\tau}$ infections per year which engage an adaptive immune response. The antibody titre after the peak of the response wanes exponentially, and thus the total titre of serum IgA over time can be modeled as the sum of a series of exponential decay functions: 
+
+$$
+  A(t+n\tau) = A_0e^{-kt} + A_0e^{-k(tt+\tau)} + A_0e^{-k(t+2\tau)} + ... + A_0e^{-k(t+n\tau)}, 0 < t < \tau 
+$$
+$$
+  A(t+n\tau) = A_0e^{-kt} (1 + e^{-k\times\tau} + e^{-k \times 2\tau} +...+ e^{-k \times n\tau})
+$$
+$$
+A(t+n\tau) = A_0e^{-kt} \times S_n, \\
+\text{where } S_n = (1 + e^{-k\times\tau} + e^{-k \times 2\tau} +...+ e^{-k \times n\tau})
+$$
+Solving for the sum of $S_n$, $A(t + n\tau)$ becomes
+
+$$
+  A(t+n\tau) = A_0e^{-kt} (\frac{1-e^{-(n+1)k\tau}}{1-e^{-k\tau}}), 0 < t < \tau 
+$${#eq-multipleinfectionsmodel}
+
+
+where $t$ is the time in years elapsed since the most recent infect, \n$\tau$ is the time in years between infections, and $t + n\tau$ is the time in years since the first infection. 
+
+In scenario (1), our titres should smoothly approach some steady-state $\frac{c}{k}$, as the total rate of decay increases proportionately with antibody titre, and titre increases with time (@eq-constantinputmodel.)
+
+In scenario (2), similarly, titres will increase with the addition of the titre from a new response to titres from previous responses, and the total rate of waning will increase proportional to the total antibody titre. In the previous, continuous scenario, we would expect some antibody titre at which the rate of input and rate of decay will be equal; in this discrete scenario, we expect titres to increase and wane periodically around that steady-state predicted by scenario 1. This steady-state $\frac{c}{k}$ is equivalent to $\frac{A_0}{k\tau}$, where $c = \frac{A_0}{\tau}$ (@eq-multipleinfectionsmodel.)
+
+We can also consider one period of this oscillatory function to be the limit of @eq-multipleinfectionsmodel at $n \rightarrow \inf$: 
+
+$$
+  \lim_{n \rightarrow \inf} A(t+n\tau) = A_0e^{-kt} (\frac{1-e^{-(n+1)k\tau}}{1-e^{-k\tau}}) = \frac{1}{1-e^{-k\tau}}A_0e^{-kt}
+$$
+where $A_0e^{-kt}$ reflects the kinetics of the most recent antigen-specific response, and $\frac{1}{1-e^{-k\tau}}$ reflects the kinetics of all prior responses.
+
+In the following code chunk, we plot @eq-constantinputmodel and @eq-multipleinfectionsmodel.. (Homesotastis and turnover?)
+
+```{r}
+#function for constant input of Ab with constant decay
+  constant_input_model = function(c,k,y) {(c-exp(-k*y))/k} #Ab_titre over time if Ab_titre had constant input, c, and decayed at some rate, k, where y is number of years
+
+#function to repeat infections
+  multiple_infections = function(A0, c, k, tau, n, time.step){
+    
+    #function describing waning after an infection
+    waning = function(Ab_titre, A0, k, time){ #Ab_titre is a vector of total IgA titer for all previous time steps. Each infection follows the same exponential function (A0 and k fixed)
+      (A0 + Ab_titre[length(Ab_titre)])*exp(-k*time) #Add preexisting titre to magnitude at start of decay, decay for duration tau
+    }
+    
+    #defining discrete time steps
+    time = seq(0,tau, by = time.step) #time since start of most recent infection for duration tau
+    t = c() #total time elapsed since the start of the series of infections
+    
+    #first infection
+    Ab_titre = A0*exp(-k*time) #first infection
+    t = c(t, time) #time elapsed over first infection
+    
+    #repeat infections
+    for(i in 2:n){ #from the second to the nth infection
+      Ab_titre = c(Ab_titre, waning(Ab_titre, A0, k, time)) #Ab_titre is the titre after most recent infection*increase in Ab_titre and decay from new infection
+      t = c(t, time + (i-1)*tau) # time steps before start of most recent infection + time steps of most recent infection (time elapsed over course of waning + time at the start of most recent infection)
+    }
+    
+    #store time elapsed since t=0 and corresponding Ab_titre in data frame
+    df = data.frame(t = t,
+                    Ab_titre = Ab_titre)
+  }
+
+#function for plotting both models
+plotting_mutliple_constant = function(parms){
+  
+  ##save parameters 
+  parms = as.list(parms)
+  list2env(parms, envir = environment())
+    
+  ##Run multiple infections model with a time.step of 0.1
+  df = multiple_infections(A0=A0, c=c, k=k, tau=tau, n=n, time.step = 0.1)
+    
+  ##plot
+  ggplot() + 
+    geom_line(data = df, aes(x = t, y = Ab_titre, color = "multiple infections model")) +  #observe magnitude of increase initially greater than magnitude of waning, but then they begin to equalize as expected
+    stat_function(fun = function(x) {constant_input_model(c=c, k=k, x)}, aes(color = "constant input model")) + 
+    geom_hline(aes(yintercept = ss.Ab_titre, color = "constant input predicted steady-state"), linetype = "dashed") +
+    labs(x = "time (yrs)", y = "antibody titre", title = paste("Predicted steady state =", ss.Ab_titre)) +
+    scale_y_continuous(trans = "log10") +
+    scale_color_manual("model", values = c("maroon", "gold", "forestgreen"))
+}
+  
+
+```
+
+```{r example.multiple.infections}
+##Parameters
+  k = 0.5 #exponential decay rate per year
+  A0 = 50 #magnitude of response
+  tau = 0.5 #duration of waning between infections
+  n = 50 #number of infections 
+  c = A0/(tau) #constant input of Ab for constant input model
+  ss.Ab_titre = c/k #steady-state Ab_titre predicted by constant input model
+  
+ parameters = c(k=k, A0=A0, tau=tau, n=n, c=c, ss.Ab_titre = ss.Ab_titre)
+ 
+#plot
+  plotting_mutliple_constant(parameters)
+
+```
