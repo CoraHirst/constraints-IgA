@@ -1,0 +1,26 @@
+---
+title: "Competition for Transport Constrains Respiratory IgA Longevity 1:"
+subtitle: "Total IgA antibody titre oscillates around a fixed point at steady-state"
+author: Cora, Susi, Rustom, Hasan, Carl...
+date: "`r Sys.Date()`"
+format: html
+bibliography: ../../assets/bibFiles/references.bib
+csl: ../../assets/bibFiles/apa.csl
+---
+
+```{r setup}
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+```
+
+# Objective 
+
