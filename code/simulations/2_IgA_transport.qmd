@@ -24,3 +24,19 @@ library(deSolve)
 
 # Objective 
 
+In this document, we develop a model of IgA transport across mucosal epithelium. Our goal is to understand the extent to which pre-existing IgA antibodies to historical infections limits the function newly generated responses, and we hypothesize that this constraint comes mainly from competition for pIgR transport proteins. 
+
+# Outline 
+
+We will assume a constant rate of 1) response generation and decay in the serum and subsequent diffusion into the tissue; 2) response generation and decay in the mucosal tissue; and 3) a constant rate of IgA transport out of the epithelium at steady state.
+
+We will run these conditions to steady-state, such that the concentration of IgA in the mucosal tissue is constant. 
+
+At equilibrium, we will begin a new response, such that the antibody titers in the serum increase and decay, the titers in the mucosa increase and decay, the rate of diffusion into the epithelium increases and decays, and the number of transport proteins increases and decays. We will look at the dynamics of the flyx of antibodies into the lumen. We are interested in: how much gets over and how early? 
+
+# Model 
+
+We model competition for transport proteins with a simple
+
+
+
