@@ -34,9 +34,29 @@ We will run these conditions to steady-state, such that the concentration of IgA
 
 At equilibrium, we will begin a new response, such that the antibody titers in the serum increase and decay, the titers in the mucosa increase and decay, the rate of diffusion into the epithelium increases and decays, and the number of transport proteins increases and decays. We will look at the dynamics of the flyx of antibodies into the lumen. We are interested in: how much gets over and how early? 
 
-# Model 
+# Model for Competition
 
-We model competition for transport proteins with a simple
+We model competition for transport proteins as a Michaelis-Menten enzymatic model with direct competition. This gives the following equation for the flux of the specific antibody into the lumen per unit time: 
+
+$$
+
+\Phi_{L,s} = \frac{V_{max}(t)}{K + M_{ns} + M_s} 
+
+$$
+Notice that 1) $K$ should be the same for both antibodies as there should be no difference in affinity between the two for pIgR, and thus we would expect competition to be symmetric; and 2) $V_{max}(t)$ is a function of time, representing the increase in pIgR expression and deposition at the basolateral surface of the epithelial cells over the course of the initial response to infection. $M_{ns}$ and $M_s$ represent the local concentrations of the nonspecific and specific antibodies in the mucosa at the basolateral side of epithelial cells. 
+
+The core of the competition comes from the relationship between the antibody concentrations in the mucosa, $M_{ns}$ and $M_s$, and $K$. 
+
+# Pre-existing, non-sepecific antibody titer
+
+One factor affecting the extent to which newly-generate IgA is inhibited by competition is on the steady-state concentration of nonspecific antibody in the mucosa.
+
+This concentration is dependent on 1) the rate of infections, 2) the the production, decay, and diffusion of systemic IgA during one of those infections, and 3) the contribution of local production and subsequent decay of IgA during those infections.
+
+We have some sense of the steady state concentration of IgA in serum; what we can vary is the steady state concentration of IgA in the mucosal tissue. 
+
+
+
 
 
 
