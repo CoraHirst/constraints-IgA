@@ -4,8 +4,7 @@ subtitle: "Total IgA antibody titre oscillates around a fixed point at steady-st
 author: Cora, Susi, Rustom, Hasan, Carl...
 date: "`r Sys.Date()`"
 format: html
-bibliography: ../../assets/bibFiles/references.bib
-csl: ../../assets/bibFiles/apa.csl
+
 ---
 
 ```{r setup}
@@ -40,12 +39,22 @@ We model competition for transport proteins as a Michaelis-Menten enzymatic mode
 
 $$
 
-\Phi_{L,s} = \frac{V_{max}(t)}{K + M_{ns} + M_s} 
+\Phi_{L,s}(t) = \frac{V_{max}(t)}{K + M_{ns}(t) + M_s(t)} 
 
 $$
-Notice that 1) $K$ should be the same for both antibodies as there should be no difference in affinity between the two for pIgR, and thus we would expect competition to be symmetric; and 2) $V_{max}(t)$ is a function of time, representing the increase in pIgR expression and deposition at the basolateral surface of the epithelial cells over the course of the initial response to infection. $M_{ns}$ and $M_s$ represent the local concentrations of the nonspecific and specific antibodies in the mucosa at the basolateral side of epithelial cells. 
+Notice that 1) $K$ should be the same for both antibodies as there should be no difference in affinity between the two for pIgR, and thus we would expect competition to be symmetric; and 2) $V_{max}(t)$ is a function of time, representing the increase in pIgR expression and deposition at the basolateral surface of the epithelial cells over the course of the initial response to infection. $M_{ns}(t)$ and $M_s(t)$ represent the local concentrations of the nonspecific and specific antibodies in the mucosa at the basolateral side of epithelial cells. These quantities change over the course of infection 
 
 The core of the competition comes from the relationship between the antibody concentrations in the mucosa, $M_{ns}$ and $M_s$, and $K$. 
+
+We define this equation in the code chunk below: 
+
+```{r define-flux-function}
+#michaelis menten kinetics with competition
+specific_flux = function(Vmax, K, M_s, M_ns) { 
+  Vmax/(K + M_s + M_ns)} #define flux
+
+```
+
 
 # Pre-existing, non-sepecific antibody titer
 
@@ -54,6 +63,26 @@ One factor affecting the extent to which newly-generate IgA is inhibited by comp
 This concentration is dependent on 1) the rate of infections, 2) the the production, decay, and diffusion of systemic IgA during one of those infections, and 3) the contribution of local production and subsequent decay of IgA during those infections.
 
 We have some sense of the steady state concentration of IgA in serum; what we can vary is the steady state concentration of IgA in the mucosal tissue. 
+
+In this document, I will simplify this situation such that we only consider dynamics in the mucosal compartment. As such, I make the following asusmptions about the composition of IgA in the mucosal compartment:
+
+1) IgA flows into the mucosal compartment (due to local production and flux from the blood) at a constant rate, $\gamma_m$;
+2) IgA decays exponentially in the mucosal compartment with rate $d_\mu$
+
+The concentration of IgA will approach an equilibrium $\frac{\gamma_m}{d_\mu}$. 
+
+Note that $\gamma_m$ is composed of two quantities: 1) the mean production of IgA locally, which comes from the average of the sum of exponentially decaying antibody responses $A_0e^{-d_\mu t}$ at a constant rate of $1/\tau$ and takes the form $A_0/\tau$, where $\tau$ is the time between responses, and 2) a constant rate of diffusion of serum IgA into the mucosa, which we can call $f$. Thus, the concentration of IgA in the mucosal tissue at equilibrium is: 
+
+$$
+\hat M_A = \frac{(\frac{A_0}{\tau} + f)}{d_\mu}
+$$
+Later, we can change $f$ as a function of time, meaning that the rate of diffusion changes over the course of the response. For now, however, we keep this as a constant. 
+
+
+
+
+
+
 
 
 

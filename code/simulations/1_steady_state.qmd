@@ -4,8 +4,6 @@ subtitle: "Total IgA antibody titre oscillates around a fixed point at steady-st
 author: Cora, Susi, Rustom, Hasan, Carl...
 date: "`r Sys.Date()`"
 format: html
-bibliography: ../../assets/bibFiles/references.bib
-csl: ../../assets/bibFiles/apa.csl
 ---
 
 ```{r setup}
