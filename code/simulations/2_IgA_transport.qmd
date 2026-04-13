@@ -76,7 +76,31 @@ Note that $\gamma_m$ is composed of two quantities: 1) the mean production of Ig
 $$
 \hat M_A = \frac{(\frac{A_0}{\tau} + f)}{d_\mu}
 $$
+
 Later, we can change $f$ as a function of time, meaning that the rate of diffusion changes over the course of the response. For now, however, we keep this as a constant. 
+
+# Newly generated specific antibodies
+
+A new response can either be generated "systemically" -- that is, generated in a secondary lymphoid organ and diffuse into the mucosal tissue -- or generated in the mucosal tissue directly. 
+
+The Brochal Associated Lymphatic Tissue (BALT) provides a fast local lymphatic response, where newly generated plasma cells immediately diffuse into the mucosa. **I'm not sure whether the diffusion here should be a barrier, but for now I will not model it that way**
+
+As such, we will generate the new response locally, according to a function that exponentially increases, then decreases, the specific antibody titer. The increase will rise to a peak $A_0$ and decay at rate $d_\mu$, the same parameters we used to estimate the steady state concentration of non-specific antibodies generated in the mucosa. Duh!
+
+This function -- from Andreas and murphy -- takes the form: 
+
+$$
+A(t) = \frac{A_0}{1+e^{(-r(t-\rho))}}e^{-d_\mu t}
+$$
+Where $r$ is the initial growth rate in antibody titers, $\rho$ is the time of the peak of the response, $A_0$ is the peak of the response, and $d_\mu$ is the exponential decay rate of antibodies in the mucosa. 
+
+This function assumes antibodies increase exponentially at a rate $r$ and decrease exponentially at a rate $d_\mu$. 
+
+# Parameters
+
+Below, we present a table of all parameters involved in these simulations: 
+
+
 
 
 
