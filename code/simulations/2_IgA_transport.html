@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Cora, Susi, Rustom, Hasan, Carl…">
-<meta name="dcterms.date" content="2026-04-12">
+<meta name="dcterms.date" content="2026-04-13">
 
-<title>Competition for Transport Constrains Respiratory IgA Longevity 1:</title>
+<title>Competition for Transport Constrains Respiratory IgA Longevity 2:</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -83,8 +83,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Competition for Transport Constrains Respiratory IgA Longevity 1:</h1>
-<p class="subtitle lead">Total IgA antibody titre oscillates around a fixed point at steady-state</p>
+<h1 class="title">Competition for Transport Constrains Respiratory IgA Longevity 2:</h1>
+<p class="subtitle lead">Nonspecific IgA inhibits specific IgA translocation to site of infection</p>
 </div>
 
 
@@ -101,7 +101,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 12, 2026</p>
+      <p class="date">April 13, 2026</p>
     </div>
   </div>
   
@@ -139,18 +139,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Objective</h1>
 <p>In this document, we develop a model of IgA transport across mucosal epithelium. Our goal is to understand the extent to which pre-existing IgA antibodies to historical infections limits the function newly generated responses, and we hypothesize that this constraint comes mainly from competition for pIgR transport proteins.</p>
 </section>
-<section id="outline" class="level1">
-<h1>Outline</h1>
+<section id="simulation-outline" class="level1">
+<h1>Simulation Outline</h1>
 <p>We will assume a constant rate of 1) response generation and decay in the serum and subsequent diffusion into the tissue; 2) response generation and decay in the mucosal tissue; and 3) a constant rate of IgA transport out of the epithelium at steady state.</p>
 <p>We will run these conditions to steady-state, such that the concentration of IgA in the mucosal tissue is constant.</p>
 <p>At equilibrium, we will begin a new response, such that the antibody titers in the serum increase and decay, the titers in the mucosa increase and decay, the rate of diffusion into the epithelium increases and decays, and the number of transport proteins increases and decays. We will look at the dynamics of the flyx of antibodies into the lumen. We are interested in: how much gets over and how early?</p>
 </section>
-<section id="model-for-competition" class="level1">
-<h1>Model for Competition</h1>
+<section id="model-description" class="level1">
+<h1>Model Description</h1>
+<p>We will consider two populations competing for transport: Newly generated IgA specific for the current infection, <span class="math inline">\(M_s\)</span>, and IgA in the mucosa remaining from prior infections, <span class="math inline">\(M_{ns}\)</span>.</p>
+<p>We will model competition as an enzymatic reaction facilitated by polymeric IgA receptors, pIgRs.</p>
+<section id="competition" class="level2">
+<h2 class="anchored" data-anchor-id="competition">Competition</h2>
 <p>We model competition for transport proteins as a Michaelis-Menten enzymatic model with direct competition. This gives the following equation for the flux of the specific antibody into the lumen per unit time:</p>
-<p>$$</p>
-<p>_{L,s}(t) = </p>
-<p>$$ Notice that 1) <span class="math inline">\(K\)</span> should be the same for both antibodies as there should be no difference in affinity between the two for pIgR, and thus we would expect competition to be symmetric; and 2) <span class="math inline">\(V_{max}(t)\)</span> is a function of time, representing the increase in pIgR expression and deposition at the basolateral surface of the epithelial cells over the course of the initial response to infection. <span class="math inline">\(M_{ns}(t)\)</span> and <span class="math inline">\(M_s(t)\)</span> represent the local concentrations of the nonspecific and specific antibodies in the mucosa at the basolateral side of epithelial cells. These quantities change over the course of infection</p>
+<p><span class="math display">\[
+\Phi_{L,s}(t) = \frac{V_{max}(t)}{K + M_{ns}(t) + M_s(t)} M_s(t)
+\]</span> Notice that 1) <span class="math inline">\(K\)</span> should be the same for both antibodies as there should be no difference in affinity between the two for pIgR, and thus we would expect competition to be symmetric; and 2) <span class="math inline">\(V_{max}(t)\)</span> is a function of time, representing the increase in pIgR expression and deposition at the basolateral surface of the epithelial cells over the course of the initial response to infection. <span class="math inline">\(M_{ns}(t)\)</span> and <span class="math inline">\(M_s(t)\)</span> represent the local concentrations of the nonspecific and specific antibodies in the mucosa at the basolateral side of epithelial cells. These quantities change over the course of infection</p>
 <p>The core of the competition comes from the relationship between the antibody concentrations in the mucosa, <span class="math inline">\(M_{ns}\)</span> and <span class="math inline">\(M_s\)</span>, and <span class="math inline">\(K\)</span>.</p>
 <p>We define this equation in the code chunk below:</p>
 <div class="cell">
@@ -158,6 +162,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>specific_flux <span class="ot">=</span> <span class="cf">function</span>(Vmax, K, M_s, M_ns) { </span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  Vmax<span class="sc">/</span>(K <span class="sc">+</span> M_s <span class="sc">+</span> M_ns)} <span class="co">#define flux</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Final note: there should be a constant rate of transport of IgA out of the epithelium at steady state, as well. <strong>I will add this to the calculation of steady state mucosal non-specific IgA</strong></p>
+</section>
 </section>
 <section id="pre-existing-non-sepecific-antibody-titer" class="level1">
 <h1>Pre-existing, non-sepecific antibody titer</h1>
@@ -167,13 +173,68 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>In this document, I will simplify this situation such that we only consider dynamics in the mucosal compartment. As such, I make the following asusmptions about the composition of IgA in the mucosal compartment:</p>
 <ol type="1">
 <li>IgA flows into the mucosal compartment (due to local production and flux from the blood) at a constant rate, <span class="math inline">\(\gamma_m\)</span>;</li>
-<li>IgA decays exponentially in the mucosal compartment with rate <span class="math inline">\(d_\mu\)</span></li>
+<li>IgA flows out of the mucosal compartment due to i) decay exponentially in the mucosal compartment with rate <span class="math inline">\(d_\mu\)</span>, and ii) transport out of the mucosal compartment at a rate <span class="math inline">\(\frac{V_{max,0}}{K + M_{ns}(t)}\)</span>.</li>
 </ol>
-<p>The concentration of IgA will approach an equilibrium <span class="math inline">\(\frac{\gamma_m}{d_\mu}\)</span>.</p>
-<p>Note that <span class="math inline">\(\gamma_m\)</span> is composed of two quantities: 1) the mean production of IgA locally, which comes from the average of the sum of exponentially decaying antibody responses <span class="math inline">\(A_0e^{-d_\mu t}\)</span> at a constant rate of <span class="math inline">\(1/\tau\)</span> and takes the form <span class="math inline">\(A_0/\tau\)</span>, where <span class="math inline">\(\tau\)</span> is the time between responses, and 2) a constant rate of diffusion of serum IgA into the mucosa, which we can call <span class="math inline">\(f\)</span>. Thus, the concentration of IgA in the mucosal tissue at equilibrium is:</p>
+<p>Note that <span class="math inline">\(\gamma_m\)</span> is composed of two quantities: 1) the mean production of IgA locally, which comes from the average of the sum of exponentially decaying antibody responses <span class="math inline">\(A_0e^{-d_\mu t}\)</span> at a constant rate of <span class="math inline">\(1/\tau\)</span> and takes the form <span class="math inline">\(A_0/\tau\)</span>, where <span class="math inline">\(\tau\)</span> is the time between responses, and 2) a constant rate of diffusion of serum IgA into the mucosa, which we can call <span class="math inline">\(f\)</span>. Thus, the concentration of IgA in the mucosal tissue changes as:</p>
 <p><span class="math display">\[
-\hat M_A = \frac{(\frac{A_0}{\tau} + f)}{d_\mu}
-\]</span> Later, we can change <span class="math inline">\(f\)</span> as a function of time, meaning that the rate of diffusion changes over the course of the response. For now, however, we keep this as a constant.</p>
+\frac{dM_{ns}}{dt} = \gamma_m - d_\mu M_{ns} - \frac{V_{max,0}}{K+M_{ns}}M_{ns}
+\\
+= \frac{A_0}{\tau} + f - d_\mu M_{ns} - \frac{V_{max,0}}{K+M_{ns}}M_{ns}
+\]</span></p>
+<p>Later, we can change <span class="math inline">\(f\)</span> as a function of time, meaning that the rate of diffusion changes over the course of the response. For now, however, we keep this as a constant.</p>
+<p>The steady-state concentration of non-specific mucosal IgA in this system can be solved for as follows:</p>
+</section>
+<section id="newly-generated-specific-antibodies" class="level1">
+<h1>Newly generated specific antibodies</h1>
+<p>A new response can either be generated “systemically” – that is, generated in a secondary lymphoid organ and diffuse into the mucosal tissue – or generated in the mucosal tissue directly.</p>
+<p>The Brochal Associated Lymphatic Tissue (BALT) provides a fast local lymphatic response, where newly generated plasma cells immediately diffuse into the mucosa. <strong>I’m not sure whether the diffusion here should be a barrier, but for now I will not model it that way</strong></p>
+<p>As such, we will generate the new response locally, according to a function that exponentially increases, then decreases, the specific antibody titer. The increase will rise to a peak <span class="math inline">\(A_0\)</span> and decay at rate <span class="math inline">\(d_\mu\)</span>, the same parameters we used to estimate the steady state concentration of non-specific antibodies generated in the mucosa. Duh!</p>
+<p>This function – from Andreas and murphy – takes the form:</p>
+<p><span class="math display">\[
+A(t) = \frac{A_0}{1+e^{(-r(t-\rho))}}e^{-d_\mu t}
+\]</span> Where <span class="math inline">\(r\)</span> is the initial growth rate in antibody titers, <span class="math inline">\(\rho\)</span> is the time of the peak of the response, <span class="math inline">\(A_0\)</span> is the peak of the response, and <span class="math inline">\(d_\mu\)</span> is the exponential decay rate of antibodies in the mucosa.</p>
+<p>This function assumes antibodies increase exponentially at a rate <span class="math inline">\(r\)</span> and decrease exponentially at a rate <span class="math inline">\(d_\mu\)</span>.</p>
+</section>
+<section id="parameters" class="level1">
+<h1>Parameters</h1>
+<p>Below, we present a table of all parameters involved in these simulations:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vector of static parameters</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>params.vector <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="do">## competition parameters</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Vmax"</span> <span class="ot">=</span> <span class="st">""</span>, <span class="co">#maximum rate of IgA transport</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"K"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#concentration of IgA for which transport is half-max</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="do">## steady state concentration of non-specific IgA</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"f"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#flux of IgA into mucosa from blood</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"A0"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#peak antibody titer for a mucosal response</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tau"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#time between respiratory infections</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gamma_m"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#constant flow of IgA into mucosal compartment due to local production and flux from the blood</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"d_mu"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#decay rate of mucosal IgA</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Vmax,0"</span> <span class="ot">=</span> <span class="st">""</span>, <span class="co"># average max transport rate of IgA to lumen</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">#newly generated IgA</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"r"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co"># exponential growth of IgA on new infection</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rho"</span><span class="ot">=</span> <span class="st">""</span> <span class="co">#time of peak of response</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># format as dataframe</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>params.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">parameter =</span> <span class="fu">names</span>(params.vector), </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>                       <span class="at">meaning =</span> <span class="fu">c</span>(</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"maximum rate of IgA transport"</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"concentration of IgA for which transport is half-max"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"flux of IgA into mucosa from blood"</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"peak antibody titer for a mucosal response"</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"time between respiratory infections"</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"constant flow of IgA into mucosal compartment due to local production and flux from the blood"</span>,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"decay rate of mucosal IgA"</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"average max transport rate of IgA to lumen"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"exponential growth of mucosal IgA at start of new response"</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"time of peak of response"</span>),</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>                       <span class="at">value =</span> <span class="fu">unname</span>(params.vector))</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Render the data frame as a Markdown table</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(params.df, <span class="at">caption =</span> <span class="st">"Parameters"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 
 </main>

@@ -1,6 +1,6 @@
 ---
-title: "Competition for Transport Constrains Respiratory IgA Longevity 1:"
-subtitle: "Total IgA antibody titre oscillates around a fixed point at steady-state"
+title: "Competition for Transport Constrains Respiratory IgA Longevity 2:"
+subtitle: "Nonspecific IgA inhibits specific IgA translocation to site of infection"
 author: Cora, Susi, Rustom, Hasan, Carl...
 date: "`r Sys.Date()`"
 format: html
@@ -25,7 +25,7 @@ library(deSolve)
 
 In this document, we develop a model of IgA transport across mucosal epithelium. Our goal is to understand the extent to which pre-existing IgA antibodies to historical infections limits the function newly generated responses, and we hypothesize that this constraint comes mainly from competition for pIgR transport proteins. 
 
-# Outline 
+# Simulation Outline 
 
 We will assume a constant rate of 1) response generation and decay in the serum and subsequent diffusion into the tissue; 2) response generation and decay in the mucosal tissue; and 3) a constant rate of IgA transport out of the epithelium at steady state.
 
@@ -33,14 +33,18 @@ We will run these conditions to steady-state, such that the concentration of IgA
 
 At equilibrium, we will begin a new response, such that the antibody titers in the serum increase and decay, the titers in the mucosa increase and decay, the rate of diffusion into the epithelium increases and decays, and the number of transport proteins increases and decays. We will look at the dynamics of the flyx of antibodies into the lumen. We are interested in: how much gets over and how early? 
 
-# Model for Competition
+# Model Description
+
+We will consider two populations competing for transport: Newly generated IgA specific for the current infection, $M_s$, and IgA in the mucosa remaining from prior infections, $M_{ns}$. 
+
+We will model competition as an enzymatic reaction facilitated by polymeric IgA receptors, pIgRs. 
+
+## Competition
 
 We model competition for transport proteins as a Michaelis-Menten enzymatic model with direct competition. This gives the following equation for the flux of the specific antibody into the lumen per unit time: 
 
 $$
-
-\Phi_{L,s}(t) = \frac{V_{max}(t)}{K + M_{ns}(t) + M_s(t)} 
-
+\Phi_{L,s}(t) = \frac{V_{max}(t)}{K + M_{ns}(t) + M_s(t)} M_s(t)
 $$
 Notice that 1) $K$ should be the same for both antibodies as there should be no difference in affinity between the two for pIgR, and thus we would expect competition to be symmetric; and 2) $V_{max}(t)$ is a function of time, representing the increase in pIgR expression and deposition at the basolateral surface of the epithelial cells over the course of the initial response to infection. $M_{ns}(t)$ and $M_s(t)$ represent the local concentrations of the nonspecific and specific antibodies in the mucosa at the basolateral side of epithelial cells. These quantities change over the course of infection 
 
@@ -55,6 +59,7 @@ specific_flux = function(Vmax, K, M_s, M_ns) {
 
 ```
 
+Final note: there should be a constant rate of transport of IgA out of the epithelium at steady state, as well. **I will add this to the calculation of steady state mucosal non-specific IgA**
 
 # Pre-existing, non-sepecific antibody titer
 
@@ -67,17 +72,44 @@ We have some sense of the steady state concentration of IgA in serum; what we ca
 In this document, I will simplify this situation such that we only consider dynamics in the mucosal compartment. As such, I make the following asusmptions about the composition of IgA in the mucosal compartment:
 
 1) IgA flows into the mucosal compartment (due to local production and flux from the blood) at a constant rate, $\gamma_m$;
-2) IgA decays exponentially in the mucosal compartment with rate $d_\mu$
+2) IgA flows out of the mucosal compartment due to i) decay exponentially in the mucosal compartment with rate $d_\mu$, and ii) transport out of the mucosal compartment at a rate $\frac{V_{max,0}}{K + M_{ns}(t)}$. 
 
-The concentration of IgA will approach an equilibrium $\frac{\gamma_m}{d_\mu}$. 
 
-Note that $\gamma_m$ is composed of two quantities: 1) the mean production of IgA locally, which comes from the average of the sum of exponentially decaying antibody responses $A_0e^{-d_\mu t}$ at a constant rate of $1/\tau$ and takes the form $A_0/\tau$, where $\tau$ is the time between responses, and 2) a constant rate of diffusion of serum IgA into the mucosa, which we can call $f$. Thus, the concentration of IgA in the mucosal tissue at equilibrium is: 
+Note that $\gamma_m$ is composed of two quantities: 1) the mean production of IgA locally, which comes from the average of the sum of exponentially decaying antibody responses $A_0e^{-d_\mu t}$ at a constant rate of $1/\tau$ and takes the form $A_0/\tau$, where $\tau$ is the time between responses, and 2) a constant rate of diffusion of serum IgA into the mucosa, which we can call $f$. Thus, the concentration of IgA in the mucosal tissue changes as: 
 
 $$
-\hat M_A = \frac{(\frac{A_0}{\tau} + f)}{d_\mu}
+\frac{dM_{ns}}{dt} = \gamma_m - d_\mu M_{ns} - \frac{V_{max,0}}{K+M_{ns}}M_{ns} 
+\\
+= \frac{A_0}{\tau} + f - d_\mu M_{ns} - \frac{V_{max,0}}{K+M_{ns}}M_{ns}
 $$
 
 Later, we can change $f$ as a function of time, meaning that the rate of diffusion changes over the course of the response. For now, however, we keep this as a constant. 
+
+The steady-state concentration of non-specific mucosal IgA in this system can be solved for as follows: 
+
+$$
+0 = \gamma_m - d_\mu M_{ns} - \frac{V_{max,0}}{K+M_{ns}}M_{ns} 
+\\
+= \gamma_m(K+M_{ns}) - d_\mu(K+M_{ns})M_{ns} - V_{max,0}M_{ns} 
+\\
+= \gamma_m K + \gamma_m M_{ns} - d_\mu K M_{ns} - d_\mu M_{ns}^2 - V_{max,0}M_{ns}
+\\
+= d_\mu M_{ns}^2 + (V_{max,0} - \gamma_m + d_\mu K)M_{ns}  - \gamma_m K 
+
+$$
+with solution
+
+$$
+M_{ns}^* = \frac{(\gamma_m -V_{max,0} - d_\mu K) + \sqrt{(V_{max,0} - \gamma_m + d_\mu K)^2 + 4d_\mu \gamma_m K}}{2d_\mu}
+$$
+as we will want the positive root and $\gamma_m$, $K$, and $d_\mu$ are all greater than 0.  
+
+I define the equation for this steady state concewntration of $M_{ns}$ in the code chunk below: 
+
+```{r define-nonspecific-steady-state}
+#calculate steady state fraction of nonspecific IgA function
+nonspecific_SteadyState = function(gamma, Vmax_0, d_mu, K) {(gamma - Vmax_0 - d_mu*K + sqrt((Vmax_0+d_mu*k-gamma)^2 + 4*d_mu*gamma*K))/(2*d_mu)}
+```
 
 # Newly generated specific antibodies
 
@@ -92,15 +124,60 @@ This function -- from Andreas and murphy -- takes the form:
 $$
 A(t) = \frac{A_0}{1+e^{(-r(t-\rho))}}e^{-d_\mu t}
 $$
+
 Where $r$ is the initial growth rate in antibody titers, $\rho$ is the time of the peak of the response, $A_0$ is the peak of the response, and $d_\mu$ is the exponential decay rate of antibodies in the mucosa. 
 
 This function assumes antibodies increase exponentially at a rate $r$ and decrease exponentially at a rate $d_\mu$. 
+
+I define this function in the code chunk below: 
+
+```{r define-specific-dynamics}
+# Concentration of mucosal specific IgA during new response
+M_specific = function(A0, r, rho, d_mu) {(A0*exp(-d_mu*t))/(1+exp(-r*(t-rho)))}
+```
 
 # Parameters
 
 Below, we present a table of all parameters involved in these simulations: 
 
+```{r parameter-table, results="hide", echo="false"}
+# vector of static parameters
+params.vector = c(
+  ## competition parameters
+  "Vmax" = "", #maximum rate of IgA transport
+  "K"= "", #concentration of IgA for which transport is half-max
+  ## steady state concentration of non-specific IgA
+  "f"= "", #flux of IgA into mucosa from blood
+  "A0"= "", #peak antibody titer for a mucosal response
+  "tau"= "", #time between respiratory infections
+  "gamma_m"= "", #constant flow of IgA into mucosal compartment due to local production and flux from the blood
+  "d_mu"= "", #decay rate of mucosal IgA
+  "Vmax,0" = "", # average max transport rate of IgA to lumen
+  #newly generated IgA
+  "r"= "", # exponential growth of IgA on new infection
+  "rho"= "" #time of peak of response
+)
 
+
+# format as dataframe
+params.df = data.frame(parameter = names(params.vector), 
+                       meaning = c(
+                      "maximum rate of IgA transport",
+                      "concentration of IgA for which transport is half-max",
+                      "flux of IgA into mucosa from blood",
+                      "peak antibody titer for a mucosal response",
+                      "time between respiratory infections",
+                      "constant flow of IgA into mucosal compartment due to local production and flux from the blood",
+                      "decay rate of mucosal IgA",
+                      "average max transport rate of IgA to lumen",
+                      "exponential growth of mucosal IgA at start of new response",
+                      "time of peak of response"),
+                       value = unname(params.vector))
+
+# Render the data frame as a Markdown table
+knitr::kable(params.df, caption = "Parameters")
+
+```
 
 
 
