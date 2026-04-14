@@ -181,9 +181,43 @@ knitr::kable(params.df, caption = "Parameters")
 
 
 
+# Simulation 
+
+```{r set-parameters}
+## competition parameters
+  Vmax = 1 #maximum rate of IgA transport
+  K = c(10^3, 10^4, 10^5, 10^6, 10^8) #concentration of IgA for which transport is half-max
+  ## steady state concentration of non-specific IgA
+  f = seq(10^1, 10^2, by = 10^0.1) #flux of IgA into mucosa from blood
+  A0 = 10^4 #peak antibody titer for a mucosal response
+  tau = 365 #time between respiratory infections in days
+  gamma_m = A0/tau + f  #constant flow of IgA into mucosal compartment due to local production and flux from the blood
+  d_mu= log(2)/(c(1,2,5,10,25)*365) #decay rate of mucosal IgA in terms of half life, in days
+  Vmax_0 = Vmax # average max transport rate of IgA to lumen
+  #newly generated IgA
+  r = log(10^3)/14 # exponential growth of IgA on new infection
+  rho = 14 #time of peak of response
+  
+# time (days of course of infection)
+```
+
+We want to vary the decay rate. $d_\mu$, and extent of competition, $K$; or vary the diffusion of non-specific IgA from serum. 
+
+Output will be the flux: 
 
 
+```{r sim}
+#vector of steady state non-specific IgA based on dependent variable
+#
+#vector of specific IgA during response
+#
+#flux over course of response
+#
+#max flux
+#
+#retunr max flux. 
 
+```
 
 
 

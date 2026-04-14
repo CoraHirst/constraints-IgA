@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Cora, Susi, Rustom, Hasan, Carl…">
-<meta name="dcterms.date" content="2026-04-13">
+<meta name="dcterms.date" content="2026-04-14">
 
 <title>Competition for Transport Constrains Respiratory IgA Longevity 2:</title>
 <style>
@@ -101,7 +101,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 13, 2026</p>
+      <p class="date">April 14, 2026</p>
     </div>
   </div>
   
@@ -183,6 +183,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 \]</span></p>
 <p>Later, we can change <span class="math inline">\(f\)</span> as a function of time, meaning that the rate of diffusion changes over the course of the response. For now, however, we keep this as a constant.</p>
 <p>The steady-state concentration of non-specific mucosal IgA in this system can be solved for as follows:</p>
+<p>$$ 0 = <em>m - d</em>M_{ns} - M_{ns} \ = <em>m(K+M</em>{ns}) - d_(K+M_{ns})M_{ns} - V_{max,0}M_{ns} \ = <em>m K + <em>m M</em>{ns} - d</em>K M_{ns} - d_M_{ns}^2 - V_{max,0}M_{ns} \ = d_M_{ns}^2 + (V_{max,0} - <em>m + d</em>K)M_{ns} - _m K</p>
+<p>$$ with solution</p>
+<p><span class="math display">\[
+M_{ns}^* = \frac{(\gamma_m -V_{max,0} - d_\mu K) + \sqrt{(V_{max,0} - \gamma_m + d_\mu K)^2 + 4d_\mu \gamma_m K}}{2d_\mu}
+\]</span> as we will want the positive root and <span class="math inline">\(\gamma_m\)</span>, <span class="math inline">\(K\)</span>, and <span class="math inline">\(d_\mu\)</span> are all greater than 0.</p>
+<p>I define the equation for this steady state concewntration of <span class="math inline">\(M_{ns}\)</span> in the code chunk below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate steady state fraction of nonspecific IgA function</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>nonspecific_SteadyState <span class="ot">=</span> <span class="cf">function</span>(gamma, Vmax_0, d_mu, K) {(gamma <span class="sc">-</span> Vmax_0 <span class="sc">-</span> d_mu<span class="sc">*</span>K <span class="sc">+</span> <span class="fu">sqrt</span>((Vmax_0<span class="sc">+</span>d_mu<span class="sc">*</span>k<span class="sc">-</span>gamma)<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">4</span><span class="sc">*</span>d_mu<span class="sc">*</span>gamma<span class="sc">*</span>K))<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span>d_mu)}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="newly-generated-specific-antibodies" class="level1">
 <h1>Newly generated specific antibodies</h1>
@@ -192,48 +202,54 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This function – from Andreas and murphy – takes the form:</p>
 <p><span class="math display">\[
 A(t) = \frac{A_0}{1+e^{(-r(t-\rho))}}e^{-d_\mu t}
-\]</span> Where <span class="math inline">\(r\)</span> is the initial growth rate in antibody titers, <span class="math inline">\(\rho\)</span> is the time of the peak of the response, <span class="math inline">\(A_0\)</span> is the peak of the response, and <span class="math inline">\(d_\mu\)</span> is the exponential decay rate of antibodies in the mucosa.</p>
+\]</span></p>
+<p>Where <span class="math inline">\(r\)</span> is the initial growth rate in antibody titers, <span class="math inline">\(\rho\)</span> is the time of the peak of the response, <span class="math inline">\(A_0\)</span> is the peak of the response, and <span class="math inline">\(d_\mu\)</span> is the exponential decay rate of antibodies in the mucosa.</p>
 <p>This function assumes antibodies increase exponentially at a rate <span class="math inline">\(r\)</span> and decrease exponentially at a rate <span class="math inline">\(d_\mu\)</span>.</p>
+<p>I define this function in the code chunk below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Concentration of mucosal specific IgA during new response</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>M_specific <span class="ot">=</span> <span class="cf">function</span>(A0, r, rho, d_mu) {(A0<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>t))<span class="sc">/</span>(<span class="dv">1</span><span class="sc">+</span><span class="fu">exp</span>(<span class="sc">-</span>r<span class="sc">*</span>(t<span class="sc">-</span>rho)))}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="parameters" class="level1">
 <h1>Parameters</h1>
 <p>Below, we present a table of all parameters involved in these simulations:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vector of static parameters</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>params.vector <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="do">## competition parameters</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Vmax"</span> <span class="ot">=</span> <span class="st">""</span>, <span class="co">#maximum rate of IgA transport</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"K"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#concentration of IgA for which transport is half-max</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="do">## steady state concentration of non-specific IgA</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"f"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#flux of IgA into mucosa from blood</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"A0"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#peak antibody titer for a mucosal response</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tau"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#time between respiratory infections</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gamma_m"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#constant flow of IgA into mucosal compartment due to local production and flux from the blood</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"d_mu"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#decay rate of mucosal IgA</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Vmax,0"</span> <span class="ot">=</span> <span class="st">""</span>, <span class="co"># average max transport rate of IgA to lumen</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">#newly generated IgA</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"r"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co"># exponential growth of IgA on new infection</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rho"</span><span class="ot">=</span> <span class="st">""</span> <span class="co">#time of peak of response</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># format as dataframe</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>params.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">parameter =</span> <span class="fu">names</span>(params.vector), </span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>                       <span class="at">meaning =</span> <span class="fu">c</span>(</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"maximum rate of IgA transport"</span>,</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"concentration of IgA for which transport is half-max"</span>,</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"flux of IgA into mucosa from blood"</span>,</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"peak antibody titer for a mucosal response"</span>,</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"time between respiratory infections"</span>,</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"constant flow of IgA into mucosal compartment due to local production and flux from the blood"</span>,</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"decay rate of mucosal IgA"</span>,</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"average max transport rate of IgA to lumen"</span>,</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"exponential growth of mucosal IgA at start of new response"</span>,</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"time of peak of response"</span>),</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>                       <span class="at">value =</span> <span class="fu">unname</span>(params.vector))</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Render the data frame as a Markdown table</span></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(params.df, <span class="at">caption =</span> <span class="st">"Parameters"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vector of static parameters</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>params.vector <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="do">## competition parameters</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Vmax"</span> <span class="ot">=</span> <span class="st">""</span>, <span class="co">#maximum rate of IgA transport</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"K"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#concentration of IgA for which transport is half-max</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="do">## steady state concentration of non-specific IgA</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"f"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#flux of IgA into mucosa from blood</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"A0"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#peak antibody titer for a mucosal response</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tau"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#time between respiratory infections</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gamma_m"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#constant flow of IgA into mucosal compartment due to local production and flux from the blood</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"d_mu"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co">#decay rate of mucosal IgA</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Vmax,0"</span> <span class="ot">=</span> <span class="st">""</span>, <span class="co"># average max transport rate of IgA to lumen</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">#newly generated IgA</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"r"</span><span class="ot">=</span> <span class="st">""</span>, <span class="co"># exponential growth of IgA on new infection</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rho"</span><span class="ot">=</span> <span class="st">""</span> <span class="co">#time of peak of response</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># format as dataframe</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>params.df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">parameter =</span> <span class="fu">names</span>(params.vector), </span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>                       <span class="at">meaning =</span> <span class="fu">c</span>(</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"maximum rate of IgA transport"</span>,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"concentration of IgA for which transport is half-max"</span>,</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"flux of IgA into mucosa from blood"</span>,</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"peak antibody titer for a mucosal response"</span>,</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"time between respiratory infections"</span>,</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"constant flow of IgA into mucosal compartment due to local production and flux from the blood"</span>,</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"decay rate of mucosal IgA"</span>,</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"average max transport rate of IgA to lumen"</span>,</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"exponential growth of mucosal IgA at start of new response"</span>,</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"time of peak of response"</span>),</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>                       <span class="at">value =</span> <span class="fu">unname</span>(params.vector))</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Render the data frame as a Markdown table</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(params.df, <span class="at">caption =</span> <span class="st">"Parameters"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 
