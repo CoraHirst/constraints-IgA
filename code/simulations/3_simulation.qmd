@@ -54,13 +54,13 @@ parms = list(
   K = 100, #concentration of IgA for which transport is half-max
   ## steady state concentration of non-specific IgA
   f = 10, #flux of IgA into mucosa from blood per day
-  A0 = 10, #peak antibody titer for a mucosal response
+  A0 = 100, #peak antibody titer for a mucosal response
   tau = 365, #time between respiratory infections in days
   gamma_m = A0/tau + f,  #constant flow of IgA into mucosal compartment due to local production and flux from the blood
   d_mu = -log(1/2)/(t.half*365), #decay rate of mucosal IgA in terms of half life, in days
   Vmax_0 = 10, # average max transport rate of IgA to lumen per day
   #newly generated IgA
-  r = log(10^3)/14, # exponential growth of IgA on new infection
+  r = log(10^2)/14, # exponential growth of IgA on new infection
   rho = 14) #time of peak of response)
 
 
@@ -162,7 +162,38 @@ plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = Ms, group = dec
 print(plot)
 ```
 
-```{r plot-flux-over-time}
-Phi.s_l = sapply(d_mus, specific_flux()
+```{r calculate-flux-over-time}
+Phi.s_l = sapply(d_mus, function(d_mu){
+  sapply(times, function(t) {
+    #calculate ss M_ns
+    M_ns = Mns_SteadyState(A0 = parms$A0, tau = parms$tau, f = parms$f, Vmax_0 = parms$Vmax, d_mu = d_mu, K = parms$K)
+    #calculate M_s at that time
+    M_s = M_specific(A0, r, rho, d_mu, t)
+    
+    # calculate flux of specific IgA
+    return(specific_flux(Vmax = parms$Vmax, K = parms$K, M_ns = M_ns, M_s = M_s))
+  })
+}) %>%
+  cbind(times, .) %>% # add time column
+  as.data.frame() #format as data frame
 
+# add column names
+colnames(Phi.s_l) = c("time", t.half)
+
+# pivot to long form 
+Phi.s_long = Phi.s_l %>% 
+  pivot_longer(cols = !time, 
+               names_to = "t.half",
+               values_to = "flux")
+
+```
+
+```{r plot-flux-over-time}
+# plot flux for each decay rate over time
+plot = ggplot() +
+  geom_line(data = Phi.s_long, aes(x = time, y = flux, group = as.factor(as.numeric(t.half)), col = as.factor(as.numeric(t.half)))) +
+  theme_bw() +
+  labs(x = "days post infection", y = "flux of specific IgA", col = expression(paste("T"[1/2], ", in years")))
+
+print(plot)
 ```

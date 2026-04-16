@@ -1,6 +1,6 @@
 # michaelis menten kinetics with competition
 specific_flux = function(Vmax, K, M_s, M_ns) { 
-  Vmax/(K + M_s + M_ns)} #define flux
+  M_s*Vmax/(K + M_s + M_ns)} #define flux
 
 # calculate steady state fraction of nonspecific IgA function
 Mns_SteadyState = function(A0, tau, f, Vmax_0, d_mu, K) {
