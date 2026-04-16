@@ -1,0 +1,168 @@
+---
+title: "Competition for Transport Constrains Respiratory IgA Longevity 3:"
+subtitle: "Calculate: nonspecific IgA inhibits specific IgA translocation to site of infection"
+author: Cora, Susi, Rustom, Hasan, Carl...
+date: "`r Sys.Date()`"
+format: html
+
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+source(here("code", "functions", "functions.R"))
+```
+
+# Objective 
+
+The goal of this document is to calculate the extent to which pre-exisiting, non-specific IgA antibodies interfere with he transport of newly generated, specific IgA across the mucosal epithelium (where it will be useful.)
+
+# Outline
+
+We can calculate the pre-existing, non-specific antibody titer in two ways: 
+
+1) we can solve for the steady state analytically, given the equation from `\code\2_IgA_transport.qmd`. This saves time, space, and is simpler. Or, 
+2) we can solve for the steady state by solving the ode describing the dynamics of IgA change in the mucosa over time, and extracting the average non-specific titer at steady state. This might be useful if we consider adding other compartments or more complex dynamics reflective of the biology of IgA that complicate the calculation of the steady-state concentration. 
+
+# Simulation 
+
+
+We want to vary the decay rate. $d_\mu$, and extent of competition, $K$; or vary the diffusion of non-specific IgA from serum. 
+Lets calculate the ss for chaning d_mu: 
+
+```{r simulated-parms}
+#half lives for decay rates: 
+t.half = c(1,2,5,10,25) #in years
+
+#make list of parms
+parms = list(
+  Vmax = 10, #maximum rate of IgA transport
+  K = 100, #concentration of IgA for which transport is half-max
+  ## steady state concentration of non-specific IgA
+  f = 10, #flux of IgA into mucosa from blood per day
+  A0 = 10, #peak antibody titer for a mucosal response
+  tau = 365, #time between respiratory infections in days
+  gamma_m = A0/tau + f,  #constant flow of IgA into mucosal compartment due to local production and flux from the blood
+  d_mu = -log(1/2)/(t.half*365), #decay rate of mucosal IgA in terms of half life, in days
+  Vmax_0 = 10, # average max transport rate of IgA to lumen per day
+  #newly generated IgA
+  r = log(10^3)/14, # exponential growth of IgA on new infection
+  rho = 14) #time of peak of response)
+
+
+```
+
+below we calculate the steady states for varying $d_\mu$ 
+
+```{r ss_solution}
+# define changing variable
+d_mus = -log(1/2)/(c(1,2,5,10,25)*365)
+
+#calculate from function
+Mns_ss = sapply(d_mus, function(d) {Mns_SteadyState(A0 = parms$A0, tau = parms$tau, f = parms$f, Vmax_0 = parms$Vmax, d_mu = d, K = parms$K)})
+
+print(Mns_ss)
+
+```
+
+and here I check (because that feels wrong):
+
+```{r }
+# define changing variable
+d_mus = -log(1/2)/(c(1,2,5,10,25)*365)
+
+## simulation parameters 
+Tmax   = 100*365                  #20       # max time in years
+points.per.day = 24                # output points per year
+duration.of.steady.state = 5*365        # duration in days for averaging steady state for seasonal
+
+## initial conditions 
+init.cond = c(Mns = 1) # initial mucosal iga
+
+#iterate through mucosal decay rates and solve
+Mns_odes = lapply(d_mus, function(d_mu){
+  #change d_mu parameter in the parms list
+  parms$d_mu = d_mu
+  
+  #calculate dynamics
+  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), Mns.odes.model, parms = parms))
+  }
+)
+
+
+```
+
+```{r plot-dynamics}
+#plot dynamics
+plot = ggplot() #create empty plot
+for(soln in Mns_odes){ #iterate through model solutions
+  plot = plot + 
+    geom_line(data = soln, aes(y = Mns, x = time/365)) +
+    geom_hline(yintercept = Mns_ss, linetype = "dashed") +
+    geom_text(aes(x = c(t.half), y = Mns_ss, label = paste0("T[1/2]==", t.half, "~years")), parse = T, nudge_y = 100, nudge_x = 10) + #labels ss with corresponding thalf
+    theme_bw()+          
+    labs(y = "Mucosal IgA, Total", x = "Time, years")
+}
+print(plot)
+
+#extract steady states
+Mns_odes_SS = sapply(Mns_odes, function(soln){
+  Mns = soln$Mns #extract vector of titer over time
+  ss = mean(tail(Mns, duration.of.steady.state*points.per.day))
+})
+
+#compare ss from ode to ss from calculation
+Mns_ss #from calculation
+Mns_odes_SS #from ode numerical solution
+
+```
+
+Still not happy with the parms but at least the calculation is correct!
+
+Below, we simulate a response over the course of month and observe the change in specific antibodies in the mucosa $M_S$ over time:
+
+```{r specific-antibodies}
+# response parameters
+times = seq(0, 30, by = 1/24) #1 month, calculated by hour
+# specific antibody titer over time
+M_s = sapply(d_mus, function(d_mu) {
+  sapply(times, function(t) {
+    M_specific(A0 = parms$A0, r = parms$r, rho = parms$rho, d_mu = d_mu, t = t)
+  })
+}) %>% as.data.frame()
+
+#add time column 
+M_s = cbind(times, M_s) %>% as.data.frame()
+colnames(M_s) = c("time", d_mus) #name columns for easy reference
+
+M_s.longer = M_s %>%
+  pivot_longer(cols = !time, 
+               names_to = "decay",
+               values_to = "Ms")
+
+# plot dynamics
+plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = Ms, group = decay)) +
+  theme_classic() +
+  labs(x = "Time, days", y = "Specific Antibody in Mucosa, Ms")
+
+print(plot)
+```
+
+```{r plot-flux-over-time}
+Phi.s_l = sapply(d_mus, specific_flux()
+
+```

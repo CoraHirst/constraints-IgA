@@ -1,6 +1,6 @@
 ---
 title: "Competition for Transport Constrains Respiratory IgA Longevity 2:"
-subtitle: "Nonspecific IgA inhibits specific IgA translocation to site of infection"
+subtitle: "Outline: nonspecific IgA inhibits specific IgA translocation to site of infection"
 author: Cora, Susi, Rustom, Hasan, Carl...
 date: "`r Sys.Date()`"
 format: html
@@ -8,6 +8,9 @@ format: html
 ---
 
 ```{r setup}
+#install.package("here")
+library(here)
+
 #install.package("ggplot2")
 library(ggplot2)
 
@@ -108,7 +111,10 @@ I define the equation for this steady state concewntration of $M_{ns}$ in the co
 
 ```{r define-nonspecific-steady-state}
 #calculate steady state fraction of nonspecific IgA function
-nonspecific_SteadyState = function(gamma, Vmax_0, d_mu, K) {(gamma - Vmax_0 - d_mu*K + sqrt((Vmax_0+d_mu*k-gamma)^2 + 4*d_mu*gamma*K))/(2*d_mu)}
+Mns_SteadyState = function(A0, tau, f, Vmax_0, d_mu, K) {
+  gamma = A0/tau + f
+  SS = (gamma - Vmax_0 - d_mu*K + sqrt((Vmax_0+d_mu*k-gamma)^2 + 4*d_mu*gamma*K))/(2*d_mu)
+  return(SS)}
 ```
 
 # Newly generated specific antibodies
@@ -178,49 +184,5 @@ params.df = data.frame(parameter = names(params.vector),
 knitr::kable(params.df, caption = "Parameters")
 
 ```
-
-
-
-# Simulation 
-
-```{r set-parameters}
-## competition parameters
-  Vmax = 1 #maximum rate of IgA transport
-  K = c(10^3, 10^4, 10^5, 10^6, 10^8) #concentration of IgA for which transport is half-max
-  ## steady state concentration of non-specific IgA
-  f = seq(10^1, 10^2, by = 10^0.1) #flux of IgA into mucosa from blood
-  A0 = 10^4 #peak antibody titer for a mucosal response
-  tau = 365 #time between respiratory infections in days
-  gamma_m = A0/tau + f  #constant flow of IgA into mucosal compartment due to local production and flux from the blood
-  d_mu= log(2)/(c(1,2,5,10,25)*365) #decay rate of mucosal IgA in terms of half life, in days
-  Vmax_0 = Vmax # average max transport rate of IgA to lumen
-  #newly generated IgA
-  r = log(10^3)/14 # exponential growth of IgA on new infection
-  rho = 14 #time of peak of response
-  
-# time (days of course of infection)
-```
-
-We want to vary the decay rate. $d_\mu$, and extent of competition, $K$; or vary the diffusion of non-specific IgA from serum. 
-
-Output will be the flux: 
-
-
-```{r sim}
-#vector of steady state non-specific IgA based on dependent variable
-#
-#vector of specific IgA during response
-#
-#flux over course of response
-#
-#max flux
-#
-#retunr max flux. 
-
-```
-
-
-
-
 
 
