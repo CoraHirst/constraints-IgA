@@ -44,6 +44,24 @@ We can calculate the pre-existing, non-specific antibody titer in two ways:
 We want to vary the decay rate. $d_\mu$, and extent of competition, $K$; or vary the diffusion of non-specific IgA from serum. 
 Lets calculate the ss for chaning d_mu: 
 
+```{r parameters}
+Vmax = 10 #maximum rate of IgA transport
+  K = 100 #concentration of IgA for which transport is half-max
+  ## steady state concentration of non-specific IgA
+  f = 10 #flux of IgA into mucosa from blood per day
+  A0 = 100 #peak antibody titer for a mucosal response
+  tau = 365 #time between respiratory infections in days
+  gamma_m = A0/tau + f  #constant flow of IgA into mucosal compartment due to local production and flux from the blood
+  d_mu = -log(1/2)/(t.half*365) #decay rate of mucosal IgA in terms of half life, in days
+  Vmax_0 = 10 # average max transport rate of IgA to lumen per day
+  #newly generated IgA
+  r = log(A0)/14 # exponential growth of IgA on new infection
+  rho = 14 #time of peak of response
+  
+  t.half = c(1,2,5,10,25) #in years
+
+```
+
 ```{r simulated-parms}
 #half lives for decay rates: 
 t.half = c(1,2,5,10,25) #in years
@@ -70,7 +88,7 @@ below we calculate the steady states for varying $d_\mu$
 
 ```{r ss_solution}
 # define changing variable
-d_mus = -log(1/2)/(c(1,2,5,10,25)*365)
+d_mus = -log(1/2)/(t.half*365)
 
 #calculate from function
 Mns_ss = sapply(d_mus, function(d) {Mns_SteadyState(A0 = parms$A0, tau = parms$tau, f = parms$f, Vmax_0 = parms$Vmax, d_mu = d, K = parms$K)})
@@ -83,7 +101,7 @@ and here I check (because that feels wrong):
 
 ```{r }
 # define changing variable
-d_mus = -log(1/2)/(c(1,2,5,10,25)*365)
+d_mus = -log(1/2)/(t.half*365)
 
 ## simulation parameters 
 Tmax   = 100*365                  #20       # max time in years
@@ -149,7 +167,7 @@ M_s = sapply(d_mus, function(d_mu) {
 M_s = cbind(times, M_s) %>% as.data.frame()
 colnames(M_s) = c("time", d_mus) #name columns for easy reference
 
-M_s.longer = M_s %>%
+M_s.longer = M_s %>% #pivots to long form for easier plotting
   pivot_longer(cols = !time, 
                names_to = "decay",
                values_to = "Ms")
@@ -159,6 +177,7 @@ plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = Ms, group = dec
   theme_classic() +
   labs(x = "Time, days", y = "Specific Antibody in Mucosa, Ms")
 
+#print to viewer
 print(plot)
 ```
 
@@ -197,3 +216,21 @@ plot = ggplot() +
 
 print(plot)
 ```
+
+# Parking on the downhill
+
+How can we simplify the model, then incorporate all of the caveats/complexities/dependencies into a supplement?
+
+Main ideas: 
+
+competition constrains transport
+recall should be inducible if we want a fast response (optimization)
+
+We want to plot $\frac{M_s}{M_{ns}}$ as a function of something like $K$ to show that there is competition. 
+
+In the supplement we can break down $M_{ns}$ into the constitutive components/compartments that influence that fraction: contribution from serum (increase and decay included); contirbution from gut mucosal responses and diffusion into serum; contribution from local responses. We can explain observation of IgA following power law in blood but maybe not so useful for respiratory stuff. 
+
+In the supplement we can also break down confusion over $K$ - whether it is fixed, and what the flux saturates at ($V_{max}$); time dependence over the course of infection (pIgR transport proteins increase over the course of infection - does that raise Vmax and if so, do we reach it, or are we always in the regime were saturation is half. )
+
+
+I need to get a better intuition of the michaelis-menten with direct competition model. What factors change K? Vmax? Vmax is kcat*enzyme concentration, and K is what, affinity for pIgR? 

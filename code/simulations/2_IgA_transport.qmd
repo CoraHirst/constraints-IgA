@@ -98,7 +98,6 @@ $$
 = \gamma_m K + \gamma_m M_{ns} - d_\mu K M_{ns} - d_\mu M_{ns}^2 - V_{max,0}M_{ns}
 \\
 = d_\mu M_{ns}^2 + (V_{max,0} - \gamma_m + d_\mu K)M_{ns}  - \gamma_m K 
-
 $$
 with solution
 
