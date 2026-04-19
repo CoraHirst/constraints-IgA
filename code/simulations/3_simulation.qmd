@@ -233,4 +233,8 @@ In the supplement we can break down $M_{ns}$ into the constitutive components/co
 In the supplement we can also break down confusion over $K$ - whether it is fixed, and what the flux saturates at ($V_{max}$); time dependence over the course of infection (pIgR transport proteins increase over the course of infection - does that raise Vmax and if so, do we reach it, or are we always in the regime were saturation is half. )
 
 
-I need to get a better intuition of the michaelis-menten with direct competition model. What factors change K? Vmax? Vmax is kcat*enzyme concentration, and K is what, affinity for pIgR? 
+I need to get a better intuition of the michaelis-menten with direct competition model. What factors change K? Vmax? Vmax is kcat*enzyme concentration, and K is what, affinity for pIgR?
+
+# New plan: 
+
+We will do the simple model with three populations: $M_s$, $M_{ns}$, and $L_s$. We will vary the ratio of $M_{ns}$ to $M_s$, while keeping the dynamics of $M_s$ during infection 

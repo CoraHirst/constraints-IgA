@@ -149,6 +149,16 @@ plotting_mutliple_constant = function(parms){
  parameters = c(k=k, A0=A0, tau=tau, n=n, c=c, ss.Ab_titre = ss.Ab_titre)
  
 #plot
-  plotting_mutliple_constant(parameters)
+plot = plotting_mutliple_constant(parameters)
 
+
+
+```
+
+```{r save-plot}
+# file path 
+file = here("results", "steady-state", "comparing-steady-state-calculations.png")
+
+## ggsave
+ggsave()
 ```
