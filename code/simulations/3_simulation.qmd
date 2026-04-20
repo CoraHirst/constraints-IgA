@@ -56,8 +56,8 @@ Vmax = 10 #maximum rate of IgA transport
   d_mu = -log(1/2)/(t.half*365) #decay rate of mucosal IgA in terms of half life, in days
   Vmax_0 = 10 # average max transport rate of IgA to lumen per day
   #newly generated IgA
-  r = log(A0)/14 # exponential growth of IgA on new infection
-  rho = 14 #time of peak of response
+  r = log(A0)/7 # exponential growth of IgA on new infection
+  rho = 7 #time of peak of response
   
   
 
@@ -156,7 +156,7 @@ Below, we simulate a response over the course of month and observe the change in
 
 ```{r specific-antibodies}
 # response parameters
-times = seq(0, 100, by = 1/24) #1 month, calculated by hour
+times = seq(0, 30, by = 1/24) #1 month, calculated by hour
 # specific antibody titer over time
 M_s = sapply(d_mus, function(d_mu) {
   sapply(times, function(t) {
@@ -174,7 +174,7 @@ M_s.longer = M_s %>% #pivots to long form for easier plotting
                values_to = "Ms")
 
 # plot dynamics
-plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = Ms, group = decay, color = decay)) +
+plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = log(Ms), group = decay, color = decay)) +
   theme_classic() +
   labs(x = "Time, days", y = "Specific Antibody in Mucosa, Ms", col = expression(paste("T"[1/2], ", in years"))) 
 
