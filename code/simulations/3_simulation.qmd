@@ -45,6 +45,7 @@ We want to vary the decay rate. $d_\mu$, and extent of competition, $K$; or vary
 Lets calculate the ss for chaning d_mu: 
 
 ```{r parameters}
+t.half = c(.1,1,10) #in years
 Vmax = 10 #maximum rate of IgA transport
   K = 100 #concentration of IgA for which transport is half-max
   ## steady state concentration of non-specific IgA
@@ -58,13 +59,13 @@ Vmax = 10 #maximum rate of IgA transport
   r = log(A0)/14 # exponential growth of IgA on new infection
   rho = 14 #time of peak of response
   
-  t.half = c(1,2,5,10,25) #in years
+  
 
 ```
 
 ```{r simulated-parms}
 #half lives for decay rates: 
-t.half = c(1,2,5,10,25) #in years
+t.half = c(.1,1,10) #in years
 
 #make list of parms
 parms = list(
@@ -155,7 +156,7 @@ Below, we simulate a response over the course of month and observe the change in
 
 ```{r specific-antibodies}
 # response parameters
-times = seq(0, 30, by = 1/24) #1 month, calculated by hour
+times = seq(0, 100, by = 1/24) #1 month, calculated by hour
 # specific antibody titer over time
 M_s = sapply(d_mus, function(d_mu) {
   sapply(times, function(t) {
@@ -165,7 +166,7 @@ M_s = sapply(d_mus, function(d_mu) {
 
 #add time column 
 M_s = cbind(times, M_s) %>% as.data.frame()
-colnames(M_s) = c("time", d_mus) #name columns for easy reference
+colnames(M_s) = c("time", t.half) #name columns for easy reference
 
 M_s.longer = M_s %>% #pivots to long form for easier plotting
   pivot_longer(cols = !time, 
@@ -173,9 +174,9 @@ M_s.longer = M_s %>% #pivots to long form for easier plotting
                values_to = "Ms")
 
 # plot dynamics
-plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = Ms, group = decay)) +
+plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = Ms, group = decay, color = decay)) +
   theme_classic() +
-  labs(x = "Time, days", y = "Specific Antibody in Mucosa, Ms")
+  labs(x = "Time, days", y = "Specific Antibody in Mucosa, Ms", col = expression(paste("T"[1/2], ", in years"))) 
 
 #print to viewer
 print(plot)
