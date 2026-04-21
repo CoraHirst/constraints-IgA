@@ -155,10 +155,3 @@ plot = plotting_mutliple_constant(parameters)
 
 ```
 
-```{r save-plot}
-# file path 
-file = here("results", "steady-state", "comparing-steady-state-calculations.png")
-
-## ggsave
-ggsave()
-```

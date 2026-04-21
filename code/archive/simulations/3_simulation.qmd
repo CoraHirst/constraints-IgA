@@ -24,7 +24,7 @@ library(tidyverse)
 library(deSolve)
 
 #load functions
-source(here("code", "functions", "functions.R"))
+source(here("code", "archive", "functions", "functions.R"))
 ```
 
 # Objective 
@@ -42,7 +42,7 @@ We can calculate the pre-existing, non-specific antibody titer in two ways:
 
 
 We want to vary the decay rate. $d_\mu$, and extent of competition, $K$; or vary the diffusion of non-specific IgA from serum. 
-Lets calculate the ss for chaning d_mu: 
+Lets calculate the ss for changing d_mu: 
 
 ```{r parameters}
 t.half = c(.1,1,10) #in years
@@ -174,7 +174,7 @@ M_s.longer = M_s %>% #pivots to long form for easier plotting
                values_to = "Ms")
 
 # plot dynamics
-plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = log(Ms), group = decay, color = decay)) +
+plot = ggplot() + geom_line(data = M_s.longer, aes(x = time, y = (Ms), group = decay, color = decay)) +
   theme_classic() +
   labs(x = "Time, days", y = "Specific Antibody in Mucosa, Ms", col = expression(paste("T"[1/2], ", in years"))) 
 
@@ -218,24 +218,4 @@ plot = ggplot() +
 print(plot)
 ```
 
-# Parking on the downhill
-
-How can we simplify the model, then incorporate all of the caveats/complexities/dependencies into a supplement?
-
-Main ideas: 
-
-competition constrains transport
-recall should be inducible if we want a fast response (optimization)
-
-We want to plot $\frac{M_s}{M_{ns}}$ as a function of something like $K$ to show that there is competition. 
-
-In the supplement we can break down $M_{ns}$ into the constitutive components/compartments that influence that fraction: contribution from serum (increase and decay included); contirbution from gut mucosal responses and diffusion into serum; contribution from local responses. We can explain observation of IgA following power law in blood but maybe not so useful for respiratory stuff. 
-
-In the supplement we can also break down confusion over $K$ - whether it is fixed, and what the flux saturates at ($V_{max}$); time dependence over the course of infection (pIgR transport proteins increase over the course of infection - does that raise Vmax and if so, do we reach it, or are we always in the regime were saturation is half. )
-
-
-I need to get a better intuition of the michaelis-menten with direct competition model. What factors change K? Vmax? Vmax is kcat*enzyme concentration, and K is what, affinity for pIgR?
-
-# New plan: 
-
-We will do the simple model with three populations: $M_s$, $M_{ns}$, and $L_s$. We will vary the ratio of $M_{ns}$ to $M_s$, while keeping the dynamics of $M_s$ during infection 
+# Parking 

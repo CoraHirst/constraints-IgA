@@ -1,0 +1,96 @@
+---
+title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers"
+author: "Cora Hirst, Susi Linderman, Carl Davis, Hasan Ahmed, Rustom Antia..."
+output: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+#source(here("code", "functions", "functions.R"))
+
+```
+
+# Objective
+
+The goal of this document is to develop a simple model of antibody transport from the inside of the mucosal epithelium to the outside lumen of the mucosal epithelium. We would like to understand the extent to which pre-existing antibody titers from previous infections to unrelated pathogens can interfere with the transport of newly generated IgA specific to a currently infecting pathogen. 
+
+# Model outline
+
+Our model considers two physiological compartments: the mucosal side of the epithelium and the external lumen on the opposite side of the epithelium. We call these compartments "Mucous" and "Lumen". 
+
+During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as $M_s$ and the specific antibodies in the lumen compartment as $L_s$. 
+
+We can model the flux of IgA antibodies to the lumen as a Michaelis-menten reaction, with the form: $\Phi_L = \frac{V_{max}}{K + M}M$. 
+
+## Steady state concentration of $M_{ns}$ 
+
+We assume that, for some rate of influx of antibody titers and a given rate of decay of antibody titers in the mucosa, the total amount of IgA in the mucosa reaches a steady state. 
+
+The simplest ODE to describe an influx and decay of antibody into $M$, which will be $M_{ns}$, is: 
+
+$$
+\frac{dM_{ns}}{dt} = c - d_\mu M_{ns}
+$$
+where $c$ is a constant rate of influx of new IgA (something akin to $\frac{A_0}{\tau}$, the peak antibody generated during an infection times the number of infections per unit time) and $d_\mu$ is the decay rate. 
+
+At steady state, the concentration of $M_{ns} = \frac{c}{d_\mu}$.
+
+## Generation and decay dynamics of $M_s$ during response
+
+Antibodies should increase exponentially during a response and decrease exponentially after the response. This intuition can be modeled with the following biexponential function: $M_s = \frac{A_0}{1+e^{(-r(t-t_p))}}e^{-d_\mu t}$
+
+However, when $d_\mu$ and $r$ are on the same time scale, a greater $d_\mu$ decreases the antibody titer at the peak of the response. We would like for the generation of responses to be the same regardless of the decay rate, and only the decay dynamics to change according to the decay rate (of plasma cells after generation.)
+
+We can accomplish this in a few ways. I have suggested two below: 
+
+First, a piece-wise function: 
+
+$$
+M_s = 
+\begin{cases}
+A_0e^{rt} & t < t_p \\
+A_0e^{rt_p} e^{-d_\mu (t-t_p)} & t > t_p
+\end{cases}
+$$
+
+This function will introduce a sharp turn discontinuity at the time of the peak (switching) time, $t_p$. 
+
+We can perhaps attenuate this effect by including a function in the $r$, $d_\mu$, or both $r$ and $d_\mu$ parameters that slowly turns the one off and the other on: 
+
+$$
+M_s(t) = \frac{A_0}{1+e^{(-r(t)(t-t_p))}}e^{-d_\mu(t) t} 
+$$
+The easiest function to "tune down" the growth rate and "tune up" the decay rate would be a logistic function: 
+## Competition for pIgRs
+
+We would like to know the extent to which non-specific antibodies remaining from previous infections in the mucosa, which we call $M_{ns}$, compete for pIgRs and interfere with the rate of specific IgA transport in the lumen. We can adjust the michaelis-menten kinetics to include direct competition between specific and non-specific IgA for pIgRs, which results in the following equation for the flux of specific antibodies into the lumen: 
+
+$$
+\Phi_{M,s} = \frac{V_{max}}{K + M_s + M_{ns}}M_s
+$$
+
+where *explain parms* 
+
+And the resulting dynamics for the number of specific antibodies in the lumen would be: 
+
+$$
+\frac{dL_s}{dt} = \frac{V_{max}}{K + M_s + M_{ns}}M_s -d_L L_s
+$$
+
+
+
