@@ -70,12 +70,8 @@ $$
 
 This function will introduce a sharp turn discontinuity at the time of the peak (switching) time, $t_p$. 
 
-We can perhaps attenuate this effect by including a function in the $r$, $d_\mu$, or both $r$ and $d_\mu$ parameters that slowly turns the one off and the other on: 
+This is where we will 
 
-$$
-M_s(t) = \frac{A_0}{1+e^{(-r(t)(t-t_p))}}e^{-d_\mu(t) t} 
-$$
-The easiest function to "tune down" the growth rate and "tune up" the decay rate would be a logistic function: 
 ## Competition for pIgRs
 
 We would like to know the extent to which non-specific antibodies remaining from previous infections in the mucosa, which we call $M_{ns}$, compete for pIgRs and interfere with the rate of specific IgA transport in the lumen. We can adjust the michaelis-menten kinetics to include direct competition between specific and non-specific IgA for pIgRs, which results in the following equation for the flux of specific antibodies into the lumen: 
