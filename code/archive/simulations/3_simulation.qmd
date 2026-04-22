@@ -40,7 +40,6 @@ We can calculate the pre-existing, non-specific antibody titer in two ways:
 
 # Simulation 
 
-
 We want to vary the decay rate. $d_\mu$, and extent of competition, $K$; or vary the diffusion of non-specific IgA from serum. 
 Lets calculate the ss for changing d_mu: 
 
