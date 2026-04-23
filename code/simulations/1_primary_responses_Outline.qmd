@@ -63,14 +63,18 @@ First, a piece-wise function:
 $$
 M_s = 
 \begin{cases}
-A_0e^{rt} & t < t_p \\
-A_0e^{rt_p} e^{-d_\mu (t-t_p)} & t > t_p
+\frac{A_0}{1+e^{rt}} & t < t_p \\
+\frac{A_0}{1+e^{-rt_p}} e^{-d_\mu (t-t_p)} & t > t_p
 \end{cases}
 $$
 
 This function will introduce a sharp turn discontinuity at the time of the peak (switching) time, $t_p$. 
 
-This is where we will 
+Because we really only care about understanding how pre-existing non-specific titers interfere with newly generated responses, the easiest way to make sure that the generation phase for all simulations is the same is to simply only look at the change in titers over the generation time, that is: 
+
+$$
+M_s(t) = \frac{A_0}{1+e^{-r(t-t_p)} } \text{,           for }  0 < t < 2t_p
+$$
 
 ## Competition for pIgRs
 
@@ -88,5 +92,12 @@ $$
 \frac{dL_s}{dt} = \frac{V_{max}}{K + M_s + M_{ns}}M_s -d_L L_s
 $$
 
+# Parking on the downhill
+
+I will vary $d_\mu$ and $k$ to demonstrate how the extent of competition with nonspecific antibodies remaing from prior infections inhibits newly generated IgA responses. 
+
+I will plot the number of specific antibodies transported to the lumen over time as well as the integral of the number transported to the lumen from day 1-$2t_p$.
+
+Then we can move on to part 2 - recall responses!
 
 
