@@ -19,10 +19,16 @@ library(tidyverse)
 #install.packages("deSolve")
 library(deSolve)
 
+#install.packages("RColorBrewer")
+library(RColorBrewer)
+
 #load functions
 source(here("code", "functions", "functions.R"))
 
-
+#choose plotting colors
+num_cols = 6 #set number of colors needed for plotting
+my.colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+my.colors = colorRampPalette(my.colors)(num_cols) #increase number of colors staying in color range
 ```
 
 # Objective
@@ -38,26 +44,30 @@ t.half = c(1/12, 6/12, 1, 2, 5, 10)*365 #half lives in years converted to days
   c = 0.5 #constant rate of IgA generated through time, per day
   d_mus = -log(1/2)/(t.half*365) #decay rate of antibody in the mucosa (1/days)
 ## for newly generated Ms
-  A0 = 100
-  r = log(10^2)/14 #exponential growth of new population
+  A0 = 10^5
+  r = log(10^5)/14 #exponential growth of new population
   t_p = 7 #1/2 time to peak (days)
 ## for transport and lumen concentration
   d_l = 1/10 #1/days
   K = 100
-  Vmax = 10
+  Vmax = 1000 #catalytic rate and number of enzymes, per day (every hours)
 
 ```
 
 # Running Sim
 
+First, I show the dependence of the steady state concentration of non-specific IgA in the mucosa ($M_{ns}$) on $d_\mu$; the dynamics of specific IgA ($M_s$) over the course of one infection, and; the how the dynamics of transported, specific IgA in the lumen ($L_s$) depends on the steady state concentration of non-specific mucosal IgA (thus on $d_\mu$) and the extent of competition for pIgRs ($K$). 
+
 ## Calculating steady state Mucosal IgA
 
-```{r transport-vs-d_l}
+Below, we visualize how the steady state concentration of total IgA in the interior (mucosa) changes as a function of the decay rate of mucosal IgA. We assume exponential decay of mucosal IgA.
+
+```{r plot-steady-state-Mns}
 # Calculate ss concentrations of Mns
 M_ns.vec = sapply(d_mus, function(d_mu) {M_ns(c = c, d = d_mu)})
 
 # plot 
-plot(x = t.half/365, y = log10(M_ns.vec), xlab = "Half life of mucosal antibody titers, Years", ylab = "Log10 Total M_ns", )
+plot(x = t.half/365, y = log10(M_ns.vec), type = "b", pch = 19, xlab = expression(paste("T"[1/2], " mucosal antibody titers (years)")), ylab = expression(paste("Log"[10], " Total ", "M"[ns])), main = "Steady state mucosal antibody titer by half-life")
 
 #create df to store d_mu, M_ns, and t.half 
 M_ns.df = data.frame( "t.half" = t.half,  #half life
@@ -68,18 +78,25 @@ M_ns.df = data.frame( "t.half" = t.half,  #half life
 
 ## Specific Antibodies generated during infection 
 
+Below, we plot the the dynamics with which a new population of antigen-specific antibodies are generated during an infection. 
+
 ```{r plot-specific-antibodies}
 # mucosal specific IgA during infection (no decay)
 times = seq(0, 2*t_p , by = 1/24) #every hour for t < t_max days
 M_s.infection = sapply(times, function(t) {M_s(A0 = A0, t_p = t_p, r = r, t = t)}) #calculate dynamics of specific IgA on the inside
 
-plot(x = times, y = M_s.infection, type = "l", xlab = "Day post infection", ylab = "Specific Antibody Inside, M_s")
+plot(x = times, y = M_s.infection, type = "l", xlab = "day post infection", ylab = expression(paste("Specific antibody inside mucosa, ", "M"[s])), main = "Generation dynamics of specific antibodies")
 
 ```
 
-## Lumenal IgA as a function of internal mucosal decay rate, $d_\mu$
+Note that we keep these dynamics the same for *every simulation* - changing the decay rate/extent of competition should not effect the dynamics of the generation of the response over the course of infection (question - how long after generation before decay kicks in?)
 
-```{r setup-Competion}
+## Lumenal specific IgA, $L_s$, as a function of internal mucosal decay rate, $d_\mu$
+
+Below, we show how the amount of specific antibody transported to the lumen during an infection
+can be inhibited by non-specific antibodies remaining from previous infections. We demonstrate this effect by 1) reducing the decay rate of antbodies after generation and thus increase $M_{ns}$, and 2) changing the extent of competition, that is, $K$ (the concentration of all antibodies, specific and nonspecific, for which the rate of antibody transport is half it's maximum. This is something like the on-rate for the secretory region, which is the same for all IgA antibodies, and the pIgR.)
+
+```{r setup-Competition}
 ## set up parms list for deSolve
 params = list(
   c = c, #constant rate of IgA generated through time, per day, A0/tau (in days)
@@ -96,14 +113,12 @@ params = list(
 
 ## deSolve parameters
 # simulation parameters 
-Tmax   =   30               #20       # max time in days - 1 month
+Tmax   =   300               #20       # max time in days - 1 month
 points.per.day = 24                # output points per year
 
 # initial conditions
-init.cond = c(L_s = 0) # initial mucosal iga
-
+init.cond = c(L_s = 0) # initial lumen iga
 ```
-
 
 ```{r competition-by-dmu}
 #solve for lumen specific antibody dynamics
@@ -130,23 +145,87 @@ competition.sims = lapply(1:nrow(M_ns.df), function(i){
 solns = do.call(rbind, competition.sims) %>% as.data.frame()
 
 #plot
-plot = ggplot() + geom_line(data = solns, aes(x = time, y = L_s, group = factor(signif(t.half/365,2)), col = factor(signif(t.half/365, 2)))) +
+plot = ggplot() + geom_line(data = solns, aes(x = time, y = log10(L_s), group = factor(signif(t.half/365,2)), col = factor(signif(t.half/365, 2)))) +
   theme_classic() +
-  labs(x = "days post infection", y = "IgA in lumen", col = "decay rate internal, years")
+  labs(x = "days post infection", y = expression(paste("Log"[10], " IgA in lumen, ", "L"[s])), col = "decay rate internal, years") +
+  scale_color_manual(values = my.colors)
 
 #print to viewer
 print(plot)
 
+```
+
+We might also be interested in the dependence of $L_s$ through time on $K$: 
+
+```{r competition-by-K}
+# I think i need to keep Vmax/K constant 
+Vmax.K.ratio = Vmax/K
+
+# set Ks to vary
+Ks = 10^seq(1, 6, by = 1)
+# set d_mu
+params$d_mu = -log(1/2)/(10*365) #half-life ten years
+
+
+# solve for lumen specific antibody dynamics
+competition.sims = lapply(Ks, function(K){
+  # substitute K into parms
+  params$K = K
+  params$Vmax = K*Vmax.K.ratio
+  
+  # deSolve
+  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition, parms = params))
+  
+  # add col to include K
+  soln = cbind(soln, "K" = K)
+})
+
+# and the total IgA transported
+total.transport.sims = lapply(Ks, function(K){
+  # substitute K into parms
+  params$K = K
+  params$Vmax = K*Vmax.K.ratio
+  
+  # deSolve
+  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), total_transported, parms = params))
+  
+  # add col to include K
+  soln = cbind(soln, "K" = K)
+})
+```
+
+```{r plot-lumen-dynamics-by-K}
+#combine all dataframes to one
+solns = do.call(rbind, competition.sims) %>% as.data.frame()
+solns.2 = do.call(rbind, total.transport.sims) %>% as.data.frame()
+
+#plot
+plot = ggplot() + geom_line(data = solns, aes(x = time, y = log10(L_s), group = factor(K), col = factor(K))) +
+  theme_classic() +
+  labs(x = "days post infection", y = expression(paste("Log"[10], " IgA in lumen, ", "L"[s])), col = expression(paste("extent of competion, K, in [Ab]"))) +
+  scale_color_manual(values = my.colors)
+
+#plot
+plot2 = ggplot() + geom_line(data = solns.2, aes(x = time, y = log10(L_s), group = factor(K), col = factor(K))) +
+  theme_classic() +
+  labs(x = "days post infection", y = expression(paste("Log"[10], " total IgA in lumen")), col = expression(paste("extent of competion, K, in [Ab]"))) +
+  scale_color_manual(values = my.colors)
+
+#print to viewer
+grid.arrange(plot, plot2)
 
 ```
 
 # Varying d_mu and K
 
-Now, we investigate how the total IgA transported by day 14 changes as a function of $K$ and $d_\mu$:
+Now, we investigate how the total IgA in the lumen through day 14 changes as a function of $K$ and $d_\mu$. Specificially, we are interested in the integral - how much functional IgA is present through time in the lumen during infection. 
 
 ```{r params}
+# I think i need to keep Vmax/K constant 
+Vmax.K.ratio = Vmax/K
+
 #define sequence of Ks and t.halfs
-Ks = seq(1, 10000, by = 100)
+Ks = 10^seq(-1, 7, by = 0.1)
 t.halfs = seq(1/12,10, by = 0.1)*365 #half lives in years converted to days
 
 ## set up parms list for deSolve
@@ -193,6 +272,8 @@ total.Ls = sapply(Ks, function(K){ #rows
 
 ```{r plot-ks-vs-dmus}
 # matrix
-filled.contour(x = t.halfs/365, y = Ks, z=log10(total.Ls), lwd = 2, xlab = "decay rate internal, years", ylab = "Michaelis-menten K", main = "Integral of IgA in Lumen by day 14") #draw figure
+filled.contour(x = t.halfs/365, y = log10(Ks), z=log10(total.Ls), lwd = 2, nlevels = 5, xlab = "decay rate internal, years", ylab = "log10 Michaelis-menten K", main = "IgA in Lumen by day 14") #draw figure
 
 ```
+
+

@@ -1,0 +1,64 @@
+---
+title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers"
+format: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+source(here("code", "functions", "functions.R"))
+
+
+```
+
+# Objective
+
+The goal of this document is to simulate the recall of antibody responses in the mucosa when including a population of inducible plasma cells, which secrete antibody only when stimulated by antigen. 
+
+
+```{r ode.model}
+IgA_recall <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        B = y[1]         # specific B cells
+        Ps = y[2]
+        Pd = y[3]
+        
+        # make empty variables for the derivatives
+        dB = 0 #change in specific Ab in the lumen
+        d_Ps = 0 #change in secreting plasma cells
+        d_Pd = 0 #change in quiescent plasma cells
+        
+        #####################################
+        #####################################
+        #	 calculate the derivatives
+        
+          
+        # output the derivatives
+        dy=c(dL_s) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+  ) 
+} 
+
+
+
+```
