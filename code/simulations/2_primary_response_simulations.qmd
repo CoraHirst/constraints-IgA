@@ -132,7 +132,7 @@ competition.sims = lapply(1:nrow(M_ns.df), function(i){
   params$d_mu = d_mu
   
   # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition, parms = params))
+  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition.model, parms = params))
   
   # add cols to include t.half, d_mu, and M_ns.val 
   soln = cbind(soln, "t.half" = t.half, "d_mu" = d_mu, "M_ns" = M_ns.val)
@@ -174,7 +174,7 @@ competition.sims = lapply(Ks, function(K){
   params$Vmax = K*Vmax.K.ratio
   
   # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition, parms = params))
+  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition.model, parms = params))
   
   # add col to include K
   soln = cbind(soln, "K" = K)
@@ -187,7 +187,7 @@ total.transport.sims = lapply(Ks, function(K){
   params$Vmax = K*Vmax.K.ratio
   
   # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), total_transported, parms = params))
+  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), total_transported.model, parms = params))
   
   # add col to include K
   soln = cbind(soln, "K" = K)
@@ -262,7 +262,7 @@ total.Ls = sapply(Ks, function(K){ #rows
     
     #competition
     # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition, parms = params))
+  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition.model, parms = params))
   
   #calculate sum of antibodies to day 14 
   total.Ls.transported = sum(soln %>% filter(time < 14) %>% pull(L_s))
