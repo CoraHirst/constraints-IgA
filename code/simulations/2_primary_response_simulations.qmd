@@ -26,9 +26,9 @@ library(RColorBrewer)
 source(here("code", "functions", "functions.R"))
 
 #choose plotting colors
-num_cols = 6 #set number of colors needed for plotting
-my.colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
-my.colors = colorRampPalette(my.colors)(num_cols) #increase number of colors staying in color range
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
 ```
 
 # Objective
@@ -39,10 +39,10 @@ The goal of this document is to udnerstand the extent to which antibodies remain
 
 ```{r set-parms}
 # biological parameters for competition simulation 
-t.half = c(1/12, 6/12, 1, 2, 5, 10)*365 #half lives in years converted to days
+t_half = c(1/12, 6/12, 1, 2, 5, 10)*365 #half lives in years converted to days
 ## for steady state Mns
   c = 0.5 #constant rate of IgA generated through time, per day
-  d_mus = -log(1/2)/(t.half*365) #decay rate of antibody in the mucosa (1/days)
+  d_mus = -log(1/2)/(t_half*365) #decay rate of antibody in the mucosa (1/days)
 ## for newly generated Ms
   A0 = 10^5
   r = log(10^5)/14 #exponential growth of new population
@@ -67,10 +67,10 @@ Below, we visualize how the steady state concentration of total IgA in the inter
 M_ns.vec = sapply(d_mus, function(d_mu) {M_ns(c = c, d = d_mu)})
 
 # plot 
-plot(x = t.half/365, y = log10(M_ns.vec), type = "b", pch = 19, xlab = expression(paste("T"[1/2], " mucosal antibody titers (years)")), ylab = expression(paste("Log"[10], " Total ", "M"[ns])), main = "Steady state mucosal antibody titer by half-life")
+plot(x = t_half/365, y = log10(M_ns.vec), type = "b", pch = 19, xlab = expression(paste("T"[1/2], " mucosal antibody titers (years)")), ylab = expression(paste("Log"[10], " Total ", "M"[ns])), main = "Steady state mucosal antibody titer by half-life")
 
-#create df to store d_mu, M_ns, and t.half 
-M_ns.df = data.frame( "t.half" = t.half,  #half life
+#create df to store d_mu, M_ns, and t_half 
+M_ns.df = data.frame( "t_half" = t_half,  #half life
                       "d_mu" = d_mus, #corresponding decay rate
                       "M_ns" = M_ns.vec) #corresponding ss antibody titer
 
@@ -83,9 +83,9 @@ Below, we plot the the dynamics with which a new population of antigen-specific 
 ```{r plot-specific-antibodies}
 # mucosal specific IgA during infection (no decay)
 times = seq(0, 2*t_p , by = 1/24) #every hour for t < t_max days
-M_s.infection = sapply(times, function(t) {M_s(A0 = A0, t_p = t_p, r = r, t = t)}) #calculate dynamics of specific IgA on the inside
+M_s.vec = sapply(times, function(t) {M_s(A0 = A0, t_p = t_p, r = r, t = t)}) #calculate dynamics of specific IgA on the inside
 
-plot(x = times, y = M_s.infection, type = "l", xlab = "day post infection", ylab = expression(paste("Specific antibody inside mucosa, ", "M"[s])), main = "Generation dynamics of specific antibodies")
+plot(x = times, y = M_s.vec, type = "l", xlab = "day post infection", ylab = expression(paste("Specific antibody inside mucosa, ", "M"[s])), main = "Generation dynamics of specific antibodies")
 
 ```
 
@@ -124,7 +124,7 @@ init.cond = c(L_s = 0) # initial lumen iga
 #solve for lumen specific antibody dynamics
 competition.sims = lapply(1:nrow(M_ns.df), function(i){
   # extract ss M_ns information
-  t.half = M_ns.df[i, "t.half"] #extract half life
+  t_half = M_ns.df[i, "t_half"] #extract half life
   d_mu = M_ns.df[i, "d_mu"] #extract decay rate
   M_ns.val = M_ns.df[i, "M_ns"] #extract ss M_ns value
   
@@ -134,8 +134,8 @@ competition.sims = lapply(1:nrow(M_ns.df), function(i){
   # deSolve
   soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition.model, parms = params))
   
-  # add cols to include t.half, d_mu, and M_ns.val 
-  soln = cbind(soln, "t.half" = t.half, "d_mu" = d_mu, "M_ns" = M_ns.val)
+  # add cols to include t_half, d_mu, and M_ns.val 
+  soln = cbind(soln, "t_half" = t_half, "d_mu" = d_mu, "M_ns" = M_ns.val)
 })
 
 ```
@@ -145,10 +145,10 @@ competition.sims = lapply(1:nrow(M_ns.df), function(i){
 solns = do.call(rbind, competition.sims) %>% as.data.frame()
 
 #plot
-plot = ggplot() + geom_line(data = solns, aes(x = time, y = log10(L_s), group = factor(signif(t.half/365,2)), col = factor(signif(t.half/365, 2)))) +
+plot = ggplot() + geom_line(data = solns, aes(x = time, y = log10(L_s), group = factor(signif(t_half/365,2)), col = factor(signif(t_half/365, 2)))) +
   theme_classic() +
   labs(x = "days post infection", y = expression(paste("Log"[10], " IgA in lumen, ", "L"[s])), col = "decay rate internal, years") +
-  scale_color_manual(values = my.colors)
+  scale_color_manual(values = my_colors)
 
 #print to viewer
 print(plot)
@@ -203,13 +203,13 @@ solns.2 = do.call(rbind, total.transport.sims) %>% as.data.frame()
 plot = ggplot() + geom_line(data = solns, aes(x = time, y = log10(L_s), group = factor(K), col = factor(K))) +
   theme_classic() +
   labs(x = "days post infection", y = expression(paste("Log"[10], " IgA in lumen, ", "L"[s])), col = expression(paste("extent of competion, K, in [Ab]"))) +
-  scale_color_manual(values = my.colors)
+  scale_color_manual(values = my_colors)
 
 #plot
 plot2 = ggplot() + geom_line(data = solns.2, aes(x = time, y = log10(L_s), group = factor(K), col = factor(K))) +
   theme_classic() +
   labs(x = "days post infection", y = expression(paste("Log"[10], " total IgA in lumen")), col = expression(paste("extent of competion, K, in [Ab]"))) +
-  scale_color_manual(values = my.colors)
+  scale_color_manual(values = my_colors)
 
 #print to viewer
 grid.arrange(plot, plot2)
@@ -224,9 +224,9 @@ Now, we investigate how the total IgA in the lumen through day 14 changes as a f
 # I think i need to keep Vmax/K constant 
 Vmax.K.ratio = Vmax/K
 
-#define sequence of Ks and t.halfs
+#define sequence of Ks and t_halfs
 Ks = 10^seq(-1, 7, by = 0.1)
-t.halfs = seq(1/12,10, by = 0.1)*365 #half lives in years converted to days
+t_halfs = seq(1/12,10, by = 0.1)*365 #half lives in years converted to days
 
 ## set up parms list for deSolve
 params = list(
@@ -253,11 +253,11 @@ init.cond = c(L_s = 0) # initial mucosal iga
 ```
 
 ```{r competition-heatmap}
-#calculate total transported by day 14 by K and t.half
+#calculate total transported by day 14 by K and t_half
 total.Ls = sapply(Ks, function(K){ #rows
-  sapply(t.halfs, function(t.half){ #columns
+  sapply(t_halfs, function(t_half){ #columns
     #set parms
-    params$d_mu = -log(1/2)/(t.half*365)
+    params$d_mu = -log(1/2)/(t_half*365)
     params$K = K
     
     #competition
@@ -272,7 +272,7 @@ total.Ls = sapply(Ks, function(K){ #rows
 
 ```{r plot-ks-vs-dmus}
 # matrix
-filled.contour(x = t.halfs/365, y = log10(Ks), z=log10(total.Ls), lwd = 2, nlevels = 5, xlab = "decay rate internal, years", ylab = "log10 Michaelis-menten K", main = "IgA in Lumen by day 14") #draw figure
+filled.contour(x = t_halfs/365, y = log10(Ks), z=log10(total.Ls), lwd = 2, nlevels = 5, xlab = "decay rate internal, years", ylab = "log10 Michaelis-menten K", main = "IgA in Lumen by day 14") #draw figure
 
 ```
 
