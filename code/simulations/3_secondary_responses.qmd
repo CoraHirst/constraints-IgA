@@ -27,38 +27,89 @@ source(here("code", "functions", "functions.R"))
 
 # Objective
 
-The goal of this document is to simulate the recall of antibody responses in the mucosa when including a population of inducible plasma cells, which secrete antibody only when stimulated by antigen. 
+The goal of this document is to Outline a simulation of the recall of antibody responses in the mucosa, including a population of inducible plasma cell which secrete antibody only when stimulated by antigen. We would like to determine the extent to which this mechanism can facilitate a rapid antibody response to a previously encountered antigen when the longevity of titers in the respiratory tract wane rapidly. 
+
+# Model Outline 
+
+## Steady state concentration of $M_{ns}$ 
+
+There will be some minimal steady - state concentration of total IgA in the mucosa due to the generation and waning of responses to respiratory pathogens. 
+
+The simplest ODE to describe an influx and decay of antibody into $M$, which will be $M_{ns}$, is: 
+
+$$
+\frac{dM_{ns}}{dt} = c - d_\mu M_{ns}
+$$
+
+where $c$ is a constant rate of influx of new IgA (something akin to $\frac{A_0}{\tau}$, the peak antibody generated during an infection times the number of infections per unit time) and $d_\mu$ is the decay rate. 
+
+*At steady state, the concentration of $M_{ns} = \frac{c}{d_\mu}$.*
+
+## Cellular Responses 
+
+Here, we explicitly model the B cell recruitment and differentiation that gives rise to a specific antibody response during primary and secondary infections. We track the activation, proliferation, and differentiation of B cells, $B_s$, specific for some antigen. A fraction $(1-f)$ of B cells begin proliferating in the presence of infection $V=1$ at a rate $r_b$. The other fraction $f$ of B cells differentiate into antibody secreting plasma cells, $P_s$. 
+
+$P_s$ secrete antibody at a rate $\rho$ and die at a rate of $d_\mu$. Importantly, some plasma cells differentiate into what we refer to as *quiescent plasma cells*, $P_q$, at rate $k_1$. These cells do not secrete antibody but quickly differentiate back into antibody-secreting cells at rate $k_{-1}$ upon recall responses. $P_q$ die at a rate $d_q$, where $d_q << d_\mu$. 
+
+This gives rise to the following set of ordinary differential equations: 
+
+$$
+\frac{dB}{dt} = r_B(1-f)BV -fBV
+$$
+$$
+\frac{dP_s}{dt} = fBV - k_1P_s - d_\mu P_s + k_{-1}P_qV
+$$
+
+$$
+\frac{dP_q}{dt} = k_1P_s - k_{-1}P_qV - d_qP_q
+$$
+
+where 
+
+$$
+V(t) = 
+\begin{cases}
+0 & \text{if } t > t_{infection} \\
+1 & \text{if } 0 < t \leq t_{infection}
+\end{cases}
+$$
+I might need to somehow put in a delay such that $P_q$ are not immediately recruited... that is, they are refractory to recruitment when they are generated. 
+
+The easiest way to do this so to create a new compartment, $P_{r}$ which are newly generated quiescent plasma cells that differentiate into inducible cells on a longer time scale (longer than the timescale of an infection). $P_s$ will produce $P_r$ at a rate $k_1$, $P_r$ will differentiate into $P_q$ at a rate $k_2$, and $P_q$ will differentiate back into $P_s$ at a rate $k_{-1}$ during infections. 
+
+This would give the following change to our ODEs: 
 
 
-```{r ode.model}
-IgA_recall <- function(t, y, parms)  # Single partial immune class (RPS)                       
-{with(as.list(parms),	# allows the parameter file parms to be as a list
-      {  
-        y = pmax(y,0)         # avoid negative values (not ideal but ok)
-        
-        # map the state variables
-        B = y[1]         # specific B cells
-        Ps = y[2]
-        Pd = y[3]
-        
-        # make empty variables for the derivatives
-        dB = 0 #change in specific Ab in the lumen
-        d_Ps = 0 #change in secreting plasma cells
-        d_Pd = 0 #change in quiescent plasma cells
-        
-        #####################################
-        #####################################
-        #	 calculate the derivatives
-        
-          
-        # output the derivatives
-        dy=c(dL_s) #vector of derivatives 
-        
-        return(list(dy)) #lists vector and returns
-      }
-  ) 
-} 
+$$
+\frac{dB}{dt} = r_B(1-f)BV -fBV
+$$
+
+$$
+\frac{dP_s}{dt} = fBV - k_1P_s - d_\mu P_s + k_{-1}P_qV
+$$
+
+$$
+\frac{dP_r}{dt} = k_1P_s - k_2P_r - d_qP_r
+$$
+
+$$
+\frac{dP_q}{dt} = k_2P_r - k_{-1}P_qV - d_qP_q
+$$
+
+where 
+
+$$
+V(t) = 
+\begin{cases}
+0 & \text{if } t > t_{infection} \\
+1 & \text{if } 0 < t \leq t_{infection}
+\end{cases}
+$$
+
+I am not going to do this now, but keep this option open in the future, Cora!
+
+# Antibody production and competition for transport
+
+We would like to observe the speed of recall responses compared to primary responses in terms of the amount of specific antibody transported to the mucosa. So, I need to track the specific antibody produced in the mucosa, the rate at which it is transported in the lumen (complete with competition from pre-existing Abs), and the dynamics of lumenal Abs. I will compare the speed of $L_s$ increase during primary and secondary infections. 
 
 
-
-```

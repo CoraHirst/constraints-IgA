@@ -114,10 +114,10 @@ params = list(
 ## deSolve parameters
 # simulation parameters 
 Tmax   =   300               #20       # max time in days - 1 month
-points.per.day = 24                # output points per year
+points_per_day = 24                # output points per year
 
 # initial conditions
-init.cond = c(L_s = 0) # initial lumen iga
+init_cond = c(L_s = 0) # initial lumen iga
 ```
 
 ```{r competition-by-dmu}
@@ -132,7 +132,7 @@ competition.sims = lapply(1:nrow(M_ns.df), function(i){
   params$d_mu = d_mu
   
   # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition.model, parms = params))
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), IgA_competition.model, parms = params))
   
   # add cols to include t_half, d_mu, and M_ns.val 
   soln = cbind(soln, "t_half" = t_half, "d_mu" = d_mu, "M_ns" = M_ns.val)
@@ -159,7 +159,7 @@ We might also be interested in the dependence of $L_s$ through time on $K$:
 
 ```{r competition-by-K}
 # I think i need to keep Vmax/K constant 
-Vmax.K.ratio = Vmax/K
+Vmax_K_ratio = Vmax/K
 
 # set Ks to vary
 Ks = 10^seq(1, 6, by = 1)
@@ -171,23 +171,23 @@ params$d_mu = -log(1/2)/(10*365) #half-life ten years
 competition.sims = lapply(Ks, function(K){
   # substitute K into parms
   params$K = K
-  params$Vmax = K*Vmax.K.ratio
+  params$Vmax = K*Vmax_K_ratio
   
   # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition.model, parms = params))
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), IgA_competition.model, parms = params))
   
   # add col to include K
   soln = cbind(soln, "K" = K)
 })
 
 # and the total IgA transported
-total.transport.sims = lapply(Ks, function(K){
+total_transport.sims = lapply(Ks, function(K){
   # substitute K into parms
   params$K = K
-  params$Vmax = K*Vmax.K.ratio
+  params$Vmax = K*Vmax_K_ratio
   
   # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), total_transported.model, parms = params))
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), total_transported.model, parms = params))
   
   # add col to include K
   soln = cbind(soln, "K" = K)
@@ -197,7 +197,7 @@ total.transport.sims = lapply(Ks, function(K){
 ```{r plot-lumen-dynamics-by-K}
 #combine all dataframes to one
 solns = do.call(rbind, competition.sims) %>% as.data.frame()
-solns.2 = do.call(rbind, total.transport.sims) %>% as.data.frame()
+solns_2 = do.call(rbind, total_transport.sims) %>% as.data.frame()
 
 #plot
 plot = ggplot() + geom_line(data = solns, aes(x = time, y = log10(L_s), group = factor(K), col = factor(K))) +
@@ -206,7 +206,7 @@ plot = ggplot() + geom_line(data = solns, aes(x = time, y = log10(L_s), group = 
   scale_color_manual(values = my_colors)
 
 #plot
-plot2 = ggplot() + geom_line(data = solns.2, aes(x = time, y = log10(L_s), group = factor(K), col = factor(K))) +
+plot2 = ggplot() + geom_line(data = solns_2, aes(x = time, y = log10(L_s), group = factor(K), col = factor(K))) +
   theme_classic() +
   labs(x = "days post infection", y = expression(paste("Log"[10], " total IgA in lumen")), col = expression(paste("extent of competion, K, in [Ab]"))) +
   scale_color_manual(values = my_colors)
@@ -222,7 +222,7 @@ Now, we investigate how the total IgA in the lumen through day 14 changes as a f
 
 ```{r params}
 # I think i need to keep Vmax/K constant 
-Vmax.K.ratio = Vmax/K
+Vmax_K_ratio = Vmax/K
 
 #define sequence of Ks and t_halfs
 Ks = 10^seq(-1, 7, by = 0.1)
@@ -245,16 +245,16 @@ params = list(
 ## deSolve parameters
 # simulation parameters 
 Tmax   =   30               #20       # max time in days - 1 month
-points.per.day = 24                # output points per year
+points_per_day = 24                # output points per year
 
 # initial conditions
-init.cond = c(L_s = 0) # initial mucosal iga
+init_cond = c(L_s = 0) # initial mucosal iga
 
 ```
 
 ```{r competition-heatmap}
 #calculate total transported by day 14 by K and t_half
-total.Ls = sapply(Ks, function(K){ #rows
+total_Ls = sapply(Ks, function(K){ #rows
   sapply(t_halfs, function(t_half){ #columns
     #set parms
     params$d_mu = -log(1/2)/(t_half*365)
@@ -262,17 +262,17 @@ total.Ls = sapply(Ks, function(K){ #rows
     
     #competition
     # deSolve
-  soln = as.data.frame(ode(y = init.cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), IgA_competition.model, parms = params))
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), IgA_competition.model, parms = params))
   
   #calculate sum of antibodies to day 14 
-  total.Ls.transported = sum(soln %>% filter(time < 14) %>% pull(L_s))
+  total_Ls.transported = sum(soln %>% filter(time < 14) %>% pull(L_s))
   })
 })
 ```
 
 ```{r plot-ks-vs-dmus}
 # matrix
-filled.contour(x = t_halfs/365, y = log10(Ks), z=log10(total.Ls), lwd = 2, nlevels = 5, xlab = "decay rate internal, years", ylab = "log10 Michaelis-menten K", main = "IgA in Lumen by day 14") #draw figure
+filled.contour(x = t_halfs/365, y = log10(Ks), z=log10(total_Ls), lwd = 2, nlevels = 5, xlab = "decay rate internal, years", ylab = "log10 Michaelis-menten K", main = "IgA in Lumen by day 14") #draw figure
 
 ```
 

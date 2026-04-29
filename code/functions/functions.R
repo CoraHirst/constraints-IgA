@@ -46,18 +46,18 @@ total_transported.model <- function(t, y, parms)  # Single partial immune class 
         y = pmax(y,0)         # avoid negative values (not ideal but ok)
         
         # map the state variables
-        tot.IgA = y[1]         # specific Ab in the lumen
+        IgA.tot = y[1]         # specific Ab in the lumen
         
         # make empty variables for the derivatives
-        dtot.IgA = 0 #change in specific Ab in the lumen
+        dIgA.tot = 0 #change in specific Ab in the lumen
         
         #####################################
         #####################################
         #	 calculate the derivatives
-        dtot.IgA = (M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))*(Vmax/(K + M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))) - d_l*tot.IgA
+        dIgA.tot = (M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))*(Vmax/(K + M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))) - d_l*IgA.tot
         
         # output the derivatives
-        dy=c(dtot.IgA) #vector of derivatives 
+        dy=c(dIgA.tot) #vector of derivatives 
         
         return(list(dy)) #lists vector and returns
       }
@@ -74,18 +74,33 @@ secondary_response.model <- function(t, y, parms)  # Single partial immune class
         y = pmax(y,0)         # avoid negative values (not ideal but ok)
         
         # map the state variables
-        tot.IgA = y[1]         # specific Ab in the lumen
+        B = y[1]         # B cells 
+        P_s = y[2]       # Antibody secreting cells (specific)
+        P_q = y[3]       # quiescent antibody secreting cells (specific)
+        M_s = y[4]       # specific Ab in mucosa
+        L_s = y[5]       # specific Ab in lumen
+        
         
         # make empty variables for the derivatives
-        dtot.IgA = 0 #change in specific Ab in the lumen
+        dB = 0      # change in specific Ab in the lumen
+        dP_s = 0    # change in specific ASCs
+        dP_q = 0    # change in quiescent ASCs
+        dM_s = 0    # change in specific antibodies in mucosa
+        dL_s = 0    # change in specific antibodies in the lumen
         
         #####################################
         #####################################
-        #	 calculate the derivatives
-        dtot.IgA = (M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))*(Vmax/(K + M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))) - d_l*tot.IgA
+        ## calculate the derivatives
+        # cell populations
+        dB = r_b*(1-diff_frac)*B*V - diff_frac*B*V #B cells (memory and naive together)
+        dP_s = diff_frac*B*V - quiessence_k*P_s - d_mu*P_s + induction_k*P_q*V # specific ASCs
+        dP_q = quiessence_k*P_s - induction_k*P_q*V - d_q*P_q # quiesent sepecific ASCs
+        # Specific antibodies        
+        dM_s = rho*P_s - (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_Ab*M_s #mucosal
+        dL_s = (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_l*L_s #lumenal
         
         # output the derivatives
-        dy=c(dtot.IgA) #vector of derivatives 
+        dy=c(dB, dP_s, dP_q, dM_s, dL_s) #vector of derivatives 
         
         return(list(dy)) #lists vector and returns
       }
