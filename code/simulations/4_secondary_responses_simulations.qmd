@@ -43,9 +43,9 @@ We will first compare the dynamics of antibody titer increase after a primary in
 ## Defining parameters for simulations 
   # B cell parms
     r_b = 2 #rate of proliferation of activated B cells, twice per day
-    diff_frac = 0.003 #rate of differentiation of B cells into AS Plasma Cell, 5 % become ASCs
+    diff_frac = 0.05 #rate of differentiation of B cells into AS Plasma Cell, 5 % become ASCs
   # Plasma cell differentiation parameters
-    quiessence_k = 0.003 #rate of differentiation of plasma cells into quiescent plasma cells
+    quiessence_k = 0.05 #rate of differentiation of plasma cells into quiescent plasma cells
     induction_k = 1 #rate of differentiation of quiescent plasma cells to AS plasma cells
   # Antibody production and transport
     rho = 10^3 #rate of antibody secretion by plasma cells per day (scaled)
@@ -55,7 +55,7 @@ We will first compare the dynamics of antibody titer increase after a primary in
   # decay rates - Cells - defined in terms of half lives
    thalf_mu = 14 # in days
     d_mu = -log(1/2)/(thalf_mu) #AS plasma cell death rate 
-   thalf_q = 5 # in years
+   thalf_q = 1 # in years
     d_q = -log(1/2)/(thalf_q*365)  #quiescent cells death rate, per day
     d_B = d_q #B cell death rate
   # Decay rates - antibodies
