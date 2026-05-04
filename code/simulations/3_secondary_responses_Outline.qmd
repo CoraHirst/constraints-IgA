@@ -1,5 +1,6 @@
 ---
 title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers"
+subtitle: "Outline Part 2: Rapid mucosal recall responses may be facilitated by inducible plasma cell populations"
 format: html
 ---
 
@@ -110,6 +111,17 @@ I am not going to do this now, but keep this option open in the future, Cora!
 
 # Antibody production and competition for transport
 
-We would like to observe the speed of recall responses compared to primary responses in terms of the amount of specific antibody transported to the mucosa. So, I need to track the specific antibody produced in the mucosa, the rate at which it is transported in the lumen (complete with competition from pre-existing Abs), and the dynamics of lumenal Abs. I will compare the speed of $L_s$ increase during primary and secondary infections. 
+We would like to observe the speed of recall responses compared to primary responses in terms of the amount of specific antibody transported to the mucosa. So, I need to track the specific antibody produced in the mucosa, the rate at which it is transported in the lumen (complete with competition from pre-existing Abs), and the dynamics of lumenal Abs. I will compare the dynamics of $L_s$ increase during primary and secondary infections. 
 
+We will use the same model for competition of antibody titers as in part 1. Briefly, this model assumes michaelis-mentin dynamics, and the flux of specific IgA into the lumen is given by $\frac{V_{max}}{K + M_s + M_{ns}}M_s$. Given some decay rate of antibody in the lumen, the differential equation for $L_s$ becomes: 
 
+$$
+\frac{dL_s}{dt} = \frac{V_{max}}{K + M_s + M_{ns}}M_s - d_L L_s
+$$
+
+While we pre-defined the kinetics of increase and decrease of $M_s$ in part 1, we are explicitly modeling the dynamics of the population of cells - $P_s$ - that secrete $M_s$. The rate of change of $M_s$ will thus follow: 
+
+$$
+\frac{dM_s}{dt} = \rho P_s - \frac{V_{max}}{K + M_s + M_{ns}}M_s - d_AM_s
+$$
+where $\rho$ is the production rate of antibodies per plasma cell and $d_A$ is the decay rate of IgA antibodies in the mucosa (half life on the order of days).

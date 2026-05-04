@@ -89,12 +89,20 @@ secondary_response.model <- function(t, y, parms)  # Single partial immune class
         dL_s = 0    # change in specific antibodies in the lumen
         
         #####################################
+        # define V function 
+        V.function = function(t_infection, t) {
+          if(t>=min(t_infection) & t <= max(t_infection)){
+            V = 1}
+          else(V = 0)
+        return(V)}
+        # set V
+        V = V.function(t_infection, t)
         #####################################
         ## calculate the derivatives
         # cell populations
-        dB = r_b*(1-diff_frac)*B*V - diff_frac*B*V #B cells (memory and naive together)
+        dB = r_b*(1-diff_frac)*B*V - diff_frac*B*V -d_B*B #B cells (memory and naive together)
         dP_s = diff_frac*B*V - quiessence_k*P_s - d_mu*P_s + induction_k*P_q*V # specific ASCs
-        dP_q = quiessence_k*P_s - induction_k*P_q*V - d_q*P_q # quiesent sepecific ASCs
+        dP_q = quiessence_k*P_s - induction_k*P_q*V - d_q*P_q # quiescent sepecific ASCs
         # Specific antibodies        
         dM_s = rho*P_s - (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_Ab*M_s #mucosal
         dL_s = (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_l*L_s #lumenal

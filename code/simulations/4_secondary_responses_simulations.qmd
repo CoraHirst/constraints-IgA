@@ -1,0 +1,129 @@
+---
+title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers"
+subtitle: "Simulations Part 2: Rapid mucosal recall responses may be facilitated by inducible plasma cell populations"
+format: html
+---
+
+# Objective
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+source(here("code", "functions", "functions.R")) #loads functions from functions file
+
+
+```
+
+# Objective
+
+The goal of this document is to simulate the recall of antibody responses in the mucosa, including a population of inducible plasma cell which secrete antibody only when stimulated by antigen. We would like to determine the extent to which this mechanism can facilitate a rapid antibody response to a previously encountered antigen when the longevity of titers in the respiratory tract wane rapidly. 
+
+
+# Visualizing dynamics
+
+We will first compare the dynamics of antibody titer increase after a primary infection and a secondary infection with the same antigen. 
+
+## Define parameters
+
+```{r define-parms}
+## Defining parameters for simulations 
+  # B cell parms
+    r_b = 2 #rate of proliferation of activated B cells, twice per day
+    diff_frac = 0.003 #rate of differentiation of B cells into AS Plasma Cell, 5 % become ASCs
+  # Plasma cell differentiation parameters
+    quiessence_k = 0.003 #rate of differentiation of plasma cells into quiescent plasma cells
+    induction_k = 1 #rate of differentiation of quiescent plasma cells to AS plasma cells
+  # Antibody production and transport
+    rho = 10^3 #rate of antibody secretion by plasma cells per day (scaled)
+    Vmax = 10^3 #maximum rate of antibody transport to the mucosa
+    K = 10^3 #Ab concentration at which transport rate is 1/2 Vmax
+    c =  10^6 #rate of general antibody influx into mucosa per day - for calculating ss nonspecic M_ns
+  # decay rates - Cells - defined in terms of half lives
+   thalf_mu = 14 # in days
+    d_mu = -log(1/2)/(thalf_mu) #AS plasma cell death rate 
+   thalf_q = 5 # in years
+    d_q = -log(1/2)/(thalf_q*365)  #quiescent cells death rate, per day
+    d_B = d_q #B cell death rate
+  # Decay rates - antibodies
+   thalf_Ab = 10 # in days
+    d_Ab = -log(1/2)/(thalf_Ab)  #decay rate of IgA in mucosa
+   thalf_l = thalf_Ab # in days
+    d_l = -log(1/2)/(thalf_l)  #decay rate of IgA in lumen 
+```
+
+Above, we define the basic parameters for our model system. 
+
+Below, we oragnize these parameters into a list for calling in
+`deSolve` and define the times for integration, as well as the intial conditions, or our ODE model. 
+
+```{r primary-simulation-setup}
+# params list for deSolve
+params = list(
+## Defining parameters for simulations 
+  # B cell parms
+    r_b = r_b, #rate of proliferation of activated B cells
+    diff_frac = diff_frac, #rate of differentiation of B cells into AS Plasma Cell
+  # Plasma cell differentiation parameters
+    quiessence_k = quiessence_k, #rate of differentiation of plasma cells into quiescent plasma cells
+    induction_k = induction_k, #rate of differentiation of quiescent plasma cells to AS plasma cells
+  # Antibody production and transport
+    rho = rho, #rate of antibody secretion by plasma cells
+    Vmax = Vmax, #maximum rate of antibody transport to the mucosa
+    K = K, #Ab concentration at which transport rate is 1/2 Vmax
+    c = c, #rate of general antibody influx into mucosa - for calculating ss nonspecic M_ns
+  # decay rates - Cells
+    d_mu = d_mu, #AS plasma cell death rate 
+    d_q = d_q, #quiescent cells death rate
+    d_B = d_B, #B cell death rate
+  # Decay rates - antibodies
+    d_Ab = d_Ab, #decay rate of IgA in mucosa
+    d_l = d_l, #decay rate of IgA in lumen 
+    t_infection = c(0,14)
+  )
+## For simulation 
+  # for time vector
+  Tmax = 120 # max time (days) to simulate over
+  points_per_day = 24 # number of points per day to simulate over
+
+# initial conditions
+  init_cond = c(B = 2, # Initial pathogen-specific B cells
+                P_s = 0, # no pathogen-specific antibody secreting plasma cells initially
+                P_q = 0, # no pathogen-specific quiescent  plasma cells
+                M_s = 0, # no specific antibodies in mucosa 
+                L_s = 0) # no specific antibodies in lumen 
+# M_ns is calculated in ODE model function
+
+```
+
+## Run simulation
+
+```{r }
+soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), secondary_response.model, parms = params))
+
+soln.long = soln %>% pivot_longer(cols = !time, 
+                                  names_to = "population", 
+                                  values_to = "number")
+
+plot1 = ggplot() + 
+  geom_line(data = soln.long %>% filter(population %in% c("B", "P_s", "P_q")), aes(x = time, y = log10(number), group = population, col = population))
+
+plot2 = ggplot() + 
+  geom_line(data = soln.long %>% filter(population %in% c("M_s", "L_s")), aes(x = time, y = log10(number), group = population, col = population))
+
+grid.arrange(plot1,plot2)
+```
+

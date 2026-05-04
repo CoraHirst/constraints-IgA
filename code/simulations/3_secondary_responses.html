@@ -6,7 +6,6 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Cora Hirst, Susi Linderman, Carl Davis, Hasan Ahmed, Rustom Antia…">
 
 <title>Evolutionary Constraints on the Longevity of IgA Antibody Titers</title>
 <style>
@@ -58,16 +57,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="1_primary_responses_files/libs/clipboard/clipboard.min.js"></script>
-<script src="1_primary_responses_files/libs/quarto-html/quarto.js"></script>
-<script src="1_primary_responses_files/libs/quarto-html/popper.min.js"></script>
-<script src="1_primary_responses_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="1_primary_responses_files/libs/quarto-html/anchor.min.js"></script>
-<link href="1_primary_responses_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="1_primary_responses_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="1_primary_responses_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="1_primary_responses_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="1_primary_responses_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="3_secondary_responses_files/libs/clipboard/clipboard.min.js"></script>
+<script src="3_secondary_responses_files/libs/quarto-html/quarto.js"></script>
+<script src="3_secondary_responses_files/libs/quarto-html/popper.min.js"></script>
+<script src="3_secondary_responses_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="3_secondary_responses_files/libs/quarto-html/anchor.min.js"></script>
+<link href="3_secondary_responses_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="3_secondary_responses_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="3_secondary_responses_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="3_secondary_responses_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="3_secondary_responses_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -116,12 +115,6 @@ window.Quarto = {
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Cora Hirst, Susi Linderman, Carl Davis, Hasan Ahmed, Rustom Antia… </p>
-          </div>
-  </div>
     
   
     
@@ -164,57 +157,81 @@ window.Quarto = {
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(deSolve)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#load functions</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#source(here("code", "functions", "functions.R"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"code"</span>, <span class="st">"functions"</span>, <span class="st">"functions.R"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="objective" class="level1">
 <h1>Objective</h1>
-<p>The goal of this document is to develop a simple model of antibody transport from the inside of the mucosal epithelium to the outside lumen of the mucosal epithelium. We would like to understand the extent to which pre-existing antibody titers from previous infections to unrelated pathogens can interfere with the transport of newly generated IgA specific to a currently infecting pathogen.</p>
+<p>The goal of this document is to Outline a simulation of the recall of antibody responses in the mucosa, including a population of inducible plasma cell which secrete antibody only when stimulated by antigen. We would like to determine the extent to which this mechanism can facilitate a rapid antibody response to a previously encountered antigen when the longevity of titers in the respiratory tract wane rapidly.</p>
 </section>
 <section id="model-outline" class="level1">
-<h1>Model outline</h1>
-<p>Our model considers two physiological compartments: the mucosal side of the epithelium and the external lumen on the opposite side of the epithelium. We call these compartments “Mucous” and “Lumen”.</p>
-<p>During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as <span class="math inline">\(M_s\)</span> and the specific antibodies in the lumen compartment as <span class="math inline">\(L_s\)</span>.</p>
-<p>We can model the flux of IgA antibodies to the lumen as a Michaelis-menten reaction, with the form: <span class="math inline">\(\Phi_L = \frac{V_{max}}{K + M}M\)</span>.</p>
+<h1>Model Outline</h1>
 <section id="steady-state-concentration-of-m_ns" class="level2">
 <h2 class="anchored" data-anchor-id="steady-state-concentration-of-m_ns">Steady state concentration of <span class="math inline">\(M_{ns}\)</span></h2>
-<p>We assume that, for some rate of influx of antibody titers and a given rate of decay of antibody titers in the mucosa, the total amount of IgA in the mucosa reaches a steady state.</p>
+<p>There will be some minimal steady - state concentration of total IgA in the mucosa due to the generation and waning of responses to respiratory pathogens.</p>
 <p>The simplest ODE to describe an influx and decay of antibody into <span class="math inline">\(M\)</span>, which will be <span class="math inline">\(M_{ns}\)</span>, is:</p>
 <p><span class="math display">\[
 \frac{dM_{ns}}{dt} = c - d_\mu M_{ns}
-\]</span> where <span class="math inline">\(c\)</span> is a constant rate of influx of new IgA (something akin to <span class="math inline">\(\frac{A_0}{\tau}\)</span>, the peak antibody generated during an infection times the number of infections per unit time) and <span class="math inline">\(d_\mu\)</span> is the decay rate.</p>
-<p>At steady state, the concentration of <span class="math inline">\(M_{ns} = \frac{c}{d_\mu}\)</span>.</p>
+\]</span></p>
+<p>where <span class="math inline">\(c\)</span> is a constant rate of influx of new IgA (something akin to <span class="math inline">\(\frac{A_0}{\tau}\)</span>, the peak antibody generated during an infection times the number of infections per unit time) and <span class="math inline">\(d_\mu\)</span> is the decay rate.</p>
+<p><em>At steady state, the concentration of <span class="math inline">\(M_{ns} = \frac{c}{d_\mu}\)</span>.</em></p>
 </section>
-<section id="generation-and-decay-dynamics-of-m_s-during-response" class="level2">
-<h2 class="anchored" data-anchor-id="generation-and-decay-dynamics-of-m_s-during-response">Generation and decay dynamics of <span class="math inline">\(M_s\)</span> during response</h2>
-<p>Antibodies should increase exponentially during a response and decrease exponentially after the response. This intuition can be modeled with the following biexponential function: <span class="math inline">\(M_s = \frac{A_0}{1+e^{(-r(t-t_p))}}e^{-d_\mu t}\)</span></p>
-<p>However, when <span class="math inline">\(d_\mu\)</span> and <span class="math inline">\(r\)</span> are on the same time scale, a greater <span class="math inline">\(d_\mu\)</span> decreases the antibody titer at the peak of the response. We would like for the generation of responses to be the same regardless of the decay rate, and only the decay dynamics to change according to the decay rate (of plasma cells after generation.)</p>
-<p>We can accomplish this in a few ways. I have suggested two below:</p>
-<p>First, a piece-wise function:</p>
+<section id="cellular-responses" class="level2">
+<h2 class="anchored" data-anchor-id="cellular-responses">Cellular Responses</h2>
+<p>Here, we explicitly model the B cell recruitment and differentiation that gives rise to a specific antibody response during primary and secondary infections. We track the activation, proliferation, and differentiation of B cells, <span class="math inline">\(B_s\)</span>, specific for some antigen. A fraction <span class="math inline">\((1-f)\)</span> of B cells begin proliferating in the presence of infection <span class="math inline">\(V=1\)</span> at a rate <span class="math inline">\(r_b\)</span>. The other fraction <span class="math inline">\(f\)</span> of B cells differentiate into antibody secreting plasma cells, <span class="math inline">\(P_s\)</span>.</p>
+<p><span class="math inline">\(P_s\)</span> secrete antibody at a rate <span class="math inline">\(\rho\)</span> and die at a rate of <span class="math inline">\(d_\mu\)</span>. Importantly, some plasma cells differentiate into what we refer to as <em>quiescent plasma cells</em>, <span class="math inline">\(P_q\)</span>, at rate <span class="math inline">\(k_1\)</span>. These cells do not secrete antibody but quickly differentiate back into antibody-secreting cells at rate <span class="math inline">\(k_{-1}\)</span> upon recall responses. <span class="math inline">\(P_q\)</span> die at a rate <span class="math inline">\(d_q\)</span>, where <span class="math inline">\(d_q &lt;&lt; d_\mu\)</span>.</p>
+<p>This gives rise to the following set of ordinary differential equations:</p>
 <p><span class="math display">\[
-M_s =
+\frac{dB}{dt} = r_B(1-f)BV -fBV
+\]</span> <span class="math display">\[
+\frac{dP_s}{dt} = fBV - k_1P_s - d_\mu P_s + k_{-1}P_qV
+\]</span></p>
+<p><span class="math display">\[
+\frac{dP_q}{dt} = k_1P_s - k_{-1}P_qV - d_qP_q
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[
+V(t) =
 \begin{cases}
-\frac{A_0}{1+e^{rt}} &amp; t &lt; t_p \\
-\frac{A_0}{1+e^{rt_p}} e^{-d_\mu (t-t_p)} &amp; t &gt; t_p
+0 &amp; \text{if } t &gt; t_{infection} \\
+1 &amp; \text{if } 0 &lt; t \leq t_{infection}
+\end{cases}
+\]</span> I might need to somehow put in a delay such that <span class="math inline">\(P_q\)</span> are not immediately recruited… that is, they are refractory to recruitment when they are generated.</p>
+<p>The easiest way to do this so to create a new compartment, <span class="math inline">\(P_{r}\)</span> which are newly generated quiescent plasma cells that differentiate into inducible cells on a longer time scale (longer than the timescale of an infection). <span class="math inline">\(P_s\)</span> will produce <span class="math inline">\(P_r\)</span> at a rate <span class="math inline">\(k_1\)</span>, <span class="math inline">\(P_r\)</span> will differentiate into <span class="math inline">\(P_q\)</span> at a rate <span class="math inline">\(k_2\)</span>, and <span class="math inline">\(P_q\)</span> will differentiate back into <span class="math inline">\(P_s\)</span> at a rate <span class="math inline">\(k_{-1}\)</span> during infections.</p>
+<p>This would give the following change to our ODEs:</p>
+<p><span class="math display">\[
+\frac{dB}{dt} = r_B(1-f)BV -fBV
+\]</span></p>
+<p><span class="math display">\[
+\frac{dP_s}{dt} = fBV - k_1P_s - d_\mu P_s + k_{-1}P_qV
+\]</span></p>
+<p><span class="math display">\[
+\frac{dP_r}{dt} = k_1P_s - k_2P_r - d_qP_r
+\]</span></p>
+<p><span class="math display">\[
+\frac{dP_q}{dt} = k_2P_r - k_{-1}P_qV - d_qP_q
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[
+V(t) =
+\begin{cases}
+0 &amp; \text{if } t &gt; t_{infection} \\
+1 &amp; \text{if } 0 &lt; t \leq t_{infection}
 \end{cases}
 \]</span></p>
-<p>This function will introduce a sharp turn discontinuity at the time of the peak (switching) time, <span class="math inline">\(t_p\)</span>.</p>
-<p>Because we really only care about understanding how pre-existing non-specific titers interfere with newly generated responses, the easiest way to make sure that the generation phase for all simulations is the same is to simply only look at the change in titers over the generation time, that is:</p>
-<p><span class="math display">\[
-\frac{A_0}{1+e^{r(t-t_p)} } \text{,           where }  0 &lt; t &lt; 2t_p
-\]</span></p>
+<p>I am not going to do this now, but keep this option open in the future, Cora!</p>
 </section>
-<section id="competition-for-pigrs" class="level2">
-<h2 class="anchored" data-anchor-id="competition-for-pigrs">Competition for pIgRs</h2>
-<p>We would like to know the extent to which non-specific antibodies remaining from previous infections in the mucosa, which we call <span class="math inline">\(M_{ns}\)</span>, compete for pIgRs and interfere with the rate of specific IgA transport in the lumen. We can adjust the michaelis-menten kinetics to include direct competition between specific and non-specific IgA for pIgRs, which results in the following equation for the flux of specific antibodies into the lumen:</p>
-<p><span class="math display">\[
-\Phi_{M,s} = \frac{V_{max}}{K + M_s + M_{ns}}M_s
-\]</span></p>
-<p>where <em>explain parms</em></p>
-<p>And the resulting dynamics for the number of specific antibodies in the lumen would be:</p>
-<p><span class="math display">\[
-\frac{dL_s}{dt} = \frac{V_{max}}{K + M_s + M_{ns}}M_s -d_L L_s
-\]</span></p>
 </section>
+<section id="antibody-production-and-competition-for-transport" class="level1">
+<h1>Antibody production and competition for transport</h1>
+<p>We would like to observe the speed of recall responses compared to primary responses in terms of the amount of specific antibody transported to the mucosa. So, I need to track the specific antibody produced in the mucosa, the rate at which it is transported in the lumen (complete with competition from pre-existing Abs), and the dynamics of lumenal Abs. I will compare the dynamics of <span class="math inline">\(L_s\)</span> increase during primary and secondary infections.</p>
+<p>We will use the same model for competition of antibody titers as in part 1. Briefly, this model assumes michaelis-mentin dynamics, and the flux of specific IgA into the lumen is given by <span class="math inline">\(\frac{V_{max}}{K + M_s + M_{ns}}M_s\)</span>. Given some decay rate of antibody in the lumen, the differential equation for <span class="math inline">\(L_s\)</span> becomes:</p>
+<p><span class="math display">\[
+\frac{dL_s}{dt} = \frac{V_{max}}{K + M_s + M_{ns}}M_s - d_L L_s
+\]</span></p>
+<p>While we pre-defined the kinetics of increase and decrease of <span class="math inline">\(M_s\)</span> in part 1, we are explicitly modeling the dynamics of the population of cells - <span class="math inline">\(P_s\)</span> - that secrete <span class="math inline">\(M_s\)</span>. The rate of change of <span class="math inline">\(M_s\)</span> will thus follow:</p>
+<p><span class="math display">\[
+\frac{dM_s}{dt} = \rho P_s - \frac{V_{max}}{K + M_s + M_{ns}}M_s - d_AM_s
+\]</span> where <span class="math inline">\(\rho\)</span> is the production rate of antibodies per plasma cell and <span class="math inline">\(d_A\)</span> is the decay rate of IgA antibodies in the mucosa (half life on the order of days).</p>
 </section>
 
 </main>
