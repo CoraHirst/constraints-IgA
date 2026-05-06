@@ -40,7 +40,7 @@ The goal of this document is to udnerstand the extent to which antibodies remain
 
 ```{r set-parms}
 # biological parameters for competition simulation 
-t_half = c(1/12, 6/12, 1, 2, 5, 10)*365 #half lives in years converted to days
+t_half = c(1/12, 6/12, 1, 2, 5, 10)*365 #half livesof antibody titers in years converted to days
 ## for steady state Mns
   c = 0.5 #constant rate of IgA generated through time, per day
   d_mus = -log(1/2)/(t_half*365) #decay rate of antibody in the mucosa (1/days)
