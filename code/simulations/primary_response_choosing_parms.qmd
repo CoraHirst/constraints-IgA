@@ -4,6 +4,27 @@ subtitle: "Simulations Part 1: constraint on the longevity of antibody titers in
 format: html
 ---
 
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+source(here("code", "functions", "functions.R")) #loads functions from functions file
+
+
+```
 # objective
 
 The purpose of this document is to help me determine the right parameter ranges to use
@@ -14,15 +35,52 @@ Below, we can see how the steady-state nonspecific antibody titer compares to th
 
 ```{r antibodies}
 #parms for antibodies
-t_half = c(1/12, 6/12, 1, 2, 5, 10)*365 #half livesof antibody titers in years converted to days
+t_half = c(7, 14, 30, 60, 180, 365, 5*365) #half livesof antibody titers in days
 ## for steady state Mns
   c = 0.5 #constant rate of IgA generated through time, per day
-  d_mus = -log(1/2)/(t_half*365) #decay rate of antibody in the mucosa (1/days)
+  d_mus = -log(1/2)/(t_half) #decay rate of antibody in the mucosa (1/days)
 ## for newly generated Ms
-  A0 = 10^5
+  A0 = 10^2
   r = log(10^5)/14 #exponential growth of new population
   t_p = 7 #1/2 time to peak (days)
+  
+  
+#### Mucosal nonspecific
+# Calculate ss concentrations of Mns
+M_ns.vec = sapply(d_mus, function(d_mu) {M_ns(c = c, d = d_mu)})
+
+# plot 
+plot(x = t_half/365, y = log10(M_ns.vec), type = "b", pch = 19, xlab = expression(paste("T"[1/2], " mucosal antibody titers (years)")), ylab = expression(paste("Log"[10], " Total ", "M"[ns])), main = "Steady state mucosal antibody titer by half-life")
+
+#create df to store d_mu, M_ns, and t_half 
+M_ns.df = data.frame( "t_half" = t_half,  #half life
+                      "d_mu" = d_mus, #corresponding decay rate
+                      "M_ns" = M_ns.vec) #corresponding ss antibody titer
+
+# dynamics of antibody responses over course of infection
+#specific antibodies during infection
+M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(1+exp(-d_mu*(2*t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growt
 
 
+t = seq(0,4*t_p, by = 1/24)
+
+m_trajectories = sapply(d_mus, function(d_mu){
+  ms = sapply(t, function(time) {M_s(A0 = A0, t_p = t_p, r = r, d_mu = d_mu, t = time)})
+}) %>% cbind(t, .) %>% as.data.frame()
+  
+colnames(m_trajectories) = c("time", t_half)
+
+m_trajectories = m_trajectories %>% 
+  pivot_longer(
+    cols = !time,
+    names_to = "t_half",
+    values_to = "titer"
+  )
+
+plot = ggplot() + geom_line(data = m_trajectories, aes(x = time, y = log10(titer), group = t_half, col = t_half)) +
+  geom_hline(data = M_ns.df, aes(yintercept = log10(M_ns), col = factor(t_half))) +
+  theme_classic() 
+
+plot
 ```
 
