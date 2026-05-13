@@ -88,6 +88,7 @@ M_s.vec = sapply(times, function(t) {M_s(A0 = A0, t_p = t_p, r = r, t = t)}) #ca
 
 plot(x = times, y = M_s.vec, type = "l", xlab = "day post infection", ylab = expression(paste("Specific antibody inside mucosa, ", "M"[s])), main = "Generation dynamics of specific antibodies")
 
+plot
 ```
 
 Note that we keep these dynamics the same for *every simulation* - changing the decay rate/extent of competition should not effect the dynamics of the generation of the response over the course of infection (question - how long after generation before decay kicks in?)
@@ -273,8 +274,16 @@ total_Ls = sapply(Ks, function(K){ #rows
 
 ```{r plot-ks-vs-dmus}
 # matrix
-filled.contour(x = t_halfs/365, y = log10(Ks), z=log10(total_Ls), lwd = 2, nlevels = 5, xlab = "decay rate internal, years", ylab = "log10 Michaelis-menten K", main = "IgA in Lumen by day 14") #draw figure
+filled.contour(x = t_halfs/365, y = log10(Ks), z=log10(total_Ls), lwd = 2, nlevels = 10, xlab = "decay rate internal, years", ylab = "log10 Michaelis-menten K", main = "IgA in Lumen by day 14") #draw figure
 
 ```
+
+### changing vmax instead of k
+
+Here we will treat receptor affinity as constant and only vary Vmax to show the effect of receptor abundance on competition.
+
+
+
+
 
 

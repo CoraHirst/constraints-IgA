@@ -23,7 +23,10 @@ library(deSolve)
 #load functions
 source(here("code", "functions", "functions.R")) #loads functions from functions file
 
-
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "darkslategrey", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
 ```
 # objective
 
@@ -82,5 +85,46 @@ plot = ggplot() + geom_line(data = m_trajectories, aes(x = time, y = log10(titer
   theme_classic() 
 
 plot
+```
+
+lets plot our competition function so we can better understand the effect of changing k, vmax, and [antibody]. 
+
+```{r plot-saturating-mm}
+#define competition function
+mm_flux = function(Abs, K, Vmax) {Abs*Vmax/(K + Abs)}
+
+#define parms 
+Abs_vec = 10^seq(0,3, 0.5)
+K_vec = 10^seq(0,3, 0.5)
+Vmax_vec = 2*10^seq(0,5, 1)
+
+#plot different combos of v, k, and Abs
+plot_dfs = lapply(Vmax_vec, function(Vmax){ #item in list
+  df = sapply(K_vec, function(K){ #columns
+         sapply(Abs_vec, function(Abs){ #rows
+           return(mm_flux(Abs = Abs, K = K, Vmax = Vmax))
+         })
+       }) %>% cbind(Abs_vec, ., Vmax) %>% as.data.frame()
+  colnames(df) = c("Ab", K_vec, "Vmax")
+  return(df)
+})
+
+plot_list = lapply(plot_dfs, function(df){
+  df = df %>% pivot_longer(
+    cols = !c("Ab", "Vmax"),
+    names_to = "K", 
+    values_to = "flux"
+  )
+  plot = ggplot() + geom_line(data = df, aes(x = Ab, y = flux, group = as.factor(signif(as.numeric(K),2)), col = as.factor(signif(as.numeric(K),2)))) +
+    geom_hline(yintercept = unique(df$Vmax), linetype = "dashed") +
+    theme_bw() + 
+    scale_color_manual(values = my_colors) +
+    labs(x = "[Ab]", y = "flux", col = "K")
+  return(plot)
+})
+
+#show plots on grid 
+do.call(grid.arrange, plot_list)
+
 ```
 
