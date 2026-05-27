@@ -1,0 +1,287 @@
+---
+title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers"
+subtitle: "Simulations Part 1: constraint on the longevity of antibody titers in the respiratory mucosa"
+format: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#install.packages("RColorBrewer")
+library(RColorBrewer)
+
+#load functions
+source(here("code", "functions", "functions.R"))
+
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
+```
+
+# Objective 
+
+The goal of this document is to understand the extent to which antibodies remaining from prior respiratory infections inhibit the transport of newly generated, specific IgA during infection. 
+
+# Outline
+
+We will generate two figures: 
+
+1) The flux of $M_s$ to the lumen as a function of $[M_s]$ on the x-axis; steady-state $[M_{ns}]$ or, in other words, $d_\mu$, changing line colors; and a low and high competition setting by high and low $V_{max}$ by (two) plots. 
+
+To generate our high and low competition settings, we want to consider the transcytosis rate, $k_{cat}$, and $[pIgR]$ concentrations separately. $k_cat$ will remain the same in the high and low competition settings, but $[pIgR]$ will change to simulate high/low abundance of transport proteins. 
+
+We also want to set our $K$ such that the peak of the specific antibody response is about $K$.
+
+# Setting parameters
+
+```{r set-parms}
+# biological parameters for competition simulation 
+t_half = c(1/52, 1/12, 1, 10, 100)*365 #half lives of antibody titers in years converted to days
+## for steady state Mns
+  c = 1 #constant rate of IgA generated through time, per day
+  d_mus = -log(1/2)/(t_half) #decay rate of antibody in the mucosa (1/days)
+  
+  ss_Mns = (signif( (c/d_mus), 2)) # 1,2,3,4,5!
+
+## for newly generated Ms
+  A0 = 10^5
+  r =  log10(A0)/14 #exponential growth of new population
+  t_p = 7 #1/2 time to peak (days)
+
+  # dynamics of antibody responses over course of infection
+  #specific antibodies during infection
+  M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growt
+
+  t = seq(0,3*t_p, by = 1/24)
+
+  m_trajectories = sapply(d_mus, function(d_mu){
+    ms = sapply(t, function(time) {M_s(A0 = A0, t_p = t_p, r = r, t = time)})
+    }) %>% cbind(t, .) %>% as.data.frame()
+  colnames(m_trajectories) = c("time", t_half)
+    
+  ## for transport and lumen concentration
+  d_l = 1/10 #1/days
+  Ks = c(c/d_mus[3], (c/d_mus[3])*10^4) #middle 
+  V_max = 10^6 #catalytic rate and number of enzymes, per day (every 24 hours)
+
+```
+
+Justifying parms *HERE*
+
+## Plots 
+
+Below, we calculate the rate of transport of $M_s$ across the mucosal epithelium as a function of log10 ($M_s$) (x-axis), half life of mucosal antibodies as seperate lines, and two plots, a high competition (low $V_{max}$) and low competition (high $V_{max}$) setting. 
+
+```{r calculate-transport}
+# function for calculating flux
+Specific_flux = function(M_s, M_ns, K, V_max){M_s*V_max/(K+M_s+M_ns)}
+# set parms
+M_s.vec = seq(0,(max(m_trajectories)), by = 100) 
+
+# calculate curves 
+M_s_transport = lapply(Ks, function(K){
+  Flux_df = sapply(ss_Mns, function(Mns){
+    sapply(M_s.vec, function(Ms){
+      Specific_flux(M_s = Ms, M_ns = Mns, K = K, V_max = V_max)
+    })
+  }) %>% as.data.frame() %>% cbind(M_s.vec, ., K)
+  colnames(Flux_df) = c("M_s", t_half, "K")
+
+  Flux_df = Flux_df %>% pivot_longer(
+    cols = !c(M_s, K),
+    names_to = "t_half",
+    values_to = "flux"
+  )
+})
+
+M_s_transport = do.call(rbind, M_s_transport) %>% as.data.frame()
+
+plot = ggplot() + 
+    geom_line(data = M_s_transport, aes(x = (M_s), y = log10(flux), col = t_half, linetype = as.factor(K))) +
+    theme_bw() +
+  labs(x = "Specific Antibody, Inside", y = "Specific Antibody Flux", linetype = "Concentration of \nhalf-saturated transport", color = "Antibody Half Life, Interior") +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = signif(Ks, 2)) +
+    scale_color_manual(values = my_colors, labels = signif(t_half, 2))
+
+#print to viewer
+print(plot)
+
+```
+
+What if I plot as a ratio of what gets over vs what is left? Flux with or without competition? Proportion specific to nonsepcific? 
+
+This is absolutely what we expect but not quite the right rational... I need to measure something dimensionless. 
+
+```{r calculate-reduction-transport}
+# function for calculating flux
+Specific_flux = function(M_s, M_ns, K, V_max){M_s*V_max/(K+M_s+M_ns)}
+# set parms
+M_s.vec = seq(0,(max(m_trajectories)), by = 100) 
+
+# calculate curves 
+M_s_transport = lapply(Ks, function(K){
+  Flux_df = sapply(ss_Mns, function(Mns){
+    sapply(M_s.vec, function(Ms){
+      competition = Specific_flux(M_s = Ms, M_ns = Mns, K = K, V_max = V_max)
+      no_competition = Specific_flux(M_s = Ms, M_ns = 0, K = K, V_max = V_max)
+      return(competition/no_competition)
+    })
+  }) %>% as.data.frame() %>% cbind(M_s.vec, ., K)
+  colnames(Flux_df) = c("M_s", t_half, "K")
+
+  Flux_df = Flux_df %>% pivot_longer(
+    cols = !c(M_s, K),
+    names_to = "t_half",
+    values_to = "prop_flux"
+  )
+})
+
+M_s_transport = do.call(rbind, M_s_transport) %>% as.data.frame()
+
+plot = ggplot() + 
+    geom_line(data = M_s_transport, aes(x = (M_s), y = log10(prop_flux), col = t_half, linetype = as.factor(K))) +
+    theme_bw() +
+  labs(x = "Specific Antibody, Inside", y = "Prop. Specific Antibody Flux", linetype = "Concentration of \nhalf-saturated transport", color = "Antibody Half Life, Interior") +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = signif(Ks, 2)) +
+    scale_color_manual(values = my_colors, labels = signif(t_half, 2))
+
+#print to viewer
+print(plot)
+
+```
+
+
+#########################
+
+# Setting parameters
+
+```{r set-parms}
+# biological parameters for competition simulation 
+t_half = c(1/52, 1/12, 1, 10, 100)*365 #half lives of antibody titers in years converted to days
+## for steady state Mns
+  c = 1 #constant rate of IgA generated through time, per day
+  d_mus = -log(1/2)/(t_half) #decay rate of antibody in the mucosa (1/days)
+  
+  ss_Mns = (signif( (c/d_mus), 2)) # 1,2,3,4,5!
+
+## for newly generated Ms
+  A0 = 10^5
+  r =  log10(A0)/14 #exponential growth of new population
+  t_p = 7 #1/2 time to peak (days)
+
+  # dynamics of antibody responses over course of infection
+  #specific antibodies during infection
+  M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growt
+
+  t = seq(0,3*t_p, by = 1/24)
+
+  m_trajectories = sapply(d_mus, function(d_mu){
+    ms = sapply(t, function(time) {M_s(A0 = A0, t_p = t_p, r = r, t = time)})
+    }) %>% cbind(t, .) %>% as.data.frame()
+  colnames(m_trajectories) = c("time", t_half)
+    
+  ## for transport and lumen concentration
+  d_l = 1/10 #1/days
+  K = c/d_mus[3] #middle 
+  V_max.vec = c(10, 10^6) #catalytic rate and number of enzymes, per day (every 24 hours)
+
+```
+
+Justifying parms *HERE*
+
+## Plots 
+
+Below, we calculate the rate of transport of $M_s$ across the mucosal epithelium as a function of log10 ($M_s$) (x-axis), half life of mucosal antibodies as seperate lines, and two plots, a high competition (low $V_{max}$) and low competition (high $V_{max}$) setting. 
+
+```{r calculate-transport}
+# function for calculating flux
+Specific_flux = function(M_s, M_ns, K, V_max){M_s*V_max/(K+M_s+M_ns)}
+# set parms
+M_s.vec = seq(0,(max(m_trajectories)), by = 100) 
+
+# calculate curves 
+M_s_transport = lapply(V_max.vec, function(V_max){
+  Flux_df = sapply(ss_Mns, function(Mns){
+    sapply(M_s.vec, function(Ms){
+      Specific_flux(M_s = Ms, M_ns = Mns, K = K, V_max = V_max)
+    })
+  }) %>% as.data.frame() %>% cbind(M_s.vec, ., V_max)
+  colnames(Flux_df) = c("M_s", t_half, "V_max")
+
+  Flux_df = Flux_df %>% pivot_longer(
+    cols = !c(M_s, V_max),
+    names_to = "t_half",
+    values_to = "flux"
+  )
+})
+
+M_s_transport = do.call(rbind, M_s_transport) %>% as.data.frame()
+
+plot = ggplot() + 
+    geom_line(data = M_s_transport, aes(x = (M_s), y = log10(flux), col = t_half, linetype = as.factor(V_max))) +
+    theme_bw() +
+  labs(x = "Specific Antibody, Inside", y = "Specific Antibody Flux", linetype = "V_max", color = "Antibody Half Life, Interior") +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = signif(V_max, 2)) +
+    scale_color_manual(values = my_colors, labels = signif(t_half, 2))
+
+#print to viewer
+print(plot)
+
+```
+
+What if I plot as a ratio of what gets over vs what is left? Flux with or without competition? Proportion specific to nonsepcific? 
+
+This is absolutely what we expect but not quite the right rational... I need to measure something dimensionless. 
+
+```{r calculate-reduction-transport}
+# function for calculating flux
+Specific_flux = function(M_s, M_ns, K, V_max){M_s*V_max/(K+M_s+M_ns)}
+# set parms
+M_s.vec = seq(0,(max(m_trajectories)), by = 100) 
+
+# calculate curves 
+M_s_transport = lapply(V_max.vec, function(V_max){
+  Flux_df = sapply(ss_Mns, function(Mns){
+    sapply(M_s.vec, function(Ms){
+      competition = Specific_flux(M_s = Ms, M_ns = Mns, K = K, V_max = V_max)
+      no_competition = Specific_flux(M_s = Ms, M_ns = 0, K = K, V_max = V_max)
+      return(competition/no_competition)
+    })
+  }) %>% as.data.frame() %>% cbind(M_s.vec, ., V_max)
+  colnames(Flux_df) = c("M_s", t_half, "V_max")
+
+  Flux_df = Flux_df %>% pivot_longer(
+    cols = !c(M_s, V_max),
+    names_to = "t_half",
+    values_to = "prop_flux"
+  )
+})
+
+M_s_transport = do.call(rbind, M_s_transport) %>% as.data.frame()
+
+plot = ggplot() + 
+    geom_line(data = M_s_transport, aes(x = (M_s), y = log10(prop_flux), col = t_half, linetype = as.factor(V_max))) +
+    theme_bw() +
+  labs(x = "Specific Antibody, Inside", y = "Specific Antibody Flux", linetype = "V_max", color = "Antibody Half Life, Interior") +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = signif(V_max.vec, 2)) +
+    scale_color_manual(values = my_colors, labels = signif(t_half, 2))
+
+#print to viewer
+print(plot)
+
+```
+
