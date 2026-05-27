@@ -34,71 +34,17 @@ The goal of this document is to develop a simple model of antibody transport fro
 
 Our model considers two physiological compartments: the mucosal side of the epithelium and the external lumen on the opposite side of the epithelium. We call these compartments "Mucous" and "Lumen". 
 
-During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as $M_s$ and the specific antibodies in the lumen compartment as $L_s$. 
+During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as $M_s$ and the specific antibodies in the lumen compartment as $L_s$. We hypothesize that these antibodies must compete with all of the IgA remaining in the mucosa from previous infections with other pathogens, which we refer to generally as non-specific mucosal IgA, $M_{NS}$. The population of nonspecific antibodies that are transported to the lumen is referred to generally as $L_{NS}$
 
-We can model the flux of IgA antibodies to the lumen as a Michaelis-menten reaction, with the form: $\Phi_L = \frac{V_{max}}{K + M}M$. 
+We can model the flux of IgA antibodies to the lumen as an ODE model of these two populations of mucosal IgA antibodies - $M_S$ and $M_{NS}$ - which compete explicitly for transport proteins, $R$. The number of specific and nonspecific antibodies on the lumenal side, $L_S$ and $L_{NS}$ respectively, depends on the rate of removal of IgA from the lumen and the rate at which the populations are transported. 
 
-## Steady state concentration of $M_{ns}$ 
-
-We assume that, for some rate of influx of antibody titers and a given rate of decay of antibody titers in the mucosa, the total amount of IgA in the mucosa reaches a steady state. 
-
-The simplest ODE to describe an influx and decay of antibody into $M$, which will be $M_{ns}$, is: 
+Importantly, we assume that pIgRs, $R$, are constantly being trancytosed across the epithelium regardless of whether they are bound by sIgA. This gives rise to the following set of ODEs: 
 
 $$
-\frac{dM_{ns}}{dt} = c - d_\mu M_{ns}
-$$
-where $c$ is a constant rate of influx of new IgA (something akin to $\frac{A_0}{\tau}$, the peak antibody generated during an infection times the number of infections per unit time) and $d_\mu$ is the decay rate. 
-
-At steady state, the concentration of $M_{ns} = \frac{c}{d_\mu}$.
-
-## Generation and decay dynamics of $M_s$ during response
-
-Antibodies should increase exponentially during a response and decrease exponentially after the response. This intuition can be modeled with the following biexponential function: $M_s = \frac{A_0}{1+e^{(-r(t-t_p))}}e^{-d_\mu t}$
-
-However, when $d_\mu$ and $r$ are on the same time scale, a greater $d_\mu$ decreases the antibody titer at the peak of the response. We would like for the generation of responses to be the same regardless of the decay rate, and only the decay dynamics to change according to the decay rate (of plasma cells after generation.)
-
-We can accomplish this in a few ways. I have suggested two below: 
-
-First, a piece-wise function: 
-
-$$
-M_s = 
-\begin{cases}
-\frac{A_0}{1+e^{rt}} & t < t_p \\
-\frac{A_0}{1+e^{-rt_p}} e^{-d_\mu (t-t_p)} & t > t_p
-\end{cases}
+\frac{dM_s}{dt} = -kM_sR - d_\mu M_s
 $$
 
-This function will introduce a sharp turn discontinuity at the time of the peak (switching) time, $t_p$. 
-
-Because we really only care about understanding how pre-existing non-specific titers interfere with newly generated responses, the easiest way to make sure that the generation phase for all simulations is the same is to simply only look at the change in titers over the generation time, that is: 
-
 $$
-M_s(t) = \frac{A_0}{1+e^{-r(t-t_p)} } \text{,           for }  0 < t < 2t_p
+\frac{dM_{NS}}{dt} = -kM_{NS}R - 
 $$
-
-## Competition for pIgRs
-
-We would like to know the extent to which non-specific antibodies remaining from previous infections in the mucosa, which we call $M_{ns}$, compete for pIgRs and interfere with the rate of specific IgA transport in the lumen. We can adjust the michaelis-menten kinetics to include direct competition between specific and non-specific IgA for pIgRs, which results in the following equation for the flux of specific antibodies into the lumen: 
-
-$$
-\Phi_{M,s} = \frac{V_{max}}{K + M_s + M_{ns}}M_s
-$$
-
-where *explain parms* 
-
-And the resulting dynamics for the number of specific antibodies in the lumen would be: 
-
-$$
-\frac{dL_s}{dt} = \frac{V_{max}}{K + M_s + M_{ns}}M_s -d_L L_s
-$$
-
-# Parking on the downhill
-
-I will vary $d_\mu$ and $k$ to demonstrate how the extent of competition with nonspecific antibodies remaing from prior infections inhibits newly generated IgA responses. 
-
-I will plot the number of specific antibodies transported to the lumen over time as well as the integral of the number transported to the lumen from day 1-$2t_p$.
-
-Then we can move on to part 2 - recall responses!
-
 
