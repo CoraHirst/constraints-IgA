@@ -38,13 +38,68 @@ During an infection, IgA antibodies specific for the pathogen are generated in t
 
 We can model the flux of IgA antibodies to the lumen as an ODE model of these two populations of mucosal IgA antibodies - $M_S$ and $M_{NS}$ - which compete explicitly for transport proteins, $R$. The number of specific and nonspecific antibodies on the lumenal side, $L_S$ and $L_{NS}$ respectively, depends on the rate of removal of IgA from the lumen and the rate at which the populations are transported. 
 
-Importantly, we assume that pIgRs, $R$, are constantly being trancytosed across the epithelium regardless of whether they are bound by sIgA. This gives rise to the following set of ODEs: 
+Importantly, we assume that pIgRs, $R$, are constantly being trancytosed across the epithelium at rate $r$ regardless of whether they are bound by sIgA. This gives rise to the following set of ODEs: 
 
 $$
 \frac{dM_s}{dt} = -kM_sR - d_\mu M_s
 $$
 
 $$
-\frac{dM_{NS}}{dt} = -kM_{NS}R - 
+\frac{dL_s}{dt} = rR_s - d_L L_s
 $$
 
+$$
+\frac{dM_{ns}}{dt} = -kM_{ns}R - d_\mu M_{ns}
+$$
+
+$$
+\frac{dL_{ns}}{dt} = rR_{ns} - d_L L_{ns}
+$$
+For our receptors: 
+
+This tracks the number of empty receptors at the basolateral surface of the epithelium. 
+
+$$
+\frac{dR_e}{dt} = 1 - k(M_s + M_{ns})R_e - rR_e
+$$
+This tracks the number of receptors bound to $M_s$ at the basolateral side.
+$$
+\frac{dR_s}{dt} = kM_sR_e - rR_s
+$$
+and this tracks the number of receptors bound to $M_{ns}$ at the basolateral side. 
+$$
+\frac{dR_{ns}}{dt} = kM_{ns}R_e - rR_{ns}
+$$
+
+If we want the number of transport proteins total to be fixed (or perhaps time-varying due only to changes in expression), we can define the number of empty receptors as 
+
+$$
+R_e = R_T(t) - R_s - R_{ns}
+$$
+
+where $R_T$ is the total number of transport proteins. 
+
+Then, the system becomes: 
+
+$$
+\frac{dM_s}{dt} = -kM_s(R_T(t) - R_s - R_{ns}) - d_\mu M_s
+$$
+
+$$
+\frac{dR_s}{dt} = kM_s(R_T(t)-R_s-R_{ns}) - rR_s
+$$
+
+$$
+\frac{dL_s}{dt} = rR_s - d_L L_s
+$$
+
+$$
+\frac{dM_{ns}}{dt} = -kM_{ns}(R_T(t)-R_s-R_{ns}) - d_\mu M_{ns}
+$$
+$$
+\frac{dR_{ns}}{dt} = kM_{ns}(R_T(t)-R_s-R_{ns}) - rR_{ns}
+$$
+
+$$
+\frac{dL_{ns}}{dt} = rR_{ns} - d_L L_{ns}
+$$
