@@ -103,3 +103,85 @@ $$
 $$
 \frac{dL_{ns}}{dt} = rR_{ns} - d_L L_{ns}
 $$
+
+
+# Michaelis-Mentin 
+
+In the regime where transport is much slower than binding - the likely regime for the biology of antibody binding and transport in the respiratory tract - this system collapses to Michaelis-Mentin competitive inhibition. 
+
+That is because the quasi-steady state assumption that $\frac{dR_s}{dt} \approx 0$ and $\frac{dR_{ns}}{dt} \approx 0$ applies in the regime where transcytosis is the rate-limiting step, and so antibody changes very slowly compared to receptors. This comes from singular perturbation theory, I am pretty sure, and the trick is to show that the solution to a perturbation in R in this manifold goes with the term $O(1)$ in terms of time and perturbation in M goes with $O(2)$ or greater. I've totally forgotten how to do this but I can do that, I am sure!
+
+Anyway, our goal here is to show that, when quasi-steady-state assumption is met, the flux in specific antibody, $\phi_S = \frac{Vmax*M_s}{K_M +M_{NS}+M_s}$
+
+First, from our ODEs, we know that the flux in specific antibody to the lumen follows $rR_s$, so we have to show the following is true at quasi-steady state: 
+
+$$
+rR_s = \frac{V_{max}*M_s}{K_M +M_{NS}+M_s}
+$$
+
+1) solve for $R_s$
+
+Assuming quasi-steady-state, where $\frac{dR_s}{dt} \approx 0$ and $\frac{dR_{ns}}{dt} \approx 0$: $\frac{dR_s}{dt} = 0 = kM_sR_e - rR_s$
+
+so 
+$$
+R_s = \frac{k}{r} M_sR_e
+$$
+and similarly $R_{ns} = \frac{k}{r}M_{ns}R_e$
+
+2) solve for $R_e$
+
+the total number of receptors, $R_T$, is conserved, such that 
+
+$$
+R_T = R_e + R_s + R_{ns}
+$$
+
+we can substitute our expressions for $R_s$ and $R_{ns}$ to solve for $R_e$: 
+
+$$
+R_T = R_e + \frac{k}{r}M_sR_e + \frac{k}{r}M_{ns}R_e
+$$
+so
+
+$$
+R_e = \frac{R_T}{1+\frac{k}{r}(M_s + M_ns)}
+$$
+3) solve for $\phi_s$
+
+We need to show that 
+
+$$
+\phi_S = rR_s = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
+$$
+we showed $R_s = \frac{k}{r}M_sR_e$. So the left-hand side of the above equation becomes:
+
+$$
+rR_s = r\frac{k}{r}M_sR_e = kM_sR_e
+$$
+we also showed that $R_e = \frac{R_T}{1+\frac{k}{r}(M_s + M_ns)}$. So, the above becomes: 
+
+$$
+\phi_S = kM_s\frac{R_T}{1+\frac{k}{r}(M_s + M_{ns})}
+$$
+
+This is looking seriously close to Michaelis-Mentin flux!
+
+we know that $V_{max} = rR_T$, that is, the rate of transcytosis and the total number of receptors in the system. We can multiply the numerator by $\frac{r}{k}$ to produce $V_{max}*M_s$. 
+
+Multiplying the denominator by ${r}{k}$ produces $\frac{r}{k} + M_s + M_{ns}$, which looks like the MM denominator $K_M + M_s + M_{ns}$ where $K_M = \frac{r}{k}$. 
+
+thus: 
+
+$$
+\phi_s = rR_s = \frac{k*\frac{r}{k}R_TM_s}{\frac{r}{k} (1 + \frac{k}{r}(M_s + M_{ns}))} = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}}
+$$
+
+so we have shown that, at quasi steady state: 
+
+$$
+rR_s = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
+$$
+given $V_{max} = rR_T$ and $K_M = \frac{r}{k}$. 
+
+
