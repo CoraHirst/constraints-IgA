@@ -32,6 +32,8 @@ The goal of this document is to develop a simple model of antibody transport fro
 
 # Model outline
 
+Our conceptual model reduces mechanistically to a michaelis-mentin enzymatic system with competitive inhibition. Below, we show how a mechanistic ODE model of antibody transport can be modelled with MM kinetics when transport across epithelium is a rate-limiting step. 
+
 Our model considers two physiological compartments: the mucosal side of the epithelium and the external lumen on the opposite side of the epithelium. We call these compartments "Mucous" and "Lumen". 
 
 During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as $M_s$ and the specific antibodies in the lumen compartment as $L_s$. We hypothesize that these antibodies must compete with all of the IgA remaining in the mucosa from previous infections with other pathogens, which we refer to generally as non-specific mucosal IgA, $M_{NS}$. The population of nonspecific antibodies that are transported to the lumen is referred to generally as $L_{NS}$
@@ -183,5 +185,9 @@ $$
 rR_s = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
 $$
 given $V_{max} = rR_T$ and $K_M = \frac{r}{k}$. 
+
+# Dynamics of $M_s$
+
+We want to capture the generation and beginning of decay of antibody responses. We can do this with a multiplicative logisting function: 
 
 

@@ -21,48 +21,40 @@ IgA_competition.model <- function(t, y, parms)  # Single partial immune class (R
         y = pmax(y,0)         # avoid negative values (not ideal but ok)
         
         # map the state variables
-        L_s = y[1]         # specific Ab in the lumen
-       
+        M_s = y[1]
+        M_ns = y[2]
+        R_s = y[3]
+        R_ns = y[4]
+        L_s = y[5]
+        L_ns = y[6]
+        
         # make empty variables for the derivatives
-        dL_s = 0 #change in specific Ab in the lumen
+        dM_s = NaN
+        dM_ns = NaN
+        dR_s = NaN
+        dR_ns = NaN
+        dL_s = NaN
+        dL_ns = NaN
         
         #####################################
+        #calculate Re 
+        R_e = R_T - R_s - R_ns
         #####################################
         #	 calculate the derivatives
-        dL_s = M_s(A0, t_p, r, t)*(Vmax/(K + M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))) - d_l*L_s
-          
+        dM_s = -k*M_s*R_e - d_mu*M_s
+        dM_ns = -k*M_ns*R_e - d_mu*M_ns
+        dR_s = k*M_s*R_e - r*R_s
+        dR_ns = k*M_ns*R_e - r*R_ns
+        dL_s = r*R_s - d_L*L_s
+        dL_ns = r*R_ns - d_L*L_ns
         # output the derivatives
-        dy=c(dL_s) #vector of derivatives 
+        dy=c(dM_s, dM_ns, dR_s, dR_ns, dL_s, dL_ns) #vector of derivatives 
         
         return(list(dy)) #lists vector and returns
       }
   ) 
 } 
 
-#michaelis menten kinetics - desolve ode model
-total_transported.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
-{with(as.list(parms),	# allows the parameter file parms to be as a list
-      {  
-        y = pmax(y,0)         # avoid negative values (not ideal but ok)
-        
-        # map the state variables
-        IgA.tot = y[1]         # specific Ab in the lumen
-        
-        # make empty variables for the derivatives
-        dIgA.tot = 0 #change in specific Ab in the lumen
-        
-        #####################################
-        #####################################
-        #	 calculate the derivatives
-        dIgA.tot = (M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))*(Vmax/(K + M_s(A0, t_p, r, t) + M_ns(c = c, d = d_mu))) - d_l*IgA.tot
-        
-        # output the derivatives
-        dy=c(dIgA.tot) #vector of derivatives 
-        
-        return(list(dy)) #lists vector and returns
-      }
-) 
-} 
 
 ############ Competition Model Popualtions ###########
 

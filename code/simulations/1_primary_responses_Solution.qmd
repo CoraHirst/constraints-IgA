@@ -1,0 +1,36 @@
+---
+title: "1_primary_responses_Solution"
+format: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+#source(here("code", "functions", "functions.R"))
+
+```
+
+# Objective 
+
+In this document, we solve for the flux of specific antibodies across epithelium relative to the transport of all other antibodies - that is, we are curious about 
+**the relative fraction of $M_s$ to the total number of antibodies in the system, which gives the fraction of transport proteins devoted to the transport of the specific response.** We can also report the efficiency of this transport - that is, the **flux of specific antibody relative to the concentration of specific antibody in the lumen.**
+
+We can plot the dynamics of the first as well as a heatmap of the first as a function of the MM $K_M$, or the ratio of $\frac{r}{k}$, and the rate of decay of antibodies in the mucosal tissue, $d_\mu$, which modulates the concentration of non-specific antibody $M_{ns}$.
+
+
+
+
