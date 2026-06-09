@@ -188,6 +188,16 @@ given $V_{max} = rR_T$ and $K_M = \frac{r}{k}$.
 
 # Dynamics of $M_s$
 
-We want to capture the generation and beginning of decay of antibody responses. We can do this with a multiplicative logisting function: 
+We want to capture the generation and beginning of decay of antibody responses. We can do this with a bi-logistic logistic function: 
 
+```{r}
+#specific antibodies during infection
+M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(1+exp(-d_mu*(2*t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growth
 
+t = seq(0,10, by = 1/24)
+A0 = 10^3
+t_p = 5
+r = 1.05
+d_mu = log(0.5)/30
+
+```
