@@ -24,6 +24,10 @@ library(deSolve)
 #load functions
 #source(here("code", "functions", "functions.R"))
 
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
 ```
 
 # Objective
@@ -179,7 +183,7 @@ $$
 \phi_s = rR_s = \frac{k\frac{r}{k}R_TM_s}{\frac{r}{k} (1 + \frac{k}{r}(M_s + M_{ns}))} = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}}
 $$
 
-so we have shown that, at quasi steady state: 
+so we have shown that, at quasi steady state, 
 
 $$
 rR_s = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
@@ -190,12 +194,12 @@ given $V_{max} = rR_T$ and $K_M = \frac{r}{k}$.
 
 We want to capture the generation and beginning of decay of antibody responses. We can do this with a bi-logistic logistic function: 
 
-```{r}
+```{r specific-antibodies-function}
 #function for plotting specific antibodies during infection
-M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(exp(d_mu*(t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growth
+M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(1+exp(d_mu*(t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growth
 
 ts = seq(0,20, by = 1/24)
-A0 = 10^3
+A0 = 10^5
 t_p = 5
 r = 1.05
 t_halfs = c(14,30,90,400, 20000) #half lives of mucosal ab in days
@@ -214,12 +218,21 @@ Ms = Ms %>% pivot_longer( #longform for ggplot
 
 # plot 
 plot = ggplot() + 
-  geom_line(data = Ms, aes(x = time, y = Ms, group = thalf, col = thalf)) +
-  geom_hline(yintercept = A0, lientype = "dashed") +
+  geom_line(data = Ms, aes(x = time, y = log10(Ms), group = thalf, col = thalf)) +
+  geom_hline(yintercept = log10(A0), lientype = "dashed") +
   theme_bw() +
   labs(x = "time, days", y = "specific antibody inside, Ms", col = "Mucosal Ab half life, days")+
-  scale_color_manual(values = )
+  scale_color_manual(values = my_colors)
 
 #print to view 
 print(plot)
+```
+
+Because the decay rate of the mucosal antibodies is faster for shorter half-lives, the $M_s$ of those antibodies never reaches the same peak as with longer half-lives.
+
+We can also capture similar dynamics with an ODE model where antibody is modeled as the rise and fall of two exponentials. This won't be sigmoidal but will at least capture mechanistically the two proposed processes - exponential increase due to clonal expansion, and exponential decrease due to death of plasma cells.  
+
+```{r mucosal-dynamics-ode}
+
+
 ```
