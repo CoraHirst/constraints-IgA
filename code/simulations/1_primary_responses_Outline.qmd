@@ -232,7 +232,64 @@ Because the decay rate of the mucosal antibodies is faster for shorter half-live
 
 We can also capture similar dynamics with an ODE model where antibody is modeled as the rise and fall of two exponentials. This won't be sigmoidal but will at least capture mechanistically the two proposed processes - exponential increase due to clonal expansion, and exponential decrease due to death of plasma cells.  
 
-```{r mucosal-dynamics-ode}
+```{r setup-mucosal-dynamics-ode}
+############ Competition Model Popualtions ###########
 
+#####################################################
+# Antibody concentrations in the respiratory mucosa #
+primary_response.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        Ms = y[1]         # Antibodies in mucosa
+        
+        # make empty variables for the derivatives
+        dMs = 0      # change in specific Ab in the mucosa
+        
+        #####################################
+        # define time dependent functions   #
+        #####################################
+        r = function(t) {r_0 - alpha*t} #define time-varying r(t)
+        #####################################
+        ## calculate the derivatives
+        # cell populations
+        dMs = r(t = t)*Ms - d_mu*M_s # specific Ab production and decay
+        
+        # output the derivatives
+        dy=c(dMs) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+) 
+} 
+
+#### Parameters
+r_0 = 2 #initial production rate 
+A0 = 1 #initial antibody 
+Ap = 10^3 #peak antibody
+alpha = ((r_0-d_mu)^2)/log(Ap/A0) # rate of decay of exponential growth rate
+
+params = list( # parameter list
+  r_0 = r_0, 
+  A0 = A0,
+  Ap = Ap,
+  alpha = alpha
+)
+
+#### initial conditions
+Ms_init = A0 # starting antibody titer
+
+#### numerical parameters
+tmax = 30 # total days
+points_per_day = 24 # every hour
 
 ```
+
+```{r solution-mucosal-dynamics-ode}
+# solution
+soln = as.data.frame(ode())
+
+```
+
