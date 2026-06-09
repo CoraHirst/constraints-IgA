@@ -176,7 +176,7 @@ Multiplying the denominator by ${r}{k}$ produces $\frac{r}{k} + M_s + M_{ns}$, w
 thus: 
 
 $$
-\phi_s = rR_s = \frac{k*\frac{r}{k}R_TM_s}{\frac{r}{k} (1 + \frac{k}{r}(M_s + M_{ns}))} = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}}
+\phi_s = rR_s = \frac{k\frac{r}{k}R_TM_s}{\frac{r}{k} (1 + \frac{k}{r}(M_s + M_{ns}))} = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}}
 $$
 
 so we have shown that, at quasi steady state: 
@@ -191,13 +191,35 @@ given $V_{max} = rR_T$ and $K_M = \frac{r}{k}$.
 We want to capture the generation and beginning of decay of antibody responses. We can do this with a bi-logistic logistic function: 
 
 ```{r}
-#specific antibodies during infection
-M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(1+exp(-d_mu*(2*t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growth
+#function for plotting specific antibodies during infection
+M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(exp(d_mu*(t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growth
 
-t = seq(0,10, by = 1/24)
+ts = seq(0,20, by = 1/24)
 A0 = 10^3
 t_p = 5
 r = 1.05
-d_mu = log(0.5)/30
+t_halfs = c(14,30,90,400, 20000) #half lives of mucosal ab in days
+d_mus = log(0.5)/t_halfs #half lives in days
 
+# calculate specific antibodies during infection by d_mu
+Ms = sapply(d_mus, function(d_mu) { #columns are d_mu
+  sapply(ts, function(t){M_s(A0 = A0, t_p = t_p, r = r, d_mu = d_mu, t = t)})}) %>% #rows are time
+  cbind(ts, .) %>% as.data.frame() # add times column and format as df
+colnames(Ms ) = c("time", t_halfs) #name columns for easier calling
+
+Ms = Ms %>% pivot_longer( #longform for ggplot
+  cols = !time,
+  names_to = "thalf",
+  values_to = "Ms")
+
+# plot 
+plot = ggplot() + 
+  geom_line(data = Ms, aes(x = time, y = Ms, group = thalf, col = thalf)) +
+  geom_hline(yintercept = A0, lientype = "dashed") +
+  theme_bw() +
+  labs(x = "time, days", y = "specific antibody inside, Ms", col = "Mucosal Ab half life, days")+
+  scale_color_manual(values = )
+
+#print to view 
+print(plot)
 ```
