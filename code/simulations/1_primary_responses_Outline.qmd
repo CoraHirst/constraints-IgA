@@ -196,14 +196,14 @@ We want to capture the generation and beginning of decay of antibody responses. 
 
 ```{r specific-antibodies-function}
 #function for plotting specific antibodies during infection
-M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(1+exp(d_mu*(t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growth
+M_s = function(A0, t_p, r, d_mu, t) {(A0/(1+exp(-r*(t-t_p))))*(1/(1+exp(-d_mu*(t_p-t))))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growth
 
 ts = seq(0,20, by = 1/24)
-A0 = 10^5
+A0 = 10^3
 t_p = 5
 r = 1.05
 t_halfs = c(14,30,90,400, 20000) #half lives of mucosal ab in days
-d_mus = log(0.5)/t_halfs #half lives in days
+d_mus = log(2)/t_halfs #half lives in days
 
 # calculate specific antibodies during infection by d_mu
 Ms = sapply(d_mus, function(d_mu) { #columns are d_mu
@@ -219,9 +219,10 @@ Ms = Ms %>% pivot_longer( #longform for ggplot
 # plot 
 plot = ggplot() + 
   geom_line(data = Ms, aes(x = time, y = log10(Ms), group = thalf, col = thalf)) +
-  geom_hline(yintercept = log10(A0), lientype = "dashed") +
+  geom_hline(yintercept = log10(A0), linetype = "dashed") +
+  geom_vline(xintercept = t_p, linetype = "dashed") +
   theme_bw() +
-  labs(x = "time, days", y = "specific antibody inside, Ms", col = "Mucosal Ab half life, days")+
+  labs(x = "time, days", y = "specific antibody inside, Ms", col = "Mucosal Ab half life, days", title = "Ms generation and decay as product of sigmoids") +
   scale_color_manual(values = my_colors)
 
 #print to view 
@@ -251,11 +252,12 @@ primary_response.model <- function(t, y, parms)  # Single partial immune class (
         #####################################
         # define time dependent functions   #
         #####################################
-        r = function(t) {r_0 - alpha*t} #define time-varying r(t)
+        r = function(t) {if(t < tp) {r_0 - alpha*t}
+          else r = 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
         #####################################
         ## calculate the derivatives
         # cell populations
-        dMs = r(t = t)*Ms - d_mu*M_s # specific Ab production and decay
+        dMs = r(t)*Ms - d_mu*Ms # specific Ab production and decay
         
         # output the derivatives
         dy=c(dMs) #vector of derivatives 
@@ -266,30 +268,103 @@ primary_response.model <- function(t, y, parms)  # Single partial immune class (
 } 
 
 #### Parameters
+d_mu = log(2)/14 #half life of 14 days
 r_0 = 2 #initial production rate 
 A0 = 1 #initial antibody 
 Ap = 10^3 #peak antibody
-alpha = ((r_0-d_mu)^2)/log(Ap/A0) # rate of decay of exponential growth rate
+alpha = ((r_0-d_mu)^2)/(2*log(Ap/A0)) # rate of decay of exponential growth rate
+tp = (r_0 - d_mu)/alpha 
 
 params = list( # parameter list
   r_0 = r_0, 
   A0 = A0,
   Ap = Ap,
-  alpha = alpha
+  alpha = alpha,
+  tp = tp
 )
 
 #### initial conditions
 Ms_init = A0 # starting antibody titer
+init_cond = c("Ms" = Ms_init)
 
 #### numerical parameters
-tmax = 30 # total days
+Tmax = 20 # total days
 points_per_day = 24 # every hour
 
 ```
 
 ```{r solution-mucosal-dynamics-ode}
 # solution
-soln = as.data.frame(ode())
+soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), primary_response.model, parms = params))
+
+# plot
+plot = ggplot() + 
+  geom_line(data = soln, aes(x = time, y = log10(Ms), linetype = "ODE with r(t)")) +
+  geom_vline(xintercept = (tp), col = "maroon") +
+  geom_hline(yintercept = log10(Ap), col = "maroon") +
+  geom_line(data = Ms %>% filter(thalf == 14), aes(x = time, y = log10(Ms), linetype = "sigmoid product")) +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  labs(x = "time", y = "specific antibody inside", linetype = "model", title = "comparing models of Ms dynamics, thalf = 14 days") +
+  theme_bw()
+
+# print to viewer
+print(plot)
+```
+
+Similar but certainly not the same! I like this one better though because it makes more sense in terms of recruitment...
+
+Lets solve the ode for different decay rates, $d_\mu$.
+
+```{r mucosal-dynamics-ode-vary-dmu}
+t_halfs = c(14,30,90,400, 20000) #half lives of mucosal ab in days
+d_mus = log(2)/t_halfs #half lives in days
+
+Ms_ode_solns = lapply(t_halfs, function(thalf){
+  #### Parameters
+    d_mu = log(2)/thalf
+    r_0 = 2 #initial production rate 
+    A0 = 1 #initial antibody 
+    Ap = 10^3 #peak antibody
+    alpha = ((r_0-d_mu)^2)/(2*log(Ap/A0)) # rate of decay of exponential growth rate
+    tp = (r_0 - d_mu)/alpha 
+    
+    params = list( # parameter list
+      d_mu = d_mu,
+      r_0 = r_0, 
+      A0 = A0,
+      Ap = Ap,
+      alpha = alpha,
+      tp = tp
+    )
+
+  #### initial conditions
+    Ms_init = A0 # starting antibody titer
+    init_cond = c("Ms" = Ms_init)
+
+  #### numerical parameters
+    Tmax = 20 # total days
+    points_per_day = 24 # every hour
+  
+  ### solve
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), primary_response.model, parms = params)) %>%
+    cbind(., thalf) %>% as.data.frame()
+})
+
+### concatenate odes
+Ms_ode_solns = do.call(rbind, Ms_ode_solns)
+
+### plot
+plot = ggplot() + 
+  geom_line(data = Ms_ode_solns, aes(x = time, y = log10(Ms), group = factor(thalf), col = factor(thalf))) +
+  geom_hline(yintercept = log10(Ap), linetype = "dashed") +
+  geom_vline(xintercept = tp, linetype = "dashed") +
+  scale_color_manual(values = my_colors)+
+  theme_bw() +
+  labs(x = "time", y = "specific antibody inside", color = "mucosal antibody thalf, days", title = "Ms generation and decay from piecewise ODE model")
+
+### print to viewer
+print(plot)
 
 ```
 
+This looks pretty good! I think we'll keep this formulation for now, and may try to smooth it with a sigmoidal function for reducing the antibody decay rate to 0 by the day of the "peak".
