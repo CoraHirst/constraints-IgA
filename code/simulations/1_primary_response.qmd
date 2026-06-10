@@ -1,7 +1,0 @@
----
-title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers:"
-subtitle: "Part 1: constraint on the longevity of antibody titers in the respiratory mucosa"
-author: "Cora Hirst, Susi Linderman, Carl Davis, Hasan Ahmed, Rustom Antia..."
-output: html
----
-

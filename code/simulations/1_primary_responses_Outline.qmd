@@ -111,7 +111,7 @@ $$
 $$
 
 
-# Michaelis-Mentin 
+## Michaelis-Mentin 
 
 In the regime where transport is much slower than binding - the likely regime for the biology of antibody binding and transport in the respiratory tract - this system collapses to Michaelis-Mentin competitive inhibition. 
 
@@ -190,7 +190,7 @@ rR_s = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{n
 $$
 given $V_{max} = rR_T$ and $K_M = \frac{r}{k}$. 
 
-# Dynamics of $M_s$
+## Dynamics of $M_s$
 
 We want to capture the generation and beginning of decay of antibody responses. We can do this with a bi-logistic logistic function: 
 
@@ -232,6 +232,9 @@ print(plot)
 Because the decay rate of the mucosal antibodies is faster for shorter half-lives, the $M_s$ of those antibodies never reaches the same peak as with longer half-lives.
 
 We can also capture similar dynamics with an ODE model where antibody is modeled as the rise and fall of two exponentials. This won't be sigmoidal but will at least capture mechanistically the two proposed processes - exponential increase due to clonal expansion, and exponential decrease due to death of plasma cells.  
+The easiest way to achieve this is to describe a constant death rate, $d_\mu$ and a decreasing exponential expansion rate until the peak of the response, $r(t<t_{peak})$, at which point expansion ends, $r(t >= t_{peak})=0$.
+
+What is nice here is that, if the expansion rate decreases linearly with time, that is $r(t<t_{peak}) = r_0 - \alpha t$), we can explicitly define the time of the peak and the amount at the peak, and calculate $\alpha$ accordingly. 
 
 ```{r setup-mucosal-dynamics-ode}
 ############ Competition Model Popualtions ###########
@@ -367,4 +370,56 @@ print(plot)
 
 ```
 
-This looks pretty good! I think we'll keep this formulation for now, and may try to smooth it with a sigmoidal function for reducing the antibody decay rate to 0 by the day of the "peak".
+This looks pretty good! I think we'll stick with this model for now, and may try to smooth it with a sigmoidal function for reducing the antibody decay rate to 0 by the day of the peak. 
+
+## Steady-state concentration of $M_{ns}$
+
+Assuming constant rates of production and decay for non-specific mucosal antibodies, $c$ and $d_mu$, the concentration of $M_{ns}$ at steady state will be given by: 
+
+$$
+\hat{M_{ns}} = \frac{c}{d_\mu}
+$$
+
+We also want to account for the transport of antibodies into the lumen given a constant total number of transport proteins. The contribution of this transport to the steady state may or may not be significant - this depends, of course, on $V_{max}$ and $k$ relative to $\hat{M_{ns}}$.
+
+Our ode model for mucosal nonspecific antibody dynamics will thus be given by: 
+
+$$
+\frac{dM_{ns}}{dt} = c - kR_eM_{ns} - d_\mu M_{ns}
+$$
+
+Note that when $kR_e M_s << \{c, d_\mu M_s\}$, the impact of transport will be minimal. 
+
+## Measuring effect of $d_\mu$ on efficiency  
+
+We might be interested in a few different quantities: 
+
+  1) The concentration of specific antibody that makes it to the lumen, $L_s$, over time, whose dynamics are described by: 
+
+$$
+\frac{dL_s}{dt} = rR_s - d_L L_s
+$$
+  
+  2) The relative proportion of transport proteins carrying specific antibody out of the total number of transport proteins carrying antibody, given by:
+
+$$
+f_s = \frac{R_s}{R_s + R_{ns}}
+$$
+
+  3) The efficiency of transport of specific antibody relative to the amount of mucosal antibody, given by: 
+
+$$
+\epsilon_s = \frac{rR_s}{M_s}
+$$
+
+These might all be plotted as a function of time (x-axis) with various lines describing the dynamics given different $d_\mu$. 
+
+However, we might also want to plot a heatmap of the effect of saturation on the response given changes in $d_\mu$ and strength of competition (either $K_M$ or $V_{max}$ changing). For these heatmaps, we will need a single value to report. My suggestion is either to report one of these values at the peak of the specific response ($t_{peak}$), or to plot the integral of one of these values up until the peak of the response. 
+
+# Final thoughts 
+
+We will likely have to change the function for the generation of antibody responses. For the time being, however, I think it captures the dynamics well enough to continue onto simulating the effect of $d_\mu$ on the efficiency of primary responses. 
+
+All functions will be saved to `code\functions\functions.r` and called in the simulation document. 
+
+
