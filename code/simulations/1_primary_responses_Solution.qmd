@@ -26,11 +26,65 @@ library(deSolve)
 
 # Objective 
 
-In this document, we solve for the flux of specific antibodies across epithelium relative to the transport of all other antibodies - that is, we are curious about 
-**the relative fraction of $M_s$ to the total number of antibodies in the system, which gives the fraction of transport proteins devoted to the transport of the specific response.** We can also report the efficiency of this transport - that is, the **flux of specific antibody relative to the concentration of specific antibody in the lumen.**
+In this document, we evaluate how long-lived IgA antibody titers in the respiratory mucosa interfere with the transport of specific IgA antibodies to the site of infection. 
 
-We can plot the dynamics of the first as well as a heatmap of the first as a function of the MM $K_M$, or the ratio of $\frac{r}{k}$, and the rate of decay of antibodies in the mucosal tissue, $d_\mu$, which modulates the concentration of non-specific antibody $M_{ns}$.
+# How to measure efficiency 
 
+We might be interested in the effect of competition on a few different quantities: 
+
+  1) The concentration of specific antibody that makes it to the lumen, $L_s$, over time, whose dynamics are described by: 
+
+$$
+\frac{dL_s}{dt} = rR_s - d_L L_s
+$$
+  
+  2) The relative proportion of transport proteins carrying specific antibody out of the total number of transport proteins carrying antibody, given by:
+
+$$
+f_s = \frac{R_s}{R_s + R_{ns}}
+$$
+
+  3) The efficiency of transport of specific antibody relative to the amount of mucosal antibody, given by: 
+
+$$
+\epsilon_s = \frac{rR_s}{M_s}
+$$
+
+These might all be plotted as a function of time (x-axis) with various lines describing the dynamics given different $d_\mu$. 
+
+However, we might also want to plot a heatmap of the effect of saturation on the response given changes in $d_\mu$ and strength of competition (either $K_M$ or $V_{max}$ changing). For these heatmaps, we will need a single value to report. My suggestion is either to report one of these values at the peak of the specific response ($t_{peak}$), or to plot the integral of one of these values up until the peak of the response. 
+
+I will make that decision after seeing the results of the dynamics for each measurement! 
+
+# Dynamics 
+
+Below, we define the parameters required for the model `IgA_competition.model` in `code\functions\function.r`. This model is described in `code\simulations\1_primary_responses_Outline.qmd`. Importantly, we define a vector of $d_\mu$ to identify the effect of larger and larger concentration of total IgA on inhibitin the transport of newly generated IgA to a novel pathogen. 
+
+```{r define-parameters}
+### parameters for competition model 
+# steady state nonspecific antibodies
+c = #rate of influx of nonspecific IgA 
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mus = log(2)/t_halfs #half lives in days
+
+# generation of new response
+A0 = 1 #initial ab titer
+Ap = 10^3 #peak antibody titer
+tp = 5 #time of peak titer -- days
+
+#will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) - d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/t_p # rate of decay of exponential growth rate
+
+# transport 
+k = #rate of antibody binding 
+r = #rate of transport
+RT = #total number (concentration) of receptors
+
+# dynamics in the lumen 
+t_half_L = 3 #half life of anitbodies in the lumen, in days
+d_L = #decay rate in the lumen
+```
 
 
 

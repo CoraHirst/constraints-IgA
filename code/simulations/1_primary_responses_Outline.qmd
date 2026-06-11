@@ -2,7 +2,7 @@
 title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers:"
 subtitle: "Outline Part 1: constraint on the longevity of antibody titers in the respiratory mucosa"
 author: "Cora Hirst, Susi Linderman, Carl Davis, Hasan Ahmed, Rustom Antia..."
-output: html
+output: pdf
 ---
 
 ```{r setup}
@@ -283,7 +283,8 @@ params = list( # parameter list
   A0 = A0,
   Ap = Ap,
   alpha = alpha,
-  tp = tp
+  tp = tp,
+  d_mu = d_mu
 )
 
 #### initial conditions

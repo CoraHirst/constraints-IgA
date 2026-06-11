@@ -1,16 +1,6 @@
 ############ Competition Model Popualtions ###########
 
 #####################################################
-# Antibody concentrations in the respiratory mucosa #
-#####################################################
-
-#non-specific ab at steady state: 
-M_ns = function(c,d_mu) {c/d_mu} #c is constant flux due to generation, d_mu is decay rate in the mucosa
-
-#specific antibodies during infection
-M_s = function(A0, t_p, r, t) {A0/(1+exp(-r*(t-t_p)))} #sigmoidal growth, A0 is max antibody, t_p is half the time to peak, r is initial growt
-
-#####################################################
 # Antibody concentrations in the lumen #
 #####################################################
 
@@ -21,34 +11,42 @@ IgA_competition.model <- function(t, y, parms)  # Single partial immune class (R
         y = pmax(y,0)         # avoid negative values (not ideal but ok)
         
         # map the state variables
-        M_s = y[1]
-        M_ns = y[2]
-        R_s = y[3]
-        R_ns = y[4]
-        L_s = y[5]
-        L_ns = y[6]
+        Ms = y[1]
+        Mns = y[2]
+        Rs = y[3]
+        Rns = y[4]
+        Ls = y[5]
+        Lns = y[6]
         
         # make empty variables for the derivatives
-        dM_s = NaN
-        dM_ns = NaN
-        dR_s = NaN
-        dR_ns = NaN
-        dL_s = NaN
-        dL_ns = NaN
+        dMs = NaN
+        dMns = NaN
+        dRs = NaN
+        dRns = NaN
+        dLs = NaN
+        dLns = NaN
         
         #####################################
-        #calculate Re 
-        R_e = R_T - R_s - R_ns
+        # define time dependent functions   #
+        #####################################
+        # exponential growth rate of Ms at time t
+        r = function(t) {if(t < tp) {r_0 - alpha*t}
+          else r = 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
+        
+        # calculate Re at time t
+        Re = RT - Rs - Rns # total number of receptors - those bound to specific ab - those bound to nonspecific ab
+        
         #####################################
         #	 calculate the derivatives
-        dM_s = -k*M_s*R_e - d_mu*M_s
-        dM_ns = -k*M_ns*R_e - d_mu*M_ns
-        dR_s = k*M_s*R_e - r*R_s
-        dR_ns = k*M_ns*R_e - r*R_ns
-        dL_s = r*R_s - d_L*L_s
-        dL_ns = r*R_ns - d_L*L_ns
+        dMs = r(t)*Ms - k*Ms*Re - d_mu*Ms # specific Ab production and decay
+        dMns = c - k*Re*Mns - d_mu*Mns
+        dRs = k*Ms*Re - r*Rs
+        dRns = k*Mns*Re - r*Rns
+        dL_s = r*Rs - d_L*Ls
+        dL_ns = r*Rns - d_L*Lns
+        
         # output the derivatives
-        dy=c(dM_s, dM_ns, dR_s, dR_ns, dL_s, dL_ns) #vector of derivatives 
+        dy=c(dMs, dMns, dRs, dRns, dLs, dLns) #vector of derivatives 
         
         return(list(dy)) #lists vector and returns
       }
@@ -56,7 +54,7 @@ IgA_competition.model <- function(t, y, parms)  # Single partial immune class (R
 } 
 
 
-############ Competition Model Popualtions ###########
+############ Recall Responses Model Popualtions ###########
 
 #####################################################
 # Antibody concentrations in the respiratory mucosa #
@@ -104,5 +102,5 @@ secondary_response.model <- function(t, y, parms)  # Single partial immune class
         
         return(list(dy)) #lists vector and returns
       }
-) 
+  ) 
 } 
