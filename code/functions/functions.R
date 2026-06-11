@@ -4,7 +4,7 @@
 # Antibody concentrations in the lumen #
 #####################################################
 
-#michaelis menten kinetics - desolve ode model
+# michaelis menten kinetics - desolve ode model
 IgA_competition.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
 {with(as.list(parms),	# allows the parameter file parms to be as a list
       {  

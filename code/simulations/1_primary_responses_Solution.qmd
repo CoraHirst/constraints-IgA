@@ -63,7 +63,7 @@ Below, we define the parameters required for the model `IgA_competition.model` i
 ```{r define-parameters}
 ### parameters for competition model 
 # steady state nonspecific antibodies
-c = #rate of influx of nonspecific IgA 
+c = #rate of influx of nonspecific IgA, Ab/time
 t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
 d_mus = log(2)/t_halfs #half lives in days
 
@@ -72,7 +72,7 @@ A0 = 1 #initial ab titer
 Ap = 10^3 #peak antibody titer
 tp = 5 #time of peak titer -- days
 
-#will be calculated when iterating through d_mu
+# will be calculated when iterating through d_mu
 #r0 = (2*log(Ap/A0)/tp) - d_mu #initial/greatest exponential expansion rate
 #alpha = (r0 - d_mu)/t_p # rate of decay of exponential growth rate
 
@@ -86,5 +86,7 @@ t_half_L = 3 #half life of anitbodies in the lumen, in days
 d_L = #decay rate in the lumen
 ```
 
+```{r plot-steady-state}
 
 
+```
