@@ -3,6 +3,35 @@
 #####################################################
 # Antibody concentrations in the lumen #
 #####################################################
+# Antibody concentrations in the respiratory mucosa #
+primary_response.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        Ms = y[1]         # Antibodies in mucosa
+        
+        # make empty variables for the derivatives
+        dMs = 0      # change in specific Ab in the mucosa
+        
+        #####################################
+        # define time dependent functions   #
+        #####################################
+        r = function(t) {if(t < tp) {r0 - alpha*t}
+          else r = 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
+        #####################################
+        ## calculate the derivatives
+        # cell populations
+        dMs = r(t)*Ms - d_mu*Ms # specific Ab production and decay
+        
+        # output the derivatives
+        dy=c(dMs) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+) 
+} 
 
 # michaelis menten kinetics - desolve ode model
 IgA_competition.model <- function(t, y, parms)  # Single partial immune class (RPS)                       

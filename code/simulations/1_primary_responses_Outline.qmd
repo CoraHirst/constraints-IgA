@@ -234,7 +234,7 @@ Because the decay rate of the mucosal antibodies is faster for shorter half-live
 We can also capture similar dynamics with an ODE model where antibody is modeled as the rise and fall of two exponentials. This won't be sigmoidal but will at least capture mechanistically the two proposed processes - exponential increase due to clonal expansion, and exponential decrease due to death of plasma cells.  
 The easiest way to achieve this is to describe a constant death rate, $d_\mu$ and a decreasing exponential expansion rate until the peak of the response, $r(t<t_{peak})$, at which point expansion ends, $r(t >= t_{peak})=0$.
 
-What is nice here is that, if the expansion rate decreases linearly with time, that is $r(t<t_{peak}) = r_0 - \alpha t$), we can explicitly define the time of the peak and the amount at the peak, and calculate $\alpha$ accordingly. 
+What is nice here is that, if the expansion rate decreases linearly with time, that is $r(t<t_{peak}) = r0 - \alpha t$), we can explicitly define the time of the peak and the amount at the peak, and calculate $\alpha$ accordingly. 
 
 ```{r setup-mucosal-dynamics-ode}
 ############ Competition Model Popualtions ###########
@@ -255,7 +255,7 @@ primary_response.model <- function(t, y, parms)  # Single partial immune class (
         #####################################
         # define time dependent functions   #
         #####################################
-        r = function(t) {if(t < tp) {r_0 - alpha*t}
+        r = function(t) {if(t < tp) {r0 - alpha*t}
           else r = 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
         #####################################
         ## calculate the derivatives
@@ -272,14 +272,14 @@ primary_response.model <- function(t, y, parms)  # Single partial immune class (
 
 #### Parameters
 d_mu = log(2)/14 #half life of 14 days
-r_0 = 2 #initial production rate 
+r0 = 2 #initial production rate 
 A0 = 1 #initial antibody 
 Ap = 10^3 #peak antibody
-alpha = ((r_0-d_mu)^2)/(2*log(Ap/A0)) # rate of decay of exponential growth rate
-tp = (r_0 - d_mu)/alpha 
+alpha = ((r0-d_mu)^2)/(2*log(Ap/A0)) # rate of decay of exponential growth rate
+tp = (r0 - d_mu)/alpha 
 
 params = list( # parameter list
-  r_0 = r_0, 
+  r0 = r0, 
   A0 = A0,
   Ap = Ap,
   alpha = alpha,
@@ -326,15 +326,15 @@ d_mus = log(2)/t_halfs #half lives in days
 Ms_ode_solns = lapply(t_halfs, function(thalf){
   #### Parameters
     d_mu = log(2)/thalf
-    r_0 = 2 #initial production rate 
+    r0 = 2 #initial production rate 
     A0 = 1 #initial antibody 
     Ap = 10^3 #peak antibody
-    alpha = ((r_0-d_mu)^2)/(2*log(Ap/A0)) # rate of decay of exponential growth rate
-    tp = (r_0 - d_mu)/alpha 
+    alpha = ((r0-d_mu)^2)/(2*log(Ap/A0)) # rate of decay of exponential growth rate
+    tp = (r0 - d_mu)/alpha 
     
     params = list( # parameter list
       d_mu = d_mu,
-      r_0 = r_0, 
+      r0 = r0, 
       A0 = A0,
       Ap = Ap,
       alpha = alpha,

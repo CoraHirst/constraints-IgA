@@ -20,7 +20,7 @@ library(tidyverse)
 library(deSolve)
 
 #load functions
-#source(here("code", "functions", "functions.R"))
+source(here("code", "functions", "functions.R"))
 
 ```
 
@@ -60,22 +60,79 @@ I will make that decision after seeing the results of the dynamics for each meas
 
 Below, we define the parameters required for the model `IgA_competition.model` in `code\functions\function.r`. This model is described in `code\simulations\1_primary_responses_Outline.qmd`. Importantly, we define a vector of $d_\mu$ to identify the effect of larger and larger concentration of total IgA on inhibitin the transport of newly generated IgA to a novel pathogen. 
 
-```{r define-parameters}
+```{r define-parameters-antibody-production}
 ### parameters for competition model 
 # steady state nonspecific antibodies
-c = #rate of influx of nonspecific IgA, Ab/time
+c = 10^-2 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
 t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
 d_mus = log(2)/t_halfs #half lives in days
 
 # generation of new response
-A0 = 1 #initial ab titer
-Ap = 10^3 #peak antibody titer
+Ap = (10^-3)*c/d_mus[length(d_mus)] #peak antibody titer will be 1/1000th of the highest concentration of ss. 
+#initial ab titer
+A0 = Ap/10^3 #1 1000th of the peak is where we start
 tp = 5 #time of peak titer -- days
 
 # will be calculated when iterating through d_mu
-#r0 = (2*log(Ap/A0)/tp) - d_mu #initial/greatest exponential expansion rate
-#alpha = (r0 - d_mu)/t_p # rate of decay of exponential growth rate
+r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
 
+#plot of change in r for specific cell production
+for(d_mu in d_mus){
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+  curve(r0 + alpha*x, from = 0, to = tp, add = T)
+}
+
+### plot Ms vs Mns over time
+Mab_titers = lapply(t_halfs, function(t_half){
+  # setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+  # setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  ### deSolve for specific ab over time
+  
+  # parms list
+  params = list( # parameter list
+  r0 = r0, 
+  A0 = A0,
+  Ap = Ap,
+  alpha = alpha,
+  tp = tp,
+  d_mu = d_mu
+  )
+
+  # initial conditions
+  Ms_init = A0 # starting antibody titer
+  init_cond = c("Ms" = Ms_init)
+
+  # numerical solver parameters
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+
+  # solve 
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), primary_response.model, parms = params)) %>% cbind(.,Mns, t_half)
+}) %>% do.call(rbind, .) #concatenates all dfs from lapply list into a single df rowwise
+
+### Plot
+plot = ggplot() + geom_line(data = Mab_titers, aes(x = time, y = log10(Ms), group = factor(t_half), col = factor(t_half), linetype = "Ms")) +
+  geom_line(data = Mab_titers, aes(x = time, y = log10(Mns), group = factor(t_half), col = factor(t_half), linetype = "Mns")) + 
+  scale_color_manual(values = my_colors) +
+  scale_linetype_manual(values = c("Ms" = "solid", "Mns" = "dashed")) +
+  labs(x = "time, days", y = "[Ab], mg/dL", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "[Ms] and [Mns] over the course of infection") +
+  theme_bw()
+  
+
+#print to viewer
+print(plot)
+
+```
+
+```{r define-parameters-transport}
 # transport 
 k = #rate of antibody binding 
 r = #rate of transport
