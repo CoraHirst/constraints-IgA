@@ -19,7 +19,7 @@ primary_response.model <- function(t, y, parms)  # Single partial immune class (
         # define time dependent functions   #
         #####################################
         r = function(t) {if(t < tp) {r0 - alpha*t}
-          else r = 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
+          else 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
         #####################################
         ## calculate the derivatives
         # cell populations
@@ -27,6 +27,38 @@ primary_response.model <- function(t, y, parms)  # Single partial immune class (
         
         # output the derivatives
         dy=c(dMs) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+) 
+} 
+
+# nonspecific antibodies dynamics
+equilibrium_ns.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        Mns = y[1]         # Antibodies in mucosa
+        Rns = y[2]
+        Lns = y[3] 
+        
+        # make empty variables for the derivatives
+        dMns = 0      # change in specific Ab in the mucosa
+        dRns = 0 
+        dLns = 0
+        
+        ################## Time varying var ############
+        Re = RT - Rns
+        #####################################
+        ## calculate the derivatives
+        # cell populations
+        dMns = c - k1*Re*Mns - d_mu*Mns # specific Ab production and decay
+        dRns = k1*Re*Mns - k2*Rns
+        dLns = k2*Rns - d_L*Lns
+        # output the derivatives
+        dy=c(dMns, dRns, dLns) #vector of derivatives 
         
         return(list(dy)) #lists vector and returns
       }
@@ -59,20 +91,20 @@ IgA_competition.model <- function(t, y, parms)  # Single partial immune class (R
         # define time dependent functions   #
         #####################################
         # exponential growth rate of Ms at time t
-        r = function(t) {if(t < tp) {r_0 - alpha*t}
-          else r = 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
+        r = function(t) {if(t < tp) {r0 - alpha*t}
+          else 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
         
         # calculate Re at time t
         Re = RT - Rs - Rns # total number of receptors - those bound to specific ab - those bound to nonspecific ab
         
         #####################################
         #	 calculate the derivatives
-        dMs = r(t)*Ms - k*Ms*Re - d_mu*Ms # specific Ab production and decay
-        dMns = c - k*Re*Mns - d_mu*Mns
-        dRs = k*Ms*Re - r*Rs
-        dRns = k*Mns*Re - r*Rns
-        dL_s = r*Rs - d_L*Ls
-        dL_ns = r*Rns - d_L*Lns
+        dMs = r(t)*Ms - k1*Ms*Re - d_mu*Ms # specific Ab production and decay
+        dMns = c - k1*Re*Mns - d_mu*Mns
+        dRs = k1*Ms*Re - k2*Rs
+        dRns = k1*Mns*Re - k2*Rns
+        dLs = k2*Rs - d_L*Ls
+        dLns = k2*Rns - d_L*Lns
         
         # output the derivatives
         dy=c(dMs, dMns, dRs, dRns, dLs, dLns) #vector of derivatives 
@@ -81,6 +113,7 @@ IgA_competition.model <- function(t, y, parms)  # Single partial immune class (R
       }
   ) 
 } 
+
 
 
 ############ Recall Responses Model Popualtions ###########

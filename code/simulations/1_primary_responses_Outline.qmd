@@ -40,41 +40,41 @@ Our conceptual model reduces mechanistically to a michaelis-mentin enzymatic sys
 
 Our model considers two physiological compartments: the mucosal side of the epithelium and the external lumen on the opposite side of the epithelium. We call these compartments "Mucous" and "Lumen". 
 
-During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as $M_s$ and the specific antibodies in the lumen compartment as $L_s$. We hypothesize that these antibodies must compete with all of the IgA remaining in the mucosa from previous infections with other pathogens, which we refer to generally as non-specific mucosal IgA, $M_{NS}$. The population of nonspecific antibodies that are transported to the lumen is referred to generally as $L_{NS}$
+During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as $M_s$ and the specific antibodies in the lumen compartment as $L_s$. We hypothesize that these antibodies must compete with all of the IgA remaining in the mucosa from previous infections with other pathogens, which we refer to generally as non-specific mucosal IgA, $M_{ns}$. The population of nonspecific antibodies that are transported to the lumen is referred to generally as $L_{ns}$
 
-We can model the flux of IgA antibodies to the lumen as an ODE model of these two populations of mucosal IgA antibodies - $M_S$ and $M_{NS}$ - which compete explicitly for transport proteins, $R$. The number of specific and nonspecific antibodies on the lumenal side, $L_S$ and $L_{NS}$ respectively, depends on the rate of removal of IgA from the lumen and the rate at which the populations are transported. 
+We can model the flux of IgA antibodies to the lumen as an ODE model of these two populations of mucosal IgA antibodies - $M_s$ and $M_{ns}$ - which compete explicitly for transport proteins, $R$. The number of specific and nonspecific antibodies on the lumenal side, $L_s$ and $L_{ns}$ respectively, depends on the rate of removal of IgA from the lumen and the rate at which the populations are transported. 
 
-Importantly, we assume that pIgRs, $R$, are constantly being trancytosed across the epithelium at rate $r$ regardless of whether they are bound by sIgA. This gives rise to the following set of ODEs: 
-
-$$
-\frac{dM_s}{dt} = -kM_sR - d_\mu M_s
-$$
+Importantly, we assume that pIgRs, $R$, are constantly being trancytosed across the epithelium at rate $k_2$ regardless of whether they are bound by sIgA. Antibodies bind pIgRs at rate $k_1$. This gives rise to the following set of ODEs: 
 
 $$
-\frac{dL_s}{dt} = rR_s - d_L L_s
+\frac{dM_s}{dt} = -k_1M_sR - d_\mu M_s
 $$
 
 $$
-\frac{dM_{ns}}{dt} = -kM_{ns}R - d_\mu M_{ns}
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
 $$
 
 $$
-\frac{dL_{ns}}{dt} = rR_{ns} - d_L L_{ns}
+\frac{dM_{ns}}{dt} = -k_1M_{ns}R - d_\mu M_{ns}
+$$
+
+$$
+\frac{dL_{ns}}{dt} = k_2R_{ns} - d_L L_{ns}
 $$
 For our receptors: 
 
 This tracks the number of empty receptors at the basolateral surface of the epithelium. 
 
 $$
-\frac{dR_e}{dt} = 1 - k(M_s + M_{ns})R_e - rR_e
+\frac{dR_e}{dt} = 1 - k_1(M_s + M_{ns})R_e - k_2R_e
 $$
 This tracks the number of receptors bound to $M_s$ at the basolateral side.
 $$
-\frac{dR_s}{dt} = kM_sR_e - rR_s
+\frac{dR_s}{dt} = k_1M_sR_e - k_2R_s
 $$
 and this tracks the number of receptors bound to $M_{ns}$ at the basolateral side. 
 $$
-\frac{dR_{ns}}{dt} = kM_{ns}R_e - rR_{ns}
+\frac{dR_{ns}}{dt} = k_1M_{ns}R_e - k_2R_{ns}
 $$
 
 If we want the number of transport proteins total to be fixed (or perhaps time-varying due only to changes in expression), we can define the number of empty receptors as 
@@ -88,26 +88,26 @@ where $R_T$ is the total number of transport proteins.
 Then, the system becomes: 
 
 $$
-\frac{dM_s}{dt} = -kM_s(R_T(t) - R_s - R_{ns}) - d_\mu M_s
+\frac{dM_s}{dt} = -k_1M_s(R_T(t) - R_s - R_{ns}) - d_\mu M_s
 $$
 
 $$
-\frac{dR_s}{dt} = kM_s(R_T(t)-R_s-R_{ns}) - rR_s
+\frac{dR_s}{dt} = k_1M_s(R_T(t)-R_s-R_{ns}) - k_2R_s
 $$
 
 $$
-\frac{dL_s}{dt} = rR_s - d_L L_s
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
 $$
 
 $$
-\frac{dM_{ns}}{dt} = -kM_{ns}(R_T(t)-R_s-R_{ns}) - d_\mu M_{ns}
+\frac{dM_{ns}}{dt} = -k_1M_{ns}(R_T(t)-R_s-R_{ns}) - d_\mu M_{ns}
 $$
 $$
-\frac{dR_{ns}}{dt} = kM_{ns}(R_T(t)-R_s-R_{ns}) - rR_{ns}
+\frac{dR_{ns}}{dt} = k_1M_{ns}(R_T(t)-R_s-R_{ns}) - k_2R_{ns}
 $$
 
 $$
-\frac{dL_{ns}}{dt} = rR_{ns} - d_L L_{ns}
+\frac{dL_{ns}}{dt} = k_1R_{ns} - d_L L_{ns}
 $$
 
 
@@ -119,21 +119,21 @@ That is because the quasi-steady state assumption that $\frac{dR_s}{dt} \approx 
 
 Anyway, our goal here is to show that, when quasi-steady-state assumption is met, the flux in specific antibody, $\phi_S = \frac{Vmax*M_s}{K_M +M_{NS}+M_s}$
 
-First, from our ODEs, we know that the flux in specific antibody to the lumen follows $rR_s$, so we have to show the following is true at quasi-steady state: 
+First, from our ODEs, we know that the flux in specific antibody to the lumen follows $k_2R_s$, so we have to show the following is true at quasi-steady state: 
 
 $$
-rR_s = \frac{V_{max}*M_s}{K_M +M_{NS}+M_s}
+k_2R_s = \frac{V_{max}*M_s}{K_M +M_{NS}+M_s}
 $$
 
 1) solve for $R_s$
 
-Assuming quasi-steady-state, where $\frac{dR_s}{dt} \approx 0$ and $\frac{dR_{ns}}{dt} \approx 0$: $\frac{dR_s}{dt} = 0 = kM_sR_e - rR_s$
+Assuming quasi-steady-state, where $\frac{dR_s}{dt} \approx 0$ and $\frac{dR_{ns}}{dt} \approx 0$: $\frac{dR_s}{dt} = 0 = k_1M_sR_e - k_2R_s$
 
 so 
 $$
-R_s = \frac{k}{r} M_sR_e
+R_s = \frac{k_1}{k_2} M_sR_e
 $$
-and similarly $R_{ns} = \frac{k}{r}M_{ns}R_e$
+and similarly $R_{ns} = \frac{k_1}{k_2}M_{ns}R_e$
 
 2) solve for $R_e$
 
@@ -146,49 +146,49 @@ $$
 we can substitute our expressions for $R_s$ and $R_{ns}$ to solve for $R_e$: 
 
 $$
-R_T = R_e + \frac{k}{r}M_sR_e + \frac{k}{r}M_{ns}R_e
+R_T = R_e + \frac{k_1}{k_2}M_sR_e + \frac{k_1}{k_2}M_{ns}R_e
 $$
 so
 
 $$
-R_e = \frac{R_T}{1+\frac{k}{r}(M_s + M_ns)}
+R_e = \frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_ns)}
 $$
 3) solve for $\phi_s$
 
 We need to show that 
 
 $$
-\phi_S = rR_s = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
+\phi_S = k_2R_s = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
 $$
-we showed $R_s = \frac{k}{r}M_sR_e$. So the left-hand side of the above equation becomes:
+we showed $R_s = \frac{k_1}{k_2}M_sR_e$. So the left-hand side of the above equation becomes:
 
 $$
-rR_s = r\frac{k}{r}M_sR_e = kM_sR_e
+k_2R_s = k_2\frac{k_1}{k_2}M_sR_e = k_1M_sR_e
 $$
-we also showed that $R_e = \frac{R_T}{1+\frac{k}{r}(M_s + M_ns)}$. So, the above becomes: 
+we also showed that $R_e = \frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_ns)}$. So, the above becomes: 
 
 $$
-\phi_S = kM_s\frac{R_T}{1+\frac{k}{r}(M_s + M_{ns})}
+\phi_S = k_1M_s\frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_{ns})}
 $$
 
 This is looking seriously close to Michaelis-Mentin flux!
 
-we know that $V_{max} = rR_T$, that is, the rate of transcytosis and the total number of receptors in the system. We can multiply the numerator by $\frac{r}{k}$ to produce $V_{max}*M_s$. 
+we know that $V_{max} = k_2R_T$, that is, the rate of transcytosis and the total number of receptors in the system. We can multiply the numerator by $\frac{k_1}{k_2}$ to produce $V_{max}*M_s$. 
 
-Multiplying the denominator by ${r}{k}$ produces $\frac{r}{k} + M_s + M_{ns}$, which looks like the MM denominator $K_M + M_s + M_{ns}$ where $K_M = \frac{r}{k}$. 
+Multiplying the denominator by ${k_2}{k_1}$ produces $\frac{k_2}{k_1} + M_s + M_{ns}$, which looks like the MM denominator $K_M + M_s + M_{ns}$ where $K_M = \frac{k_2}{k_1}$. 
 
 thus: 
 
 $$
-\phi_s = rR_s = \frac{k\frac{r}{k}R_TM_s}{\frac{r}{k} (1 + \frac{k}{r}(M_s + M_{ns}))} = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}}
+\phi_s = k_2R_s = \frac{k_1\frac{k_2}{k_1}R_TM_s}{\frac{k_2}{k_1} (1 + \frac{k_1}{k_2}(M_s + M_{ns}))} = \frac{k_2R_TM_s}{\frac{k_2}{k_1} + M_s + M_{ns}}
 $$
 
 so we have shown that, at quasi steady state, 
 
 $$
-rR_s = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
+k_2R_s = \frac{k_2R_TM_s}{\frac{k_2}{k_1} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
 $$
-given $V_{max} = rR_T$ and $K_M = \frac{r}{k}$. 
+given $V_{max} = k_2R_T$ and $K_M = \frac{k_2}{k_1}$. 
 
 ## Dynamics of $M_s$
 
@@ -386,10 +386,10 @@ We also want to account for the transport of antibodies into the lumen given a c
 Our ode model for mucosal nonspecific antibody dynamics will thus be given by: 
 
 $$
-\frac{dM_{ns}}{dt} = c - kR_eM_{ns} - d_\mu M_{ns}
+\frac{dM_{ns}}{dt} = c - k_1R_eM_{ns} - d_\mu M_{ns}
 $$
 
-Note that when $kR_e M_s << \{c, d_\mu M_s\}$, the impact of transport will be minimal. 
+Note that when $k_1R_e M_s << \{c, d_\mu M_s\}$, the impact of transport will be minimal. 
 
 ## Measuring effect of $d_\mu$ on efficiency  
 
@@ -398,7 +398,7 @@ We might be interested in a few different quantities:
   1) The concentration of specific antibody that makes it to the lumen, $L_s$, over time, whose dynamics are described by: 
 
 $$
-\frac{dL_s}{dt} = rR_s - d_L L_s
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
 $$
   
   2) The relative proportion of transport proteins carrying specific antibody out of the total number of transport proteins carrying antibody, given by:
@@ -410,7 +410,7 @@ $$
   3) The efficiency of transport of specific antibody relative to the amount of mucosal antibody, given by: 
 
 $$
-\epsilon_s = \frac{rR_s}{M_s}
+\epsilon_s = \frac{k_2R_s}{M_s}
 $$
 
 These might all be plotted as a function of time (x-axis) with various lines describing the dynamics given different $d_\mu$. 
