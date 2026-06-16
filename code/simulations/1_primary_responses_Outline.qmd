@@ -2,7 +2,7 @@
 title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers:"
 subtitle: "Outline Part 1: constraint on the longevity of antibody titers in the respiratory mucosa"
 author: "Cora Hirst, Susi Linderman, Carl Davis, Hasan Ahmed, Rustom Antia..."
-output: pdf
+output: html
 ---
 
 ```{r setup}
@@ -390,6 +390,41 @@ $$
 $$
 
 Note that when $k_1R_e M_s << \{c, d_\mu M_s\}$, the impact of transport will be minimal. 
+
+## ODE system 
+
+Taken together, these dynamics give rise to the following system of ODEs: 
+
+$$
+\frac{dM_s}{dt} = r(t)M_s -k_1M_s(R_T(t) - R_s - R_{ns}) - d_\mu M_s
+$$
+where 
+
+$$
+r(t \leq t_{peak}) = r_0 - \alpha t \text{ and } r(t > t_{peak}) = 0
+$$
+and $\alpha = \frac{r_0 - d_{\mu}}{t_{peak}}$, $r_0 = \frac{2log(\frac{Ap}{A0})}{t_p} + d_{\mu}$
+
+$$
+\frac{dR_s}{dt} = k_1M_s(R_T(t)-R_s-R_{ns}) - k_2R_s
+$$
+
+$$
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
+$$
+
+$$
+\frac{dM_{ns}}{dt} = c - k_1R_eM_{ns} - d_\mu M_{ns}
+$$
+
+$$
+\frac{dR_{ns}}{dt} = k_1M_{ns}(R_T(t)-R_s-R_{ns}) - k_2R_{ns}
+$$
+
+$$
+\frac{dL_{ns}}{dt} = k_2R_{ns} - d_L L_{ns}
+$$
+
 
 ## Measuring effect of $d_\mu$ on efficiency  
 

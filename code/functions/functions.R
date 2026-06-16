@@ -23,7 +23,7 @@ primary_response.model <- function(t, y, parms)  # Single partial immune class (
         #####################################
         ## calculate the derivatives
         # cell populations
-        dMs = r(t)*Ms - d_mu*Ms # specific Ab production and decay
+        dMs = r(t)*Ms - d_mu*Ms - D*Ms# specific Ab production and decay
         
         # output the derivatives
         dy=c(dMs) #vector of derivatives 
@@ -54,7 +54,7 @@ equilibrium_ns.model <- function(t, y, parms)  # Single partial immune class (RP
         #####################################
         ## calculate the derivatives
         # cell populations
-        dMns = c - k1*Re*Mns - d_mu*Mns # specific Ab production and decay
+        dMns = c - k1*Re*Mns - d_mu*Mns - D*Mns # specific Ab production and decay
         dRns = k1*Re*Mns - k2*Rns
         dLns = k2*Rns - d_L*Lns
         # output the derivatives
@@ -99,8 +99,8 @@ IgA_competition.model <- function(t, y, parms)  # Single partial immune class (R
         
         #####################################
         #	 calculate the derivatives
-        dMs = r(t)*Ms - k1*Ms*Re - d_mu*Ms # specific Ab production and decay
-        dMns = c - k1*Re*Mns - d_mu*Mns
+        dMs = r(t)*Ms - k1*Ms*Re - d_mu*Ms - D*Ms # specific Ab production and decay
+        dMns = c - k1*Re*Mns - d_mu*Mns - D*Mns
         dRs = k1*Ms*Re - k2*Rs
         dRns = k1*Mns*Re - k2*Rns
         dLs = k2*Rs - d_L*Ls

@@ -151,28 +151,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Model outline</h1>
 <p>Our conceptual model reduces mechanistically to a michaelis-mentin enzymatic system with competitive inhibition. Below, we show how a mechanistic ODE model of antibody transport can be modelled with MM kinetics when transport across epithelium is a rate-limiting step.</p>
 <p>Our model considers two physiological compartments: the mucosal side of the epithelium and the external lumen on the opposite side of the epithelium. We call these compartments “Mucous” and “Lumen”.</p>
-<p>During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as <span class="math inline">\(M_s\)</span> and the specific antibodies in the lumen compartment as <span class="math inline">\(L_s\)</span>. We hypothesize that these antibodies must compete with all of the IgA remaining in the mucosa from previous infections with other pathogens, which we refer to generally as non-specific mucosal IgA, <span class="math inline">\(M_{NS}\)</span>. The population of nonspecific antibodies that are transported to the lumen is referred to generally as <span class="math inline">\(L_{NS}\)</span></p>
-<p>We can model the flux of IgA antibodies to the lumen as an ODE model of these two populations of mucosal IgA antibodies - <span class="math inline">\(M_S\)</span> and <span class="math inline">\(M_{NS}\)</span> - which compete explicitly for transport proteins, <span class="math inline">\(R\)</span>. The number of specific and nonspecific antibodies on the lumenal side, <span class="math inline">\(L_S\)</span> and <span class="math inline">\(L_{NS}\)</span> respectively, depends on the rate of removal of IgA from the lumen and the rate at which the populations are transported.</p>
-<p>Importantly, we assume that pIgRs, <span class="math inline">\(R\)</span>, are constantly being trancytosed across the epithelium at rate <span class="math inline">\(r\)</span> regardless of whether they are bound by sIgA. This gives rise to the following set of ODEs:</p>
+<p>During an infection, IgA antibodies specific for the pathogen are generated in the mucous compartment and are transported via polymeric immunoglobulin receptors, pIgRs, to the lumen. We refer to the pathogen-specific antibodies in the mucous compartment as <span class="math inline">\(M_s\)</span> and the specific antibodies in the lumen compartment as <span class="math inline">\(L_s\)</span>. We hypothesize that these antibodies must compete with all of the IgA remaining in the mucosa from previous infections with other pathogens, which we refer to generally as non-specific mucosal IgA, <span class="math inline">\(M_{ns}\)</span>. The population of nonspecific antibodies that are transported to the lumen is referred to generally as <span class="math inline">\(L_{ns}\)</span></p>
+<p>We can model the flux of IgA antibodies to the lumen as an ODE model of these two populations of mucosal IgA antibodies - <span class="math inline">\(M_s\)</span> and <span class="math inline">\(M_{ns}\)</span> - which compete explicitly for transport proteins, <span class="math inline">\(R\)</span>. The number of specific and nonspecific antibodies on the lumenal side, <span class="math inline">\(L_s\)</span> and <span class="math inline">\(L_{ns}\)</span> respectively, depends on the rate of removal of IgA from the lumen and the rate at which the populations are transported.</p>
+<p>Importantly, we assume that pIgRs, <span class="math inline">\(R\)</span>, are constantly being trancytosed across the epithelium at rate <span class="math inline">\(k_2\)</span> regardless of whether they are bound by sIgA. Antibodies bind pIgRs at rate <span class="math inline">\(k_1\)</span>. This gives rise to the following set of ODEs:</p>
 <p><span class="math display">\[
-\frac{dM_s}{dt} = -kM_sR - d_\mu M_s
+\frac{dM_s}{dt} = -k_1M_sR - d_\mu M_s
 \]</span></p>
 <p><span class="math display">\[
-\frac{dL_s}{dt} = rR_s - d_L L_s
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
 \]</span></p>
 <p><span class="math display">\[
-\frac{dM_{ns}}{dt} = -kM_{ns}R - d_\mu M_{ns}
+\frac{dM_{ns}}{dt} = -k_1M_{ns}R - d_\mu M_{ns}
 \]</span></p>
 <p><span class="math display">\[
-\frac{dL_{ns}}{dt} = rR_{ns} - d_L L_{ns}
+\frac{dL_{ns}}{dt} = k_2R_{ns} - d_L L_{ns}
 \]</span> For our receptors:</p>
 <p>This tracks the number of empty receptors at the basolateral surface of the epithelium.</p>
 <p><span class="math display">\[
-\frac{dR_e}{dt} = 1 - k(M_s + M_{ns})R_e - rR_e
+\frac{dR_e}{dt} = 1 - k_1(M_s + M_{ns})R_e - k_2R_e
 \]</span> This tracks the number of receptors bound to <span class="math inline">\(M_s\)</span> at the basolateral side. <span class="math display">\[
-\frac{dR_s}{dt} = kM_sR_e - rR_s
+\frac{dR_s}{dt} = k_1M_sR_e - k_2R_s
 \]</span> and this tracks the number of receptors bound to <span class="math inline">\(M_{ns}\)</span> at the basolateral side. <span class="math display">\[
-\frac{dR_{ns}}{dt} = kM_{ns}R_e - rR_{ns}
+\frac{dR_{ns}}{dt} = k_1M_{ns}R_e - k_2R_{ns}
 \]</span></p>
 <p>If we want the number of transport proteins total to be fixed (or perhaps time-varying due only to changes in expression), we can define the number of empty receptors as</p>
 <p><span class="math display">\[
@@ -181,38 +181,38 @@ R_e = R_T(t) - R_s - R_{ns}
 <p>where <span class="math inline">\(R_T\)</span> is the total number of transport proteins.</p>
 <p>Then, the system becomes:</p>
 <p><span class="math display">\[
-\frac{dM_s}{dt} = -kM_s(R_T(t) - R_s - R_{ns}) - d_\mu M_s
+\frac{dM_s}{dt} = -k_1M_s(R_T(t) - R_s - R_{ns}) - d_\mu M_s
 \]</span></p>
 <p><span class="math display">\[
-\frac{dR_s}{dt} = kM_s(R_T(t)-R_s-R_{ns}) - rR_s
+\frac{dR_s}{dt} = k_1M_s(R_T(t)-R_s-R_{ns}) - k_2R_s
 \]</span></p>
 <p><span class="math display">\[
-\frac{dL_s}{dt} = rR_s - d_L L_s
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
 \]</span></p>
 <p><span class="math display">\[
-\frac{dM_{ns}}{dt} = -kM_{ns}(R_T(t)-R_s-R_{ns}) - d_\mu M_{ns}
+\frac{dM_{ns}}{dt} = -k_1M_{ns}(R_T(t)-R_s-R_{ns}) - d_\mu M_{ns}
 \]</span> <span class="math display">\[
-\frac{dR_{ns}}{dt} = kM_{ns}(R_T(t)-R_s-R_{ns}) - rR_{ns}
+\frac{dR_{ns}}{dt} = k_1M_{ns}(R_T(t)-R_s-R_{ns}) - k_2R_{ns}
 \]</span></p>
 <p><span class="math display">\[
-\frac{dL_{ns}}{dt} = rR_{ns} - d_L L_{ns}
+\frac{dL_{ns}}{dt} = k_1R_{ns} - d_L L_{ns}
 \]</span></p>
 <section id="michaelis-mentin" class="level2">
 <h2 class="anchored" data-anchor-id="michaelis-mentin">Michaelis-Mentin</h2>
 <p>In the regime where transport is much slower than binding - the likely regime for the biology of antibody binding and transport in the respiratory tract - this system collapses to Michaelis-Mentin competitive inhibition.</p>
 <p>That is because the quasi-steady state assumption that <span class="math inline">\(\frac{dR_s}{dt} \approx 0\)</span> and <span class="math inline">\(\frac{dR_{ns}}{dt} \approx 0\)</span> applies in the regime where transcytosis is the rate-limiting step, and so antibody changes very slowly compared to receptors. This comes from singular perturbation theory, I am pretty sure, and the trick is to show that the solution to a perturbation in R in this manifold goes with the term <span class="math inline">\(O(1)\)</span> in terms of time and perturbation in M goes with <span class="math inline">\(O(2)\)</span> or greater. I’ve totally forgotten how to do this but I can do that, I am sure!</p>
 <p>Anyway, our goal here is to show that, when quasi-steady-state assumption is met, the flux in specific antibody, <span class="math inline">\(\phi_S = \frac{Vmax*M_s}{K_M +M_{NS}+M_s}\)</span></p>
-<p>First, from our ODEs, we know that the flux in specific antibody to the lumen follows <span class="math inline">\(rR_s\)</span>, so we have to show the following is true at quasi-steady state:</p>
+<p>First, from our ODEs, we know that the flux in specific antibody to the lumen follows <span class="math inline">\(k_2R_s\)</span>, so we have to show the following is true at quasi-steady state:</p>
 <p><span class="math display">\[
-rR_s = \frac{V_{max}*M_s}{K_M +M_{NS}+M_s}
+k_2R_s = \frac{V_{max}*M_s}{K_M +M_{NS}+M_s}
 \]</span></p>
 <ol type="1">
 <li>solve for <span class="math inline">\(R_s\)</span></li>
 </ol>
-<p>Assuming quasi-steady-state, where <span class="math inline">\(\frac{dR_s}{dt} \approx 0\)</span> and <span class="math inline">\(\frac{dR_{ns}}{dt} \approx 0\)</span>: <span class="math inline">\(\frac{dR_s}{dt} = 0 = kM_sR_e - rR_s\)</span></p>
+<p>Assuming quasi-steady-state, where <span class="math inline">\(\frac{dR_s}{dt} \approx 0\)</span> and <span class="math inline">\(\frac{dR_{ns}}{dt} \approx 0\)</span>: <span class="math inline">\(\frac{dR_s}{dt} = 0 = k_1M_sR_e - k_2R_s\)</span></p>
 <p>so <span class="math display">\[
-R_s = \frac{k}{r} M_sR_e
-\]</span> and similarly <span class="math inline">\(R_{ns} = \frac{k}{r}M_{ns}R_e\)</span></p>
+R_s = \frac{k_1}{k_2} M_sR_e
+\]</span> and similarly <span class="math inline">\(R_{ns} = \frac{k_1}{k_2}M_{ns}R_e\)</span></p>
 <ol start="2" type="1">
 <li>solve for <span class="math inline">\(R_e\)</span></li>
 </ol>
@@ -222,32 +222,32 @@ R_T = R_e + R_s + R_{ns}
 \]</span></p>
 <p>we can substitute our expressions for <span class="math inline">\(R_s\)</span> and <span class="math inline">\(R_{ns}\)</span> to solve for <span class="math inline">\(R_e\)</span>:</p>
 <p><span class="math display">\[
-R_T = R_e + \frac{k}{r}M_sR_e + \frac{k}{r}M_{ns}R_e
+R_T = R_e + \frac{k_1}{k_2}M_sR_e + \frac{k_1}{k_2}M_{ns}R_e
 \]</span> so</p>
 <p><span class="math display">\[
-R_e = \frac{R_T}{1+\frac{k}{r}(M_s + M_ns)}
+R_e = \frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_ns)}
 \]</span> 3) solve for <span class="math inline">\(\phi_s\)</span></p>
 <p>We need to show that</p>
 <p><span class="math display">\[
-\phi_S = rR_s = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
-\]</span> we showed <span class="math inline">\(R_s = \frac{k}{r}M_sR_e\)</span>. So the left-hand side of the above equation becomes:</p>
+\phi_S = k_2R_s = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
+\]</span> we showed <span class="math inline">\(R_s = \frac{k_1}{k_2}M_sR_e\)</span>. So the left-hand side of the above equation becomes:</p>
 <p><span class="math display">\[
-rR_s = r\frac{k}{r}M_sR_e = kM_sR_e
-\]</span> we also showed that <span class="math inline">\(R_e = \frac{R_T}{1+\frac{k}{r}(M_s + M_ns)}\)</span>. So, the above becomes:</p>
+k_2R_s = k_2\frac{k_1}{k_2}M_sR_e = k_1M_sR_e
+\]</span> we also showed that <span class="math inline">\(R_e = \frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_ns)}\)</span>. So, the above becomes:</p>
 <p><span class="math display">\[
-\phi_S = kM_s\frac{R_T}{1+\frac{k}{r}(M_s + M_{ns})}
+\phi_S = k_1M_s\frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_{ns})}
 \]</span></p>
 <p>This is looking seriously close to Michaelis-Mentin flux!</p>
-<p>we know that <span class="math inline">\(V_{max} = rR_T\)</span>, that is, the rate of transcytosis and the total number of receptors in the system. We can multiply the numerator by <span class="math inline">\(\frac{r}{k}\)</span> to produce <span class="math inline">\(V_{max}*M_s\)</span>.</p>
-<p>Multiplying the denominator by <span class="math inline">\({r}{k}\)</span> produces <span class="math inline">\(\frac{r}{k} + M_s + M_{ns}\)</span>, which looks like the MM denominator <span class="math inline">\(K_M + M_s + M_{ns}\)</span> where <span class="math inline">\(K_M = \frac{r}{k}\)</span>.</p>
+<p>we know that <span class="math inline">\(V_{max} = k_2R_T\)</span>, that is, the rate of transcytosis and the total number of receptors in the system. We can multiply the numerator by <span class="math inline">\(\frac{k_1}{k_2}\)</span> to produce <span class="math inline">\(V_{max}*M_s\)</span>.</p>
+<p>Multiplying the denominator by <span class="math inline">\({k_2}{k_1}\)</span> produces <span class="math inline">\(\frac{k_2}{k_1} + M_s + M_{ns}\)</span>, which looks like the MM denominator <span class="math inline">\(K_M + M_s + M_{ns}\)</span> where <span class="math inline">\(K_M = \frac{k_2}{k_1}\)</span>.</p>
 <p>thus:</p>
 <p><span class="math display">\[
-\phi_s = rR_s = \frac{k\frac{r}{k}R_TM_s}{\frac{r}{k} (1 + \frac{k}{r}(M_s + M_{ns}))} = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}}
+\phi_s = k_2R_s = \frac{k_1\frac{k_2}{k_1}R_TM_s}{\frac{k_2}{k_1} (1 + \frac{k_1}{k_2}(M_s + M_{ns}))} = \frac{k_2R_TM_s}{\frac{k_2}{k_1} + M_s + M_{ns}}
 \]</span></p>
 <p>so we have shown that, at quasi steady state,</p>
 <p><span class="math display">\[
-rR_s = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
-\]</span> given <span class="math inline">\(V_{max} = rR_T\)</span> and <span class="math inline">\(K_M = \frac{r}{k}\)</span>.</p>
+k_2R_s = \frac{k_2R_TM_s}{\frac{k_2}{k_1} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{ns}+M_s}
+\]</span> given <span class="math inline">\(V_{max} = k_2R_T\)</span> and <span class="math inline">\(K_M = \frac{k_2}{k_1}\)</span>.</p>
 </section>
 <section id="dynamics-of-m_s" class="level2">
 <h2 class="anchored" data-anchor-id="dynamics-of-m_s">Dynamics of <span class="math inline">\(M_s\)</span></h2>
@@ -292,7 +292,7 @@ rR_s = \frac{rR_TM_s}{\frac{r}{k} + M_s + M_{ns}} = \frac{V_{max}*M_s}{K_M +M_{n
 <p>Because the decay rate of the mucosal antibodies is faster for shorter half-lives, the <span class="math inline">\(M_s\)</span> of those antibodies never reaches the same peak as with longer half-lives.</p>
 <p>We can also capture similar dynamics with an ODE model where antibody is modeled as the rise and fall of two exponentials. This won’t be sigmoidal but will at least capture mechanistically the two proposed processes - exponential increase due to clonal expansion, and exponential decrease due to death of plasma cells.<br>
 The easiest way to achieve this is to describe a constant death rate, <span class="math inline">\(d_\mu\)</span> and a decreasing exponential expansion rate until the peak of the response, <span class="math inline">\(r(t&lt;t_{peak})\)</span>, at which point expansion ends, <span class="math inline">\(r(t &gt;= t_{peak})=0\)</span>.</p>
-<p>What is nice here is that, if the expansion rate decreases linearly with time, that is <span class="math inline">\(r(t&lt;t_{peak}) = r_0 - \alpha t\)</span>), we can explicitly define the time of the peak and the amount at the peak, and calculate <span class="math inline">\(\alpha\)</span> accordingly.</p>
+<p>What is nice here is that, if the expansion rate decreases linearly with time, that is <span class="math inline">\(r(t&lt;t_{peak}) = r0 - \alpha t\)</span>), we can explicitly define the time of the peak and the amount at the peak, and calculate <span class="math inline">\(\alpha\)</span> accordingly.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">############ Competition Model Popualtions ###########</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -312,7 +312,7 @@ The easiest way to achieve this is to describe a constant death rate, <span clas
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="do">#####################################</span></span>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># define time dependent functions   #</span></span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="do">#####################################</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        r <span class="ot">=</span> <span class="cf">function</span>(t) {<span class="cf">if</span>(t <span class="sc">&lt;</span> tp) {r_0 <span class="sc">-</span> alpha<span class="sc">*</span>t}</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        r <span class="ot">=</span> <span class="cf">function</span>(t) {<span class="cf">if</span>(t <span class="sc">&lt;</span> tp) {r0 <span class="sc">-</span> alpha<span class="sc">*</span>t}</span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>          <span class="cf">else</span> r <span class="ot">=</span> <span class="dv">0</span>} <span class="co">#define time-varying r(t) - increase that slows and is then dominated by decay rate</span></span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        <span class="do">#####################################</span></span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        <span class="do">## calculate the derivatives</span></span>
@@ -329,14 +329,14 @@ The easiest way to achieve this is to describe a constant death rate, <span clas
 <span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="do">#### Parameters</span></span>
 <span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">14</span> <span class="co">#half life of 14 days</span></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>r_0 <span class="ot">=</span> <span class="dv">2</span> <span class="co">#initial production rate </span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>r0 <span class="ot">=</span> <span class="dv">2</span> <span class="co">#initial production rate </span></span>
 <span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> <span class="dv">1</span> <span class="co">#initial antibody </span></span>
 <span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">3</span> <span class="co">#peak antibody</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">=</span> ((r_0<span class="sc">-</span>d_mu)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)) <span class="co"># rate of decay of exponential growth rate</span></span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> (r_0 <span class="sc">-</span> d_mu)<span class="sc">/</span>alpha </span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">=</span> ((r0<span class="sc">-</span>d_mu)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)) <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>alpha </span>
 <span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>params <span class="ot">=</span> <span class="fu">list</span>( <span class="co"># parameter list</span></span>
-<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">r_0 =</span> r_0, </span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">r0 =</span> r0, </span>
 <span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">A0 =</span> A0,</span>
 <span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">Ap =</span> Ap,</span>
 <span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> alpha,</span>
@@ -381,15 +381,15 @@ The easiest way to achieve this is to describe a constant death rate, <span clas
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>Ms_ode_solns <span class="ot">=</span> <span class="fu">lapply</span>(t_halfs, <span class="cf">function</span>(thalf){</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="do">#### Parameters</span></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>thalf</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    r_0 <span class="ot">=</span> <span class="dv">2</span> <span class="co">#initial production rate </span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    r0 <span class="ot">=</span> <span class="dv">2</span> <span class="co">#initial production rate </span></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    A0 <span class="ot">=</span> <span class="dv">1</span> <span class="co">#initial antibody </span></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    Ap <span class="ot">=</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">3</span> <span class="co">#peak antibody</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    alpha <span class="ot">=</span> ((r_0<span class="sc">-</span>d_mu)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)) <span class="co"># rate of decay of exponential growth rate</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    tp <span class="ot">=</span> (r_0 <span class="sc">-</span> d_mu)<span class="sc">/</span>alpha </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    alpha <span class="ot">=</span> ((r0<span class="sc">-</span>d_mu)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)) <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    tp <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>alpha </span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">=</span> <span class="fu">list</span>( <span class="co"># parameter list</span></span>
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">d_mu =</span> d_mu,</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">r_0 =</span> r_0, </span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">r0 =</span> r0, </span>
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">A0 =</span> A0,</span>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">Ap =</span> Ap,</span>
 <span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> alpha,</span>
@@ -438,9 +438,34 @@ The easiest way to achieve this is to describe a constant death rate, <span clas
 <p>We also want to account for the transport of antibodies into the lumen given a constant total number of transport proteins. The contribution of this transport to the steady state may or may not be significant - this depends, of course, on <span class="math inline">\(V_{max}\)</span> and <span class="math inline">\(k\)</span> relative to <span class="math inline">\(\hat{M_{ns}}\)</span>.</p>
 <p>Our ode model for mucosal nonspecific antibody dynamics will thus be given by:</p>
 <p><span class="math display">\[
-\frac{dM_{ns}}{dt} = c - kR_eM_{ns} - d_\mu M_{ns}
+\frac{dM_{ns}}{dt} = c - k_1R_eM_{ns} - d_\mu M_{ns}
 \]</span></p>
-<p>Note that when <span class="math inline">\(kR_e M_s &lt;&lt; \{c, d_\mu M_s\}\)</span>, the impact of transport will be minimal.</p>
+<p>Note that when <span class="math inline">\(k_1R_e M_s &lt;&lt; \{c, d_\mu M_s\}\)</span>, the impact of transport will be minimal.</p>
+</section>
+<section id="ode-system" class="level2">
+<h2 class="anchored" data-anchor-id="ode-system">ODE system</h2>
+<p>Taken together, these dynamics give rise to the following system of ODEs:</p>
+<p><span class="math display">\[
+\frac{dM_s}{dt} = r(t)M_s -k_1M_s(R_T(t) - R_s - R_{ns}) - d_\mu M_s
+\]</span> where</p>
+<p><span class="math display">\[
+r(t \leq t_{peak}) = r_0 - \alpha t \text{ and } r(t &gt; t_{peak}) = 0
+\]</span> and <span class="math inline">\(\alpha = \frac{r_0 - d_{\mu}}{t_{peak}}\)</span>, <span class="math inline">\(r_0 = \frac{2log(\frac{Ap}{A0})}{t_p} + d_{\mu}\)</span></p>
+<p><span class="math display">\[
+\frac{dR_s}{dt} = k_1M_s(R_T(t)-R_s-R_{ns}) - k_2R_s
+\]</span></p>
+<p><span class="math display">\[
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
+\]</span></p>
+<p><span class="math display">\[
+\frac{dM_{ns}}{dt} = c - k_1R_eM_{ns} - d_\mu M_{ns}
+\]</span></p>
+<p><span class="math display">\[
+\frac{dR_{ns}}{dt} = k_1M_{ns}(R_T(t)-R_s-R_{ns}) - k_2R_{ns}
+\]</span></p>
+<p><span class="math display">\[
+\frac{dL_{ns}}{dt} = k_2R_{ns} - d_L L_{ns}
+\]</span></p>
 </section>
 <section id="measuring-effect-of-d_mu-on-efficiency" class="level2">
 <h2 class="anchored" data-anchor-id="measuring-effect-of-d_mu-on-efficiency">Measuring effect of <span class="math inline">\(d_\mu\)</span> on efficiency</h2>
@@ -449,7 +474,7 @@ The easiest way to achieve this is to describe a constant death rate, <span clas
 <li>The concentration of specific antibody that makes it to the lumen, <span class="math inline">\(L_s\)</span>, over time, whose dynamics are described by:</li>
 </ol>
 <p><span class="math display">\[
-\frac{dL_s}{dt} = rR_s - d_L L_s
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
 \]</span></p>
 <ol start="2" type="1">
 <li>The relative proportion of transport proteins carrying specific antibody out of the total number of transport proteins carrying antibody, given by:</li>
@@ -461,7 +486,7 @@ f_s = \frac{R_s}{R_s + R_{ns}}
 <li>The efficiency of transport of specific antibody relative to the amount of mucosal antibody, given by:</li>
 </ol>
 <p><span class="math display">\[
-\epsilon_s = \frac{rR_s}{M_s}
+\epsilon_s = \frac{k_2R_s}{M_s}
 \]</span></p>
 <p>These might all be plotted as a function of time (x-axis) with various lines describing the dynamics given different <span class="math inline">\(d_\mu\)</span>.</p>
 <p>However, we might also want to plot a heatmap of the effect of saturation on the response given changes in <span class="math inline">\(d_\mu\)</span> and strength of competition (either <span class="math inline">\(K_M\)</span> or <span class="math inline">\(V_{max}\)</span> changing). For these heatmaps, we will need a single value to report. My suggestion is either to report one of these values at the peak of the specific response (<span class="math inline">\(t_{peak}\)</span>), or to plot the integral of one of these values up until the peak of the response.</p>
