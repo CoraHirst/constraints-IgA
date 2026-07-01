@@ -154,8 +154,8 @@ Now, we define our parameters for the transport of antibodies across mucosal epi
 # transport
 Vmax = Ap # order of magnitude of peak response # we might vary this later
 k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
-RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
-k1 =  k2/min(Mns_vec) #rate of antibody binding such that KM is order of magnitude of min of the Mns
+RT = 1#Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = 1 #k2/min(Mns_vec) #rate of antibody binding such that KM is order of magnitude of min of the Mns
 KM = k2/k1 #checking KM
 
 # dynamics in the lumen 
