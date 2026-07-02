@@ -64,7 +64,26 @@ Below, we define the parameters required for the model `IgA_competition.model` i
 
 First, we define how we vary the concentration of nonspecific antibody $M_{ns}$ with respect to the dynamics of specific antibody $M_s$ increase and decay during infection.
 
-Importantly, the steady state concentration of $M_{ns}$ is not simply the steady state of $\frac{dM_{ns}{dt} = c - d_\mu}$ which gives $
+Importantly, the steady state concentration of $M_{ns}$ is not simply the steady state of $\frac{dM_{ns}}{dt} = c - d_\mu$ which gives $\frac{c`}{d_\mu}$, because antibody is constantly being transported into the lumen. Instead, the equilibrium concentration of $M_{ns}$ should be derived as the positive solution to the steady state of the following system of ODEs:
+
+$$
+\frac{dM_{ns}}{dt} = c - k_1 (R_T - R_{ns}) M_{ns} - d_\mu M_{ns}
+$$
+
+and
+
+$$
+\frac{dR_{ns}}{dt} = k_1(R_T - R_{ns})M_{ns} - k_2R_{ns}
+$$
+
+solving for the steady state gives: 
+
+$$
+M_{ns}^{*} = \frac{-\left(d_{\mu}k_{2}+k_{1}k_{2}R_{T}-ck_{1}\right)+\sqrt{\left(d_{\mu}k_{2}+k_{1}k_{2}R_{T}-ck_{1}\right)^{2}+4d_{\mu}k_{1}ck_{2}}}{2d_{\mu}k_{1}}
+$$
+Below, we plot the dependence of $M_{ns}^{*}$ on the decay rate 
+
+
 
 ```{r define-parameters-antibody-production}
 ### parameters for competition model 
@@ -342,3 +361,4 @@ plot = ggplot() +
 print(plot)
 
 ```
+
