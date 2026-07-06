@@ -81,7 +81,43 @@ solving for the steady state gives:
 $$
 M_{ns}^{*} = \frac{-\left(d_{\mu}k_{2}+k_{1}k_{2}R_{T}-ck_{1}\right)+\sqrt{\left(d_{\mu}k_{2}+k_{1}k_{2}R_{T}-ck_{1}\right)^{2}+4d_{\mu}k_{1}ck_{2}}}{2d_{\mu}k_{1}}
 $$
-Below, we plot the dependence of $M_{ns}^{*}$ on the decay rate 
+
+
+Below, we plot the dependence of $M_{ns}^{*}$ on the decay rate ($d_\{mu}$). 
+
+```{r define-parameters-transport}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^2 #k2/min(Mns_vec) #rate of antibody binding such that KM is order of magnitude of min of the Mns
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 7 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+D = 0 #diffusion out
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mus = log(2)/t_halfs #half lives in days
+names(d_mus) = t_halfs
+
+```
+
+```{r steady-state-Mns}
+#define steady state concentration of mns
+ss_Mns = function(d_mu) {(-(d_mu*k2 + k1*k2*RT - c*k1) + sqrt((d_mu*k2 + k1*k2*RT - c*k1)^2) + 4*d_mu*k1*c*k2)/2*d_mu*k1}
+
+# calculate ss concentrations 
+sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)})
+
+#plot
+plot = ggplot() + geom_hline(yintercept = sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)}))
+
+plot
+```
 
 
 
