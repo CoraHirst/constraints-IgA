@@ -108,13 +108,20 @@ names(d_mus) = t_halfs
 
 ```{r steady-state-Mns}
 #define steady state concentration of mns
-ss_Mns = function(d_mu) {(-(d_mu*k2 + k1*k2*RT - c*k1) + sqrt((d_mu*k2 + k1*k2*RT - c*k1)^2) + 4*d_mu*k1*c*k2)/2*d_mu*k1}
+ss_Mns = function(d_mu) {
+  num = -(d_mu*k2 + k1*k2*RT - c*k1) +
+    sqrt((d_mu*k2 + k1*k2*RT - c*k1)^2 + 4*d_mu*k1*c*k2)
+
+  den = 2*d_mu*k1
+
+  num / den
+}
 
 # calculate ss concentrations 
 sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)})
 
 #plot
-plot = ggplot() + geom_hline(yintercept = sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)}))
+plot = ggplot() + geom_hline(yintercept = log10(sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)})))
 
 plot
 ```
