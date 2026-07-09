@@ -1,0 +1,49 @@
+---
+title: "Simulations of specific IgA transport in the context of pre-existing immunity"
+subtitle: "Simplified model: approximation, $M_{ns}$ constant"
+format: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+source(here("code", "functions", "functions.R"))
+
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
+```
+
+# Objective 
+
+In this document, we evaluate how long-lived IgA antibody titers in the respiratory mucosa interfere with the transport of specific IgA antibodies to the site of infection. We assume that the concentration of $M_{ns}$ changes negligibly over the course of infection, and assume that the steady state concentration of $M_{ns}$ is proportional to $\frac{c}{d_\mu}$. steady state concentration of non-specific antibodies explicitly considering the flux of IgA out of the mucosa. 
+
+# Outline
+
+1. Plot the generation of specific IgA, $M_s$ versus the steady state concentration of $M_{ns}$, $\frac{c}{d_\mu}$ over time. 
+2. Show the MM plot of the flux of $M_s$ as a function of $M_s$, varying the half life of antibodies in the mucosa (via $d_\mu$)
+
+- plot $K_M$ for the Michaelis-Menten kinetics 
+- plot $A_p$, the peak of the specific antibody response
+
+This will show us what regime of transport we are in over the course of infection, and where the half - saturation $[M_s]$ moves in the presence of a competitive inhibitor. 
+
+3. Show the dynamics of $L_s$ over the course of infection (+ a week or two) for varying $d_\mu$
+
+
+

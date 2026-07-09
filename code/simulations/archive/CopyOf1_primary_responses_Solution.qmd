@@ -1,0 +1,415 @@
+---
+title: "1_primary_responses_Solution"
+format: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+source(here("code", "functions", "functions.R"))
+
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
+```
+
+# Objective 
+
+In this document, we evaluate how long-lived IgA antibody titers in the respiratory mucosa interfere with the transport of specific IgA antibodies to the site of infection. 
+
+# How to measure efficiency 
+
+We might be interested in the effect of competition on a few different quantities: 
+
+  1) The concentration of specific antibody that makes it to the lumen, $L_s$, over time, whose dynamics are described by: 
+
+$$
+\frac{dL_s}{dt} = k_2R_s - d_L L_s
+$$
+  
+  2) The relative proportion of transport proteins carrying specific antibody out of the total number of transport proteins carrying antibody, given by:
+
+$$
+f_s = \frac{R_s}{R_s + R_{ns}}
+$$
+
+  3) The efficiency of transport of specific antibody relative to the amount of mucosal antibody, given by: 
+
+$$
+\epsilon_s = \frac{k_2R_s}{M_s}
+$$
+
+These might all be plotted as a function of time (x-axis) with various lines describing the dynamics given different $d_\mu$. 
+
+However, we might also want to plot a heatmap of the effect of saturation on the response given changes in $d_\mu$ and strength of competition (either $K_M$ or $V_{max}$ changing). For these heatmaps, we will need a single value to report. My suggestion is either to report one of these values at the peak of the specific response ($t_{peak}$), or to plot the integral of one of these values up until the peak of the response. 
+
+I will make that decision after seeing the results of the dynamics for each measurement! 
+
+# Parameters 
+
+Below, we define the parameters required for the model `IgA_competition.model` in `code\functions\function.r`. This model is described in `code\simulations\1_primary_responses_Outline.qmd`. Importantly, we define a vector of $d_\mu$ to identify the effect of larger and larger concentration of total IgA on inhibitin the transport of newly generated IgA to a novel pathogen. 
+
+## Antibody concentrations 
+
+First, we define how we vary the concentration of nonspecific antibody $M_{ns}$ with respect to the dynamics of specific antibody $M_s$ increase and decay during infection.
+
+Importantly, the steady state concentration of $M_{ns}$ is not simply the steady state of $\frac{dM_{ns}}{dt} = c - d_\mu$ which gives $\frac{c`}{d_\mu}$, because antibody is constantly being transported into the lumen. Instead, the equilibrium concentration of $M_{ns}$ should be derived as the positive solution to the steady state of the following system of ODEs:
+
+$$
+\frac{dM_{ns}}{dt} = c - k_1 (R_T - R_{ns}) M_{ns} - d_\mu M_{ns}
+$$
+
+and
+
+$$
+\frac{dR_{ns}}{dt} = k_1(R_T - R_{ns})M_{ns} - k_2R_{ns}
+$$
+
+solving for the steady state gives: 
+
+$$
+M_{ns}^{*} = \frac{-\left(d_{\mu}k_{2}+k_{1}k_{2}R_{T}-ck_{1}\right)+\sqrt{\left(d_{\mu}k_{2}+k_{1}k_{2}R_{T}-ck_{1}\right)^{2}+4d_{\mu}k_{1}ck_{2}}}{2d_{\mu}k_{1}}
+$$
+
+
+Below, we plot the dependence of $M_{ns}^{*}$ on the decay rate ($d_\{mu}$). 
+
+```{r define-parameters-transport}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^5 #k2/min(Mns_vec) #rate of antibody binding such that KM is order of magnitude of min of the Mns
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 7 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+D = 0 #diffusion out
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mus = log(2)/t_halfs #half lives in days
+names(d_mus) = t_halfs
+
+```
+
+```{r steady-state-Mns}
+#define steady state concentration of mns
+ss_Mns = function(d_mu) {
+  num = -(d_mu*k2 + k1*k2*RT - c*k1) +
+    sqrt((d_mu*k2 + k1*k2*RT - c*k1)^2 + 4*d_mu*k1*c*k2)
+
+  den = 2*d_mu*k1
+
+  num / den
+}
+
+# calculate ss concentrations 
+sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)})
+
+#plot
+plot = ggplot() + geom_hline(yintercept = log10(sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)})), col = t_halfs) + 
+  theme_bw() +
+  scale_color_manual(values = my_colors)
+
+plot
+```
+
+We would like to see 
+
+```{r define-parameters-antibody-production}
+### parameters for competition model 
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+D = 0 #diffusion out
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mus = log(2)/t_halfs #half lives in days
+names(d_mus) = t_halfs
+Mns_vec = sapply(d_mus, function(d_mu){ss_Mns(d_mu = d_mu)}) #vector of the ss nonspecific mucosal antibodies
+names(Mns_vec) = t_halfs
+
+# generation of new response
+Ap = unname(Mns_vec[3]) #peak antibody titer will be the same as Mns for 90 days
+#initial ab titer
+A0 = Ap/10^5 #1 1000th of the peak is where we start
+tp = 5 #time of peak titer -- days
+
+# will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+#plot of change in r for specific cell production
+for(d_mu in d_mus){
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+  if(d_mu == d_mus[1]){
+  curve(r0 - alpha*x, from = 0, to = tp, xlab = "time, days", ylab = "growth rate of Ms", main = "changing growth rate of IgA population until peak")}
+  else {curve(r0 - alpha*x, from = 0, to = tp, add = T)}
+}
+```
+
+Below, we plot how the dynamics of specific antibody generation and decay compare to the steady-state concentrations of nonspecific antibody over the course of infection. 
+
+```{r plot-Ms-v-Mns}
+### plot Ms vs Mns over time
+Mab_titers = lapply(t_halfs, function(t_half){
+  # setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = ss_Mns(d_mu = d_mu) # steadys state nonspecific
+  
+  # setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + D + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu - D)/tp # rate of decay of exponential growth rate
+
+  ### deSolve for specific ab over time
+  
+  # parms list
+  params = list( # parameter list
+  r0 = r0, 
+  A0 = A0,
+  Ap = Ap,
+  alpha = alpha,
+  tp = tp,
+  d_mu = d_mu, 
+  D = D
+  )
+
+  # initial conditions
+  Ms_init = A0 # starting antibody titer
+  init_cond = c("Ms" = Ms_init)
+
+  # numerical solver parameters
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+
+  # solve 
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), primary_response.model, parms = params)) %>% cbind(.,Mns, t_half)
+}) %>% do.call(rbind, .) #concatenates all dfs from lapply list into a single df rowwise
+
+### Plot
+plot = ggplot() + geom_line(data = Mab_titers, aes(x = time, y = log10(Ms), group = factor(t_half), col = factor(t_half), linetype = "Ms")) +
+  geom_line(data = Mab_titers, aes(x = time, y = log10(Mns), group = factor(t_half), col = factor(t_half), linetype = "Mns")) + 
+  scale_color_manual(values = my_colors) +
+  scale_linetype_manual(values = c("Ms" = "solid", "Mns" = "dashed")) +
+  labs(x = "time, days", y = "log10[Ab], mg/dL", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "[Ms] and [Mns] over the course of infection") +
+  theme_bw()
+  
+
+#print to viewer
+print(plot)
+
+```
+
+## Antibody transport 
+
+Now, we define our parameters for the transport of antibodies across mucosal epithelium, as well as the decay of antibody in the lumen: 
+
+```{r define-parameters-transport}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^5 #k2/min(Mns_vec) #rate of antibody binding such that KM is order of magnitude of min of the Mns
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 7 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+```
+
+and plot how the flux of $M_s$ into the lumen depends on the steady state concentration of $M_{ns}$ and the concentration of $M_s$
+
+```{r plot-Ms-flux-curve-by-Mns}
+### plot flux vs [Ms] given each Mns 
+flux_df = lapply(t_halfs, function(t_half){
+  # set d_mu and Mns 
+  d_mu = log(2)/t_half
+  Mns = ss_Mns(d_mu = d_mu)
+  
+  #set concentrations of Ms
+  concentrations = 10^seq(-3, log10(max(Mns_vec)), by = 0.1)
+  
+  #calculate flux
+  flux = sapply(concentrations, function(Ms){
+    Vmax*Ms/((k2/k1) + Mns + Ms)
+  }) %>% cbind("Ms" = concentrations, "flux" = ., "t_half" = t_half) %>% as.data.frame() 
+}) %>% do.call(rbind, .) %>% as.data.frame() 
+
+## plot
+plot = ggplot() + geom_line(data = flux_df, aes(x = log10(Ms), y = flux, group = factor(t_half), col = factor(t_half))) +
+  geom_hline(yintercept = Vmax, linetype = "dashed") +
+  geom_vline(xintercept = log10(k2/k1), linetype = "dashed") +
+#  geom_vline(xintercept = k2/k1 + Mns_vec, linetype = "dotted") +
+  geom_vline(xintercept = log10(Ap), color = "red") +
+  stat_function(xlim = log10(c(10^-3, max(Mns_vec))), fun = function(x) Vmax*x/(KM+x), col = "red") +
+  scale_color_manual(values = my_colors) +
+  labs(x = "[Ms]", y = "flux [Ms]", color = "Mucosal Ab Half Life, days", title = "Competitive inhibition of specific antibody transport by nonspecific antibodies") + 
+  theme_bw()
+
+# print to viewer
+print(plot)
+```
+
+The horizontal dashed line shows the greatest possible transport rate, $V_{max}$, the vertical dashed line shows the 50% saturation concnetration given $[M_s]$ only, and I have added a red vertical line to show the maximum concentration of $M_s$ over an infection.
+
+RETURN TO THIS TO ADD JUSTIFICATION FOR PARMS 
+
+# Dynamics as a function of mucosal antibody half-life
+
+We would like to show how high concentrations of nonspecific antibody in the mucosa interfere with the transport of specific antibody across the mucosa and into the lumen, the site of infection. 
+
+## Concentration of specific antibody, $L_s$ in the lumen over time
+
+Here, we numerically solve for the concentration of specific antibody in the lumen over time: 
+
+
+```{r ode-setup-IgA-competition}
+### parameters for competition model 
+## define half-lifes
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+
+### define initial conditions and parms
+# initial conditions
+  Mns_init = 0
+  Rns_init = 0
+  Lns_init = 0
+  init_cond = c("Mns" = Mns_init, "Rns" = Rns_init, "Lns" = Lns_init)
+
+  # numerical solver parameters
+  Tmax = 100000 # total days
+  points_per_day = 1 # every hour
+
+
+### deSolve soltions
+ss_solns = lapply(t_halfs, function(t_half){ # half lives in days
+  ### set parms 
+    d_mu = log(2)/t_half #decay rate per day
+    
+  # As list
+  params = list( #setting A
+    # nonspecific ss
+    d_mu = d_mu, # plasma cell decay rate per day
+    c = c, # total antibody production rate per day
+    D = D,
+    # transport
+    k2 = k2, # trancytosis rate
+    RT = RT, # total number of receptors
+    k1 = k1, # ab binding rate
+    # lumen
+    d_L = d_L #decay rate in the lumen
+  )
+  
+  # ode solve for steady state without specific response (to account for transport of nonspecific to lumen)
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), equilibrium_ns.model, parms = params)) %>% cbind(., t_half)
+}) %>% do.call(rbind, .) %>% pivot_longer(cols = !c(time, t_half),
+                                          names_to = "population",
+                                          values_to = "concentration")
+
+
+plot = ggplot() +
+  geom_line(data = ss_solns %>% filter(population %in% c("Mns"), time >= Tmax-30), aes(x = time, y = log10(concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "Mns")) +
+  geom_line(data = Mab_titers, aes(x = time + Tmax-30, y = log10(Ms), group = factor(t_half), col = factor(t_half), linetype = "Ms")) +
+  geom_hline(yintercept = log10(Mns_vec), linetype = "dotted") +
+  scale_color_manual(values = my_colors) +
+  theme_bw()
+
+# print to viewer
+print(plot)
+
+```
+
+This is maybe a better approximation for the regime we are in...
+
+
+
+```{r ode-setup-IgA-competition}
+### parameters for competition model 
+## define half-lifes
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+
+### define initial conditions and parms
+# initial conditions
+  Ms_init = 0 # starting antibody titer
+  Mns_init = 0
+  Rs_init = 0
+  Rns_init = 0
+  Ls_init = 0
+  Lns_init = 0
+
+### numerical simulation parms
+Tmax_ss = 100000
+points_per_day_ss = 1
+
+Tmax = 100
+points_per_day = 24 
+
+### deSolve soltions
+competition_solns = lapply(t_halfs, function(t_half){ # half lives in days
+
+  ############ solve for steady state concentrations ###################
+  init_cond = c("Ms" = 0, "Mns" = Mns_init, "Rs" = 0, "Rns" = 0, "Ls" = 0, "Lns" = Lns_init)
+  ### set parms 
+    d_mu = log(2)/t_half #decay rate per day
+    
+  # As list
+  params = list( #setting A
+    # nonspecific ss
+    d_mu = d_mu, # plasma cell decay rate per day
+    c = c, # total antibody production rate per day
+    D = D, 
+    #generation of new responses
+    Ap = Ap, # peak antibody titer
+    A0 = A0, # intial antibody titer
+    tp = tp, # time of peak response, days
+    r0 = (2*log(Ap/A0)/tp) + d_mu, #initial/greatest exponential expansion rate
+    alpha = (r0 - d_mu)/tp, # rate of decay of exponential growth rate
+    # transport
+    k2 = k2, # trancytosis rate
+    RT = RT, # total number of receptors
+    k1 = k1, # ab binding rate
+    # lumen
+    d_L = d_L #decay rate in the lumen
+  )
+  
+  # ode solve for steady state without specific response (to account for transport of nonspecific to lumen)
+  init_cond = as.data.frame(ode(y = init_cond, times = seq(0, Tmax_ss, length.out = Tmax_ss*points_per_day_ss), IgA_competition.model, parms = params)) %>% tail(.,1) %>% select(!time) %>% unlist(.)
+  
+  ############## course of infection ######################
+  init_cond["Ms"] = A0 # set specific antibody to increase
+  
+  soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points_per_day), IgA_competition.model, parms = params)) %>% cbind(., t_half) 
+  
+  return(soln)
+}) %>% do.call(rbind, .) %>% pivot_longer(cols = !c(time, t_half),
+                                          names_to = "population",
+                                          values_to = "concentration")
+
+
+plot = ggplot() +
+  geom_line(data = competition_solns %>% filter(population %in% c("Lns", "Ls")), aes(x = time, y = log10(concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = population)) +
+  scale_y_continuous(limits = c(-5,5)) +
+  scale_color_manual(values = my_colors) +
+  theme_bw()
+
+# print to viewer
+print(plot)
+
+```
+
