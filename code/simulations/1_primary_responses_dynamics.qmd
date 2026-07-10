@@ -133,6 +133,7 @@ signif(Mns_vec,1)
 plot = ggplot() + 
   geom_point(aes(x = log10(t_halfs), y = log10(Mns_vec))) +
   geom_line(aes(x = log10(t_halfs), y = log10(Mns_vec))) +
+  geom_line(aes(x = log10(t_halfs), y = log10(c/d_mus)), col = "red") + # steady state approximation c/d_mu
   theme_classic()
 
 #print to viewer 
@@ -210,6 +211,7 @@ print(plot)
 ```
 
 I also explicitly plot the integral of the ode used to generate the specific response, but i've hidden that for now because its identical (which is what we wouldve hoped for!) 
+
 ```{r check-specific-response, include: FALSE}
 ### plot Ms vs Mns over time
 Mab_titers = lapply(t_halfs, function(t_half){
@@ -367,7 +369,7 @@ ss_solns = lapply(t_halfs, function(t_half){ # half lives in days
 
 #plot spectific responses in the lumen
 plot = ggplot() +
-  geom_line(data = ss_solns %>% filter(population %in% c("Mns", "Ms")), aes(x = time, y = log10(concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = factor(population))) +
+  geom_line(data = full_solns %>% filter(population %in% c("Mns", "Ms")), aes(x = time, y = log10(concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = factor(population))) +
   scale_y_continuous(limits = c(-1,NA)) +
   scale_color_manual(values = my_colors) +
   theme_bw()
