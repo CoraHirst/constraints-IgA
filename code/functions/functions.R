@@ -91,7 +91,7 @@ IgA_competition.model <- function(t, y, parms)  # Single partial immune class (R
         # define time dependent functions   #
         #####################################
         # exponential growth rate of Ms at time t
-        r = function(t) {if(t < tp) {r0 - alpha*t}
+        r = function(t) {if(t <= tp) {r0 - alpha*t}
           else 0} #define time-varying r(t) - increase that slows and is then dominated by decay rate
         
         # calculate Re at time t

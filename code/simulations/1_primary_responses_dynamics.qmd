@@ -341,7 +341,7 @@ ss_solns = lapply(t_halfs, function(t_half){ # half lives in days
     c = c, # total antibody production rate per day
     #generation of new responses
     Ap = Ap, # peak antibody titer
-    A0 = A0, # intial antibody titer
+    A0 = 1, # intial antibody titer
     tp = tp, # time of peak response, days
     r0 = (2*log(Ap/A0)/tp) + d_mu, #initial/greatest exponential expansion rate
     alpha = (((2*log(Ap/A0)/tp) + d_mu) - d_mu)/tp, # rate of decay of exponential growth rate
@@ -369,7 +369,7 @@ ss_solns = lapply(t_halfs, function(t_half){ # half lives in days
 
 #plot spectific responses in the lumen
 plot = ggplot() +
-  geom_line(data = full_solns %>% filter(population %in% c("Mns", "Ms")), aes(x = time, y = log10(concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = factor(population))) +
+  geom_line(data = ss_solns %>% filter(population %in% c("Mns", "Ms")), aes(x = time, y = log10(concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = factor(population))) +
   scale_y_continuous(limits = c(-1,NA)) +
   scale_color_manual(values = my_colors) +
   theme_bw()

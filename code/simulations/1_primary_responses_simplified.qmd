@@ -23,13 +23,13 @@ library(deSolve)
 #load functions
 source(here("code", "functions", "functions.R"))
 
+here("code", "functions", "functions.R")
+
 #choose plotting colors
 my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
 num_colors = length(my_colors) #set number of colors needed for plotting
 my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
 ```
-
-test
 
 # Objective 
 
@@ -107,7 +107,7 @@ I guess I would change the specific more than the nonspecific, but also, if we c
 
 This gives rise to the following dynamics in the mucosa over the course of infection: 
 
-```{r define-parameters}
+```{r define-parameters-bioogical-dont-work include: FALSE}
 # steady state nonspecific antibodies
 c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
 t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
@@ -138,6 +138,40 @@ t_half_L = 3 #half life of antibodies in the lumen, in days
 d_L = log(2)/t_half_L #decay rate in the lumen
 
 ```
+
+```{r define-parameters}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^3 #k2/min(Mns_vec) #rate of antibody binding such that KM is order of magnitude of min of the Mns
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 3 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mus = log(2)/t_halfs #half lives in days
+names(d_mus) = t_halfs
+names(d_mus) = t_halfs
+Mns_vec = c/d_mus #vecotr of approximate ss solutions
+names(Mns_vec) = t_halfs
+
+# generation of new response
+Ap = Mns_vec["90"] #peak antibody titer will be the same as Mns for 90 days
+#initial ab titer
+A0 = 1 # initial specific ab concentration
+tp = 5 #time of peak titer -- days
+
+# will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+```
+
 
 ```{r plot-Ms-and-Mns}
 ### plot Ms vs Mns over time
@@ -442,12 +476,15 @@ print(plot)
 
 Aww they're basically the same! All that running to stay in one place :) heck, I'm doing a PhD!
 
-And I bet in this parameter regime the full ode will give the same result. Aw shall we try? 
+
 
 # Compare to the ODE including transport in steady state
 
 ```{r compare-approximation-full}
 ### parameters for competition model 
+## define half-lifes
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+
 ### define initial conditions and parms
 # initial conditions
   Ms_init = 0 # starting antibody titer
@@ -465,10 +502,10 @@ Tmax = 30
 points_per_day = 24 
 
 ### deSolve soltions
-full_solns = lapply(t_halfs, function(t_half){ # half lives in days
+ss_solns = lapply(t_halfs, function(t_half){ # half lives in days
 
   ############ solve for steady state concentrations ###################
-  init_cond = c("Ms" = 0, "Mns" = Mns_init, "Rs" = 0, "Rns" = 0, "Ls" = 0, "Lns" = 0)
+  init_cond = c("Ms" = 0, "Mns" = Mns_init, "Rs" = 0, "Rns" = 0, "Ls" = 0, "Lns" = Lns_init)
   ### set parms 
     d_mu = log(2)/t_half #decay rate per day
     
@@ -479,7 +516,7 @@ full_solns = lapply(t_halfs, function(t_half){ # half lives in days
     c = c, # total antibody production rate per day
     #generation of new responses
     Ap = Ap, # peak antibody titer
-    A0 = A0, # intial antibody titer
+    A0 = 1, # intial antibody titer
     tp = tp, # time of peak response, days
     r0 = (2*log(Ap/A0)/tp) + d_mu, #initial/greatest exponential expansion rate
     alpha = (((2*log(Ap/A0)/tp) + d_mu) - d_mu)/tp, # rate of decay of exponential growth rate
@@ -505,13 +542,24 @@ full_solns = lapply(t_halfs, function(t_half){ # half lives in days
                                           values_to = "concentration") %>% as.data.frame()
 
 
+#plot spectific responses in the lumen
+plot = ggplot() +
+  geom_line(data = ss_solns %>% filter(population %in% c("Mns", "Ms")), aes(x = time, y = log10(concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = factor(population))) +
+  scale_y_continuous(limits = c(-1,NA)) +
+  scale_color_manual(values = my_colors) +
+  theme_bw()
+
+# print to viewer
+print(plot)
+
 
 ```
+
 
 ```{r plot-all}
 plot = ggplot() +
   geom_line(data = ODE_solns %>% filter(population %in% c("Rns", "Rs")), aes(x = time, y = log10(k2*concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "simple_ODE")) +
-   geom_line(data = full_solns %>% filter(population %in% c("Rns", "Rs")), aes(x = time, y = log10(k2*concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "full_ODE")) +
+   geom_line(data = ss_solns %>% filter(population %in% c("Rns", "Rs")), aes(x = time, y = log10(k2*concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "full_ODE")) +
   geom_line(data = MM_soln, aes(x = time, y = log10(phi_s), group = factor(t_half), col = factor(t_half), linetype = "MM")) +
   geom_line(data = MM_soln, aes(x = time, y = log10(phi_ns), group = factor(t_half), col = factor(t_half), linetype = "MM")) + 
   scale_color_manual(values = my_colors) +
