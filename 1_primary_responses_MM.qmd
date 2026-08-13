@@ -127,7 +127,6 @@ The horizontal dashed line shows the greatest possible transport rate, $V_{max}$
 
 Notice that I have chosen paramerters such that, in the absence of competition, the maximum flux is reached by the the maximum concentration of $M_s$ generated during a response. As nonspecific antibody is added, however, the flux achieved at the maximum specific antibody concentration drops. This is the core of the competitive effect. 
 
-
 Below, I show the generation and decay of $M_s$ over the course of infection with respect to the steady-state concentration of $M_{ns}$ for increasing half-life of mucosal antibodies. 
 
 ```{r plot-Ms-and-Mns}
@@ -352,7 +351,6 @@ Mns = c/d_mu
 Ap = Ap
 A0 = A0
 tp = tp
-
 ```
 
 ```{r calculate-flux-Vmax}
