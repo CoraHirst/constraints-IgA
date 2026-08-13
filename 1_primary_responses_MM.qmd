@@ -1,0 +1,1308 @@
+---
+title: "Simulations of specific IgA transport in the context of pre-existing immunity"
+subtitle: "Michaelis-Mentin Approximation"
+format: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+MM_function = function(M_s, M_ns) {(Vmax*M_s)/(KM+M_ns+M_s)}
+
+
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
+```
+
+# Objective 
+
+In this document, we evaluate how long-lived IgA antibody titers in the respiratory mucosa interfere with the transport of specific IgA antibodies to the site of infection. We assume that the concentration of $M_{ns}$ changes negligibly over the course of infection, and assume that the steady state concentration of $M_{ns}$ is proportional to $\frac{c}{d_\mu}$. We use a Michaelis-Mentin approximation to estimate the flux of specific IgA across the mucosal membrane. 
+
+
+# Outline 
+
+I will review the kinetics inferred by the Michaelis-Mentin approximation before presenting the results of competitive inhibition by non-specific immunity during a specific response. 
+
+The results in this document are organized as follows: 
+
+1) First, we will explore the effect of changing $d_\mu$, ${k_2}$, and $R_T$ on the total flux of specific IgA, $k_2R_S$ (or $\phi_S$) over time. 
+
+2) We will then explore the effect of these two parameters, as well as $V_{max}$ on the *efficiency* of the response over time, which we define as $\epsilon_S = \frac{k_2R_s}{M_s}$. 
+
+3) Finally, we will explore the peak flux and integral of flux by the peak, as well as the peak efficiency of the response, as a function of both $d_\mu$ and $\frac{k_2}{k_1}$ and as a function of $d_\mu$ and $V_{max}$, to explore which variable has the greatest effect of reducing the effect of pre-existing immunity on primary responses. 
+
+# Michaelis-Mentin Kinetics
+
+Below, we define our parameters: 
+
+```{r define-parameters}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^3 #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 3 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years :) 69 
+d_mus = log(2)/t_halfs #half lives in days
+  names(d_mus) = t_halfs
+Mns_vec = c/d_mus #vecotr of approximate ss solutions
+  names(Mns_vec) = t_halfs
+
+# generation of new response
+Ap = Mns_vec["90"] #peak antibody titer will be the same as Mns for 90 days
+#initial ab titer
+A0 = 1 # initial specific ab concentration
+tp = 5 #time of peak titer -- days
+
+# will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+
+```
+
+
+Below, we plot how the flux of specific antibody for a given concentration of $M_s$ in the mucosa changes as a function of the half-life of non-specific antibodies. In essence, the effective amount of $M_s$ required to reach half-maximal transport will increase by the concnetration of non-specific antibody conferred by the increasing half-life. 
+
+```{r plot-MM-kinetics}
+#set concentrations of Ms for x axis
+concentrations = 10^seq(1, 10, by = 0.1) #range of concentrations M_s such that we span much less than and much greater than Ap
+
+### plot flux vs [Ms] given each Mns 
+flux_df = lapply(t_halfs, function(t_half){
+  # set d_mu and Mns 
+  d_mu = log(2)/t_half
+  Mns = c/d_mu
+  
+  #calculate flux
+  flux = sapply(concentrations, function(Ms){
+   
+   return(MM_function(M_s = Ms, M_ns = Mns))
+  }) %>% cbind("Ms" = concentrations, "flux" = ., "t_half" = t_half) %>% as.data.frame() 
+}) %>% do.call(rbind, .) %>% as.data.frame() 
+
+## plot
+plot = ggplot() + geom_line(data = flux_df, aes(x = (Ms), y = flux, group = factor(t_half), col = factor(t_half))) +
+  geom_hline(yintercept = Vmax, linetype = "dashed") +
+  geom_vline(xintercept = (KM), color = "red") +
+  geom_vline(xintercept = (Ap), linetype= "dashed") +
+geom_line(
+  aes(x = concentrations, y = sapply(concentrations, function(Ms){Vmax*Ms/(KM+Ms)})),
+  inherit.aes = FALSE,
+  color = "red"
+) +
+  scale_x_continuous(trans = "log10") +
+  scale_color_manual(values = my_colors) +
+  labs(x = "[Ms]", y = "flux [Ms]", color = "Mucosal Ab Half Life, days", title = "Competitive inhibition of specific antibody transport by nonspecific antibodies") + 
+  theme_bw()
+
+# print to viewer
+print(plot)
+```
+
+The horizontal dashed line shows the greatest possible transport rate, $V_{max}$; the red curve shows the MM kinetics given $[M_s]$ only; the vertical red line shows the 50% saturation concentration given $[M_s]$ only, $K_M$; and I have added a vertical dashed line to show the peak concentration of $M_s$ generated over an infection.
+
+Notice that I have chosen paramerters such that, in the absence of competition, the maximum flux is reached by the the maximum concentration of $M_s$ generated during a response. As nonspecific antibody is added, however, the flux achieved at the maximum specific antibody concentration drops. This is the core of the competitive effect. 
+
+
+Below, I show the generation and decay of $M_s$ over the course of infection with respect to the steady-state concentration of $M_{ns}$ for increasing half-life of mucosal antibodies. 
+
+```{r plot-Ms-and-Mns}
+### plot Ms vs Mns over time
+Mab_titers = lapply(t_halfs, function(t_half){
+  # setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+  # setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate
+  soln = data.frame("time" = time, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }))
+  
+
+  # solve 
+  soln = soln %>% cbind(.,Mns, t_half)
+}) %>% do.call(rbind, .) #concatenates all dfs from lapply list into a single df rowwise
+
+### Plot
+plot = ggplot() + geom_line(data = Mab_titers, aes(x = time, y = log10(Ms), group = factor(t_half), col = factor(t_half), linetype = "Ms")) +
+  geom_line(data = Mab_titers, aes(x = time, y = log10(Mns), group = factor(t_half), col = factor(t_half), linetype = "Mns")) + 
+  scale_color_manual(values = my_colors) +
+  scale_linetype_manual(values = c("Ms" = "solid", "Mns" = "dashed")) +
+  labs(x = "time, days", y = "log10[Ab], mg/dL", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "[Ms] and [Mns] over the course of infection") +
+  theme_bw()
+  
+
+#print to viewer
+print(plot)
+
+```
+
+I have chosen the peak of the response such that the peak titer matches the steady state of the nonspecific antibody for an intermediate half-life. 
+
+# Results 1: Flux over time as a function of $d_\mu$ or $\frac{k_2}{k_1}$
+
+The flux of specific IgA over time will depend on competition with pre-existing immunity. This competition changes according to i) the amount of non-specific pre-exisitng immunity, which is a function of the rate of decay of responses, and ii) the magnitude of the peak specific antibody titer with respect to the saturation of transport, which we can change as a funtion of $K_M$, the half saturation point, which equals $\frac{k_2}{k_1}$. 
+
+## Flux over time as a function of $d_\mu$
+
+Below, we calculate the flux of specific IgA over time as a function of the decay rate of previously generated IgA: 
+
+```{r parms-flux-decay-rate}
+# set parms 
+#transport 
+Vmax = Vmax
+k2 = k2
+RT = RT
+k1 = k1
+KM = KM
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_halfs = t_halfs
+d_mus = d_mus
+Mns_vec = Mns_vec
+Ap = Ap
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-flux-decay-rate}
+MM_soln = lapply(t_halfs, function(t_half){
+  # setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+  # setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "t_half" = t_half, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){MM_function(M_s = Ms, M_ns = Mns)})
+  Ms_soln$phi_ns = sapply(Ms_soln$Ms, function(Ms){(Vmax*Mns)/(KM+Ms+Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+```
+
+```{r plot-flux-decay-rate}
+#ggplot
+plot = ggplot() + geom_line(data = MM_soln, aes(x = time, y = log10(phi_s), group = factor(t_half), col = factor(t_half), linetype = "phi_s")) +
+  geom_line(data = MM_soln, aes(x = time, y = log10(phi_ns), group = factor(t_half), col = factor(t_half), linetype = "phi_ns")) + 
+  scale_color_manual(values = my_colors) +
+  scale_linetype_manual(values = c("phi_s" = "solid", "phi_ns" = "dashed")) +
+  labs(x = "time, days", y = "log10[R-Ab], mg/dL, over time", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "flux of s and ns into the lumen over the course of infection") +
+  theme_bw()
+
+print(plot)
+
+```
+
+## Flux over time as a function of $k_2$
+
+Below we define the range of $K_M$ over which to calculate our antibody. We will set our half life to 5 years, which is still substantially faster than for systemic immunity. 
+
+```{r parms-flux-KM}
+# set parms 
+#transport 
+k2_vec = 1/(c(0.25,0.5,0.75,1,2,3)/24)
+Vmax = k2_vec*RT #Vmax increases as well as KM when k2 increases
+k1 = k1
+KM_vec = k2_vec/k1
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_half = 4000
+d_mu = log(2)/t_half
+Mns = c/d_mu
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-flux-KM}
+
+MM_soln = lapply(k2_vec, function(k2.new){
+  KM = k2.new/k1
+  Vmax = k2.new*RT
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "k2" = k2.new, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){(Vmax*Ms)/(KM+Ms+Mns)})
+  Ms_soln$phi_ns = sapply(Ms_soln$Ms, function(Ms){(Vmax*Mns)/(KM+Ms+Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+```
+
+```{r plot-flux-KM}
+#ggplot
+plot = ggplot() + geom_line(data = MM_soln, aes(x = time, y = log10(phi_s), group = factor(k2), col = factor(k2), linetype = "phi_s")) +
+  geom_line(data = MM_soln, aes(x = time, y = log10(phi_ns), group = factor(k2), col = factor(k2), linetype = "phi_ns")) + 
+  scale_color_manual(values = c("black", "blue", my_colors)) +
+  scale_linetype_manual(values = c("phi_s" = "solid", "phi_ns" = "dashed")) +
+  labs(x = "time, days", y = "log10[R-Ab], mg/dL, over time", col = "cellular transport rate, per day", linetype = "Specificity", title = "flux of s and ns into the lumen over the course of infection") +
+  theme_bw()
+
+print(plot)
+```
+
+The increase in the rate of transport increases the half-saturation titer $K_M$ as well as the maximum flux $V_max$. I have varied $k_2$ such that the transport rate varies from 1 per 15 minutes to 1 per 3 hours. As a result of this small range of physiologically reasonable rates and the change in two conflicting increasing parameters, the effect of increasing $k_2$ is more muted.
+
+*NOTE: The effect is likely to increase when we consider the full model, because higher rate of transport and Vmax will reduce the SS concentration of non-specific Ab*
+
+Same with increasing $V_{max}$ alone, which is what I will explore below: 
+
+## Flux over time as a function of $V_{max}$
+
+```{r parms-flux-Vmax}
+# set parms 
+#transport 
+k2 = 1/(2/24)
+Vmax_factors = c(1,2,4,8,16,20,50,100)
+Vmax = k2*(RT*Vmax_factors) #Vmax increases as well as KM when k2 increases
+k1 = k1
+KM = k2/k1
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_half = 4000
+d_mu = log(2)/t_half
+Mns = c/d_mu
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-flux-Vmax}
+
+MM_soln = lapply(Vmax_factors, function(Vmax_factor){
+  Vmax = k2*RT*Vmax_factor
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "Vmax_Factor" = Vmax_factor, "Total_R" = RT*Vmax_factor, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){(Vmax*Ms)/(KM+Ms+Mns)})
+  Ms_soln$phi_ns = sapply(Ms_soln$Ms, function(Ms){(Vmax*Mns)/(KM+Ms+Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+```
+
+```{r plot-flux-Vmax}
+#ggplot
+plot = ggplot() + geom_line(data = MM_soln, aes(x = time, y = log10(phi_s), group = factor(Vmax_Factor), col = factor(Vmax_Factor), linetype = "phi_s")) +
+  geom_line(data = MM_soln, aes(x = time, y = log10(phi_ns), group = factor(Vmax_Factor), col = factor(Vmax_Factor), linetype = "phi_ns")) + 
+  scale_color_manual(values = c("black", "blue", my_colors)) +
+  scale_linetype_manual(values = c("phi_s" = "solid", "phi_ns" = "dashed")) +
+  labs(x = "time, days", y = "log10[R-Ab], mg/dL, over time", col = "Fold increase in Vmax", linetype = "Specificity", title = "flux of s and ns into the lumen over the course of infection") +
+  theme_bw()
+
+print(plot)
+```
+
+Again, the steady state nonspecific will change if Vmax is consistently high. So, the effect may be greater in the model considering transport in the SS calculation of the nonspecific titer. I'll run that later to verify the extent to which the conclusions change in that context. 
+
+# Efficiency over time
+
+We can calculate/report efficiency according to a few metrics. I suggest two below: 
+
+i) $\frac{k_2R_s}{M_s}$ - the flux of $R_s$ relative to $M_s$ or, in other words, the per-capita transport rate of **specific antibody** into the lumen relative to the existing pool of specific antibody in the mucosa, or in other words for each $M_s$ sitting in the mucosa, how much specific antibody is being transported to the lumen per unit time?
+
+ii) the fraction of specific to nonspecific antibody either being delivered or in the lumen. should just reflect the fraction of specific to nonspecific in the mucosa. 
+
+We are going to report the first measurement of efficiency for now. 
+
+I will start by re-defining our basic parameters: 
+
+```{r define-parameters-efficiency}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^3 #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 3 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mu = log(2)/40000 #half lives in days
+Mns = c/d_mu #vecotr of approximate ss solutions
+ 
+
+# generation of new response
+Ap = Mns_vec["90"] #peak antibody titer will be the same as Mns for 90 days
+#initial ab titer
+A0 = 1 # initial specific ab concentration
+tp = 5 #time of peak titer -- days
+
+# will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+```
+
+
+## $/Epsilon_s$ by decay rate
+
+```{r parms-efficiency-decay-rate}
+# set parms 
+#transport 
+Vmax = Vmax
+k2 = k2
+RT = RT
+k1 = k1
+KM = KM
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_halfs = t_halfs
+d_mus = log(2)/t_halfs #half lives in days
+  names(d_mus) = t_halfs
+Mns_vec = c/d_mus #vecotr of approximate ss solutions
+  names(Mns_vec) = t_halfs
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+Because $k_2R_s$ = $phi_s$, the efficiency $\epsilon_s = \frac{k_2 R_s}{M_s}$ can be calculated as $\epsilon_s = \frac{\phi_s}{M_s}$. 
+
+Really, this is the per-capita transport rate given by the Michaelis Mentin approximation, $\frac{phi_s}{M_s} = \frac{V_{max}}{K_M + M_ns + M_s}$.
+
+We plot this over time over the course of infection. 
+
+```{r calculate-efficiency-decay-rate}
+MM_soln = lapply(t_halfs, function(t_half){
+  # setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+  # setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "t_half" = t_half, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$MM_s = sapply(Ms_soln$Ms, function(Ms){MM_function(M_s = Ms, M_ns = Mns)/Ms})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+```
+
+```{r plot-efficiecy-decay-rate}
+#ggplot
+# --- rescale log10(Ms) onto the primary axis so it can share the panel ---
+prim <- c(-7, -3)                    # primary axis range (per-capita transport)
+sec  <- range(log10(MM_soln$Ms))     # secondary data range (log10 Ms)
+to_prim <- function(x) (x - sec[1]) / diff(sec) * diff(prim) + prim[1]
+to_sec  <- function(x) (x - prim[1]) / diff(prim) * diff(sec) + sec[1]
+
+plot = ggplot(MM_soln, aes(x = time, col = factor(t_half))) +
+  geom_line(aes(y = log10(MM_s), group = factor(t_half))) +
+  geom_line(aes(y = to_prim(log10(Ms)), group = factor(t_half)), linetype = "dashed") +
+  scale_y_continuous(
+    name     = "Per-capita specific antibody transport rate",
+    limits   = prim,
+    sec.axis = sec_axis(~ to_sec(.), name = "log10 [Ms], mg/dL")
+  ) +
+  scale_color_manual(values = my_colors) +
+  labs(x = "time, days", col = "mucosal Ab half-life, days", title = "Per capita transport rate of specific antibody into the lumen over the course of infection") +
+  theme_bw()
+
+print(plot)
+
+```
+
+## Per-capita specific transport over time as a function of $k_2$
+
+Below we define the range of $k_2$ over which to calculate our antibody. We will set our half life to 5 years, which is still substantially faster than for systemic immunity. 
+
+```{r parms-efficiency-KM}
+# set parms 
+#transport 
+k2_vec = 1/(c(0.25,0.5,0.75,1,2,3)/24)
+Vmax = k2_vec*RT #Vmax increases as well as KM when k2 increases
+k1 = k1
+KM_vec = k2_vec/k1
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_half = 4000
+d_mu = log(2)/t_half
+Mns = c/d_mu
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-efficiency-KM}
+MM_soln = lapply(k2_vec, function(k2.new){
+  KM = k2.new/k1
+  Vmax = k2.new*RT
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "k2" = k2.new, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){(Vmax)/(KM+Ms+Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+```
+
+```{r plot-efficiency-KM}
+#ggplot
+# --- rescale log10(Ms) onto the primary axis so it can share the panel ---
+prim <- c(-7, -3)                    # primary axis range (per-capita transport)
+sec  <- range(log10(MM_soln$Ms))     # secondary data range (log10 Ms)
+to_prim <- function(x) (x - sec[1]) / diff(sec) * diff(prim) + prim[1]
+to_sec  <- function(x) (x - prim[1]) / diff(prim) * diff(sec) + sec[1]
+
+plot = ggplot(MM_soln, aes(x = time, col = factor(k2))) +
+  geom_line(aes(y = log10(phi_s), group = factor(k2))) +
+  geom_line(aes(y = to_prim(log10(Ms)), group = factor(k2)), linetype = "dashed") +
+  scale_y_continuous(
+    name     = "per capita specific antibody transport rate",
+    limits   = prim,
+    sec.axis = sec_axis(~ to_sec(.), name = "log10 [Ms], mg/dL")
+  ) +
+  scale_color_manual(values = c("black", "blue", my_colors)) +
+  labs(x = "time, days", col = "cellular transport rate, per day", title = "Per capita transport rate of specific antibody into the lumen over the course of infection") +
+  theme_bw()
+
+print(plot)
+```
+
+## Per-capita specific transport over time as a function of $V_{max}$
+
+
+```{r parms-efficiency-Vmax}
+# set parms 
+#transport 
+k2 = 1/(2/24)
+Vmax_factors = c(1,2,4,8,16,20,50,100)
+Vmax = k2*(RT*Vmax_factors) #Vmax increases with Vmax factors, through RT
+k1 = k1
+KM = k2/k1
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_half = 4000
+d_mu = log(2)/t_half
+Mns = c/d_mu
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-efficiency-Vmax}
+
+MM_soln = lapply(Vmax_factors, function(Vmax_factor){
+  Vmax = k2*RT*Vmax_factor
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "Vmax_Factor" = Vmax_factor, "Total_R" = RT*Vmax_factor, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){(Vmax)/(KM+Ms+Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+```
+
+```{r plot-efficiency-Vmax}
+#ggplot
+# --- rescale log10(Ms) onto the primary axis so it can share the panel ---
+prim <- c(-7, -3)                    # primary axis range (per-capita transport)
+sec  <- range(log10(MM_soln$Ms))     # secondary data range (log10 Ms)
+to_prim <- function(x) (x - sec[1]) / diff(sec) * diff(prim) + prim[1]
+to_sec  <- function(x) (x - prim[1]) / diff(prim) * diff(sec) + sec[1]
+
+plot = ggplot(MM_soln, aes(x = time, col = factor(Vmax_Factor))) +
+  geom_line(aes(y = log10(phi_s), group = factor(Vmax_Factor))) +
+  geom_line(aes(y = to_prim(log10(Ms)), group = factor(Vmax_Factor)), linetype = "dashed") +
+  scale_y_continuous(
+    name     = "Per capita specific antibody transport rate",
+    limits   = prim,
+    sec.axis = sec_axis(~ to_sec(.), name = "log10 [Ms], mg/dL")
+  ) +
+  scale_color_manual(values = c("black", "blue", my_colors)) +
+  labs(x = "time, days", col = "fold increase in Receptors (Vmax)", title = "Per capita transport rate of specific antibody into the lumen over the course of infection") +
+  theme_bw()
+
+print(plot)
+```
+
+At this point I just really don't know what i am looking for...
+
+Maybe a better measurement is the integral of $k_2 R_s(t)$ over the integral of $M_s(t)$, rather than an instantaneous rate over time. Let's try: 
+
+# Efficiency as $\frac{\int_0^\infty k_2 R_s (t) dt}{\int_0^\infty M_s(t)}$
+
+```{r define-parameters}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^3 #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 3 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years :) 69 
+d_mus = log(2)/t_halfs #half lives in days
+  names(d_mus) = t_halfs
+Mns_vec = c/d_mus #vecotr of approximate ss solutions
+  names(Mns_vec) = t_halfs
+
+# generation of new response
+Ap = Mns_vec["90"] #peak antibody titer will be the same as Mns for 90 days
+#initial ab titer
+A0 = 1 # initial specific ab concentration
+tp = 5 #time of peak titer -- days
+
+# will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+
+```
+
+
+
+Because my time points are equally spaced, because I would be multiplying by the x intervals in the numerator and denomitor, these values cancel out in my reimman summ approximation of the integral and thus I can simply calculate 
+$$
+\epsilon_2 = \frac{\int_0^\infty k_2 R_s (t) dt}{\int_0^\infty M_s(t)} = \sum_{i=1}^N \frac{\phi_{s,i}}{M_{s,i}}
+$$
+where i is the ith of N time points. 
+
+Note that this is almost like the average efficiency - it would be, if I were to divide by N. 
+
+## Efficiency by decay rate
+
+```{r parms-efficiency-decay-rate}
+# set parms 
+#transport 
+Vmax = Vmax
+k2 = k2
+RT = RT
+k1 = k1
+KM = KM
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_halfs = t_halfs
+d_mus = log(2)/t_halfs #half lives in days
+  names(d_mus) = t_halfs
+Mns_vec = c/d_mus #vecotr of approximate ss solutions
+  names(Mns_vec) = t_halfs
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+
+```{r calculate-efficiency-decay-rate}
+MM_soln = lapply(t_halfs, function(t_half){
+  # setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+  # setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "t_half" = t_half, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){MM_function(M_s = Ms, M_ns = Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+# calculate average efficiency
+MM_soln = MM_soln %>% 
+  group_by(t_half) %>% 
+  summarise(sum_Ms = sum(Ms), sum_phi_s = sum(phi_s)) %>%
+  mutate(efficiency = sum_phi_s/sum_Ms) %>% #efficiency column defined 
+  as.data.frame()
+
+```
+
+```{r plot-efficiecy-decay-rate}
+# plot 
+plot = ggplot() + geom_line(data = MM_soln, aes(x = t_half, y = log10(efficiency))) + geom_point(data = MM_soln, aes(x = t_half, y = log10(efficiency)))
+
+# print to system viewer
+print(plot)
+```
+
+## Efficiency by transport rate $k_2$
+
+```{r parms-efficiency-KM}
+# set parms 
+#transport 
+k2_vec = 1/(c(0.25,0.5,0.75,1,2,3)/24)
+Vmax = k2_vec*RT #Vmax increases as well as KM when k2 increases
+k1 = k1
+KM_vec = k2_vec/k1
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_half = 4000
+d_mu = log(2)/t_half
+Mns = c/d_mu
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-efficiency-KM}
+MM_soln = lapply(k2_vec, function(k2.new){
+  KM = k2.new/k1
+  Vmax = k2.new*RT
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "k2" = k2.new, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){(Vmax)/(KM+Ms+Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+# calculate average efficiency
+MM_soln = MM_soln %>% 
+  group_by(k2) %>% 
+  summarise(sum_Ms = sum(Ms), sum_phi_s = sum(phi_s)) %>%
+  mutate(efficiency = sum_phi_s/sum_Ms) %>% #efficiency column defined 
+  as.data.frame()
+
+
+```
+
+```{r plot-efficiency-KM}
+#ggplot
+# plot 
+plot = ggplot() + geom_line(data = MM_soln, aes(x = k2, y = log10(efficiency))) + geom_point(data = MM_soln, aes(x = k2, y = log10(efficiency))) + scale_x_reverse() #reverse x axis to see how efficinecy decreases with transport rate
+
+# print to system viewer
+print(plot)
+```
+
+## Efficiency as a function of $V_{max}$
+
+```{r parms-efficiency-Vmax}
+# set parms 
+#transport 
+k2 = 1/(2/24)
+Vmax_factors = c(1,2,4,8,16,20,50,100)
+Vmax = k2*(RT*Vmax_factors) #Vmax increases as well as KM when k2 increases
+k1 = k1
+KM = k2/k1
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_half = 4000
+d_mu = log(2)/t_half
+Mns = c/d_mu
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-efficiency-Vmax}
+MM_soln = lapply(Vmax_factors, function(Vmax_factor){
+  Vmax = k2*RT*Vmax_factor
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+  # set time vector parms
+  Tmax = 30 # total days
+  points_per_day = 24 # every hour
+  time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+
+  ### apply to calculate Ms titers over time
+  Ms_soln = data.frame("time" = time, "Vmax_Factor" = Vmax_factor, "Total_R" = RT*Vmax_factor, "Ms" = sapply(time, function(t){
+    if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+    else {Ap*exp(-d_mu*(t-tp))}
+  }), "Mns" = Mns)
+  
+  ### apply to calculate Ls flux over time
+  Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){(Vmax)/(KM+Ms+Mns)})
+  
+  return(Ms_soln)
+}) %>% do.call(rbind, .)
+
+# calculate average efficiency
+MM_soln = MM_soln %>% 
+  group_by(Vmax_Factor) %>% 
+  summarise(sum_Ms = sum(Ms), sum_phi_s = sum(phi_s)) %>%
+  mutate(efficiency = sum_phi_s/sum_Ms) %>% #efficiency column defined 
+  as.data.frame()
+
+```
+
+```{r plot-efficiency-Vmax}
+#ggplot
+# plot 
+plot = ggplot() + geom_line(data = MM_soln, aes(x = Vmax_Factor, y = log10(efficiency))) + geom_point(data = MM_soln, aes(x = Vmax_Factor, y = log10(efficiency))) + scale_x_reverse() #reverse x axis to see how efficinecy decreases with transport rate
+
+# print to system viewer
+print(plot)
+```
+
+# Heatmaps
+
+We will plot the magnitude (measured at the peak, day 5) and efficiency of the response as a function of $d_\mu$ and either $k_2$ or $V_{max}$.
+
+```{r define-parameters-heatmaps}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^3 #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 3 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mu = log(2)/40000 #half lives in days
+Mns = c/d_mu #vecotr of approximate ss solutions
+ 
+
+# generation of new response
+Ap = 4000 #peak antibody titer will be the same as Mns for 90 days
+#initial ab titer
+A0 = 1 # initial specific ab concentration
+tp = 5 #time of peak titer -- days
+
+# will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+```
+
+## Effect of $d_\mu$ vs $k_2$ 
+
+```{r parameters-heatmaps-dmu-k2}
+# set parms 
+#transport 
+RT = RT
+k2_vec = rev(1/(seq(0.1,3, by = 0.01)/24))
+Vmax_vec = k2_vec*RT #Vmax increases as well as KM when k2 increases
+k1 = k1
+KM_vec = k2_vec/k1
+
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_halfs = 10^seq(1,5,by = 0.01)
+d_mus = log(2)/t_halfs
+Mns_vec = c/d_mus
+Ap = Ap
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-peak-dmu-k2}
+MM_soln = sapply(t_halfs, function(t_half){ #iterate over half lives
+# setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+# iterate over k2s
+  sapply(k2_vec, function(k2.new){
+  #set k2 dependent parms 
+    KM = k2.new/k1
+    Vmax = k2.new*RT
+    
+  # set time vector parms
+    Tmax = 30 # total days
+    points_per_day = 24 # every hour
+    time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+  
+    ### apply to calculate Ms titers over time
+    Ms_soln = data.frame("time" = time, "t_half" = t_half, "Ms" = sapply(time, function(t){
+      if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+      else {Ap*exp(-d_mu*(t-tp))}
+    }), "Mns" = Mns)
+    
+    ### apply to calculate Ls flux over time
+    Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){Vmax*Ms/(KM+Mns+Ms)})
+    # report the max flux
+    return(max(Ms_soln$phi_s))
+  })
+})
+
+
+### plot
+#plot AICs
+filled.contour(x = k2_vec, y = log10(t_halfs), z=log10(MM_soln), nlevels = 10, lwd = 2, xlab = expression(paste("transport rate, ", k[2], " ", days^{-1})), ylab = expression(paste(log[10], " exponential half life, ", days^{-1})), main = "Peak Flux of Specific Antibody")
+
+## try as a plotly
+library(plotly)
+
+# long form required for plot
+MM_soln_long = MM_soln %>% as.data.frame %>% cbind(k2_vec, .) %>%
+  set_names(c("k_2", t_halfs)) %>%
+  pivot_longer(cols = !k_2,
+               names_to = "t_half",
+               values_to = "peak_flux")
+
+#plot 
+plot <- plot_ly(data = MM_soln_long, x=~as.numeric(k_2),y=~log10(as.numeric(t_half)), z=~log10(peak_flux), type = "contour")
+
+print(plot)
+```
+
+```{r calculate-efficiency-dmu-k2}
+MM_soln = sapply(t_halfs, function(t_half){ #iterate over half lives
+# setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+# iterate over k2s
+  sapply(k2_vec, function(k2.new){
+  #set k2 dependent parms 
+    KM = k2.new/k1
+    Vmax = k2.new*RT
+    
+  # set time vector parms
+    Tmax = 30 # total days
+    points_per_day = 24 # every hour
+    time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+  
+    ### apply to calculate Ms titers over time
+    Ms_soln = data.frame("time" = time, "t_half" = t_half, "Ms" = sapply(time, function(t){
+      if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+      else {Ap*exp(-d_mu*(t-tp))}
+    }), "Mns" = Mns)
+    
+    ### apply to calculate Ls flux over time
+    Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){Vmax*Ms/(KM+Mns+Ms)})
+    
+    #calculate average efficiency
+    efficiency = sum(Ms_soln$phi_s)/sum(Ms_soln$Ms)
+
+    # report the efficiency
+    return(efficiency)
+  })
+})
+
+### plot
+#plot AICs
+filled.contour(x = k2_vec, y = log10(t_halfs), z=log10(MM_soln), nlevels = 10, lwd = 2, xlab = expression(paste("transport rate, ", k[2], " ", days^{-1})), ylab = expression(paste(log[10], " exponential half life, ", days^{-1})), main = "Efficiency of Specific Antibody Transport, sum(Phi)/sum(Ms)")
+
+## try as a plotly
+library(plotly)
+
+# long form required for plot
+MM_soln_long = MM_soln %>% as.data.frame %>% cbind(k2_vec, .) %>%
+  set_names(c("k_2", t_halfs)) %>%
+  pivot_longer(cols = !k_2,
+               names_to = "t_half",
+               values_to = "efficiency")
+
+#plot 
+plot <- plot_ly(data = MM_soln_long, x=~as.numeric(k_2),y=~log10(as.numeric(t_half)), z=~log10(efficiency), type = "contour")
+
+print(plot)
+```
+
+Lets try now with $V_{max}$
+
+## effect of $d_\mu$ and $V_{max}$
+
+```{r redefine-parameters-heatmaps-}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k1 = k2/10^3 #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3
+KM = k2/k1 #checking KM
+
+# dynamics in the lumen 
+t_half_L = 3 #half life of antibodies in the lumen, in days
+d_L = log(2)/t_half_L #decay rate in the lumen
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years
+d_mu = log(2)/40000 #half lives in days
+Mns = c/d_mu #vecotr of approximate ss solutions
+ 
+
+# generation of new response
+Ap = 40000 #peak antibody titer will be the same as Mns for 90 days
+#initial ab titer
+A0 = 1 # initial specific ab concentration
+tp = 5 #time of peak titer -- days
+
+# will be calculated when iterating through d_mu
+#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+```
+
+
+```{r parameters-heatmaps-dmu-vmax}
+# set parms 
+#transport 
+Vmax_factors = seq(1,1000, by = 1)
+RTs = RT*Vmax_factors #increase available receptors
+Vmax = k2*(RTs) #Vmax increases with available receptors
+k2 = 1/(2/24)
+k1 = k1
+KM = k2/k1
+
+#lumen
+t_half_L = t_half_L
+d_L = d_L
+
+#steady state Ab
+c = c
+t_halfs = 10^seq(1,5,by = 0.01)
+d_mus = log(2)/t_halfs
+Mns_vec = c/d_mus
+
+# generating new response
+Ap = Ap
+A0 = A0
+tp = tp
+
+```
+
+```{r calculate-peak-dmu-vmax}
+MM_soln = sapply(t_halfs, function(t_half){ #iterate over half lives
+# setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+# iterate over vmax
+  sapply(Vmax_factors, function(Vmax_factor){
+  #set vmax_factor dependent parms 
+    Vmax = k2*RT*Vmax_factor
+    
+  # set time vector parms
+    Tmax = 30 # total days
+    points_per_day = 24 # every hour
+    time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+  
+    ### apply to calculate Ms titers over time
+    Ms_soln = data.frame("time" = time, "t_half" = t_half, "Ms" = sapply(time, function(t){
+      if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+      else {Ap*exp(-d_mu*(t-tp))}
+    }), "Mns" = Mns)
+    
+    ### apply to calculate Ls flux over time
+    Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){Vmax*Ms/(KM+Mns+Ms)})
+    # report the max flux
+    return(max(Ms_soln$phi_s))
+  })
+})
+
+
+### plot
+#plot AICs
+filled.contour(x = log10(Vmax_factors), y = log10(t_halfs), z=log10(MM_soln), lwd = 2, xlab = expression(paste("fold increase in transport proteins")), ylab = expression(paste(log[10], " exponential half life, ", days^{-1})), main = "Peak Flux of Specific Antibody")
+
+## try as a plotly
+library(plotly)
+
+# long form required for plot
+MM_soln_long = MM_soln %>% as.data.frame %>% cbind(Vmax_factors, .) %>%
+  set_names(c("Vmax_factor", t_halfs)) %>%
+  pivot_longer(cols = !Vmax_factor,
+               names_to = "t_half",
+               values_to = "peak_flux")
+
+#plot 
+plot <- plot_ly(data = MM_soln_long, x=~log10(as.numeric(Vmax_factor)),y=~log10(as.numeric(t_half)), z=~log10(peak_flux), type = "contour")
+
+print(plot)
+```
+
+```{r calculate-efficiency-dmu-vmax}
+MM_soln = sapply(t_halfs, function(t_half){ #iterate over half lives
+# setting t.half dependent parms for nonspecific population
+  d_mu = log(2)/t_half #set d_mu
+  Mns = c/d_mu # steadys state nonspecific
+  
+# setting t.half dependent parms for specific abs
+  r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
+  alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate
+
+# iterate over vmax
+  sapply(Vmax_factors, function(Vmax_factor){
+  #set vmax_factor dependent parms 
+    Vmax = k2*RT*Vmax_factor
+    
+  # set time vector parms
+    Tmax = 30 # total days
+    points_per_day = 24 # every hour
+    time = seq(0, Tmax, length.out = Tmax*points_per_day) #generate time vector
+  
+    ### apply to calculate Ms titers over time
+    Ms_soln = data.frame("time" = time, "t_half" = t_half, "Ms" = sapply(time, function(t){
+      if(t<=tp){A0*exp((r0 - d_mu)*t - (alpha/2)*t^2)}
+      else {Ap*exp(-d_mu*(t-tp))}
+    }), "Mns" = Mns)
+    
+    ### apply to calculate Ls flux over time
+    Ms_soln$phi_s = sapply(Ms_soln$Ms, function(Ms){Vmax*Ms/(KM+Mns+Ms)})
+    # report the efficiency
+    efficiency = sum(Ms_soln$phi_s)/sum(Ms_soln$Ms)
+    return(efficiency)
+  })
+})
+
+
+### plot
+#plot AICs
+filled.contour(x = log10(Vmax_factors), y = log10(t_halfs), z=log10(MM_soln), nlevels = 10, lwd = 2, xlab = expression(paste("fold increase in transport proteins")), ylab = expression(paste(log[10], " exponential half life, ", days^{-1})), main = "Efficiency of Specific Antibody Transport")
+
+## try as a plotly
+library(plotly)
+
+# long form required for plot
+MM_soln_long = MM_soln %>% as.data.frame %>% cbind(Vmax_factors, .) %>%
+  set_names(c("Vmax_factor", t_halfs)) %>%
+  pivot_longer(cols = !Vmax_factor,
+               names_to = "t_half",
+               values_to = "Efficiency")
+
+#plot 
+plot <- plot_ly(data = MM_soln_long, x=~log10(as.numeric(Vmax_factor)),y=~log10(as.numeric(t_half)), z=~log10(Efficiency), type = "contour")
+
+print(plot)
+```
+
+
+
+

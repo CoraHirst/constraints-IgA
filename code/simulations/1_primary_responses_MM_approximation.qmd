@@ -1,0 +1,186 @@
+---
+title: "Michaelis-Mentin Approximation of Antibody Transport"
+subtitle: "To what extent does competition from previously generated, non-specific antibodies interfer with newly generated responses"
+format: pdf
+editor: visual
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+source(here("code", "functions", "functions.R"))
+
+here("code", "functions", "functions.R")
+
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
+```
+
+# Objective
+
+# Objective 
+
+In this document, we evaluate how long-lived IgA antibody titers remaining from previous infections of the respiratory mucosa interfere with the transport of newly generated, specific IgA antibodies to the site of infection. We assume that the concentration of $M_{ns}$ changes negligibly over the course of infection, and assume that the steady state concentration of $M_{ns}$ is proportional to $\frac{c}{d_\mu}$. We use a Michaelis-Menten approximation to calculate the flux of specific IgA across the mucosal membrane, and treat nonspecific antibodies as a competitive inhibitor of the transport process.
+
+# Outline 
+
+I will review the kinetics inferred by the Michaelis-Mentin approximation before presenting the results of competitive inhibition by non-specific immunity during a specific response. 
+
+We are modelling the factors that contribute to the strength of competition between newly generated, pathogen specific IgA ($M_s$) and nonspecific IgA remaining from previous infections ($M_{ns}$) in the mucosa for transport across the epithelium and to the cite of infection, the Lumen. 
+
+We are interested in how the half life of IgA titers in the mucosa - thus, the steady-state concentration of non-specific IgA in the mucosa - affects the magnitude and efficiency of newly-generated specific IgA responses. We therefore compare the effect of varying IgA half-life ($t_{1/2}$) on these two quantities to the effect of changing the rate of transport of antibodies across the epithelium ($k_2$) and effect of increases the concentration of transport proteins ($R_T$) on the mucosal surface.  
+
+The results in this document are organized as follows: 
+
+1) How do $t_{1/2}$, $k_2$, and $R_T$ effect the flux of antibody into the lumen over the course of infection (VAR vs Time)
+
+2) How do $t_{1/2}$ and $k_2$ affect i) the peak flux of the antibody and ii) the efficiency of the antibody transport to the lumen? 
+
+3) How do $t_{1/2}$ and $R_T$ affect  i) the peak flux of the antibody and ii) the efficiency of the antibody transport to the lumen? 
+
+# Michaelis-Mentin Kinetics
+
+Below, we define our parameters and vary the $t_{1/2}$ of mucosal antibody titers to observe how pre-existing antibodies increase the concentration of specific IgA at which point the transport of specific antibodies is half-saturated:
+
+```{r define-parameters-vary-thalf}
+# transport
+Vmax = 10^3 # order of magnitude of peak response # we might vary this later
+RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
+k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
+k1 = k2/10^3 #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3
+KM = k2/k1 #checking KM
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years :) 69 
+d_mus = log(2)/t_halfs #half lives in days
+  names(d_mus) = t_halfs
+Mns_vec = c/d_mus #vecotr of approximate ss solutions
+  names(Mns_vec) = t_halfs
+
+# generation of new response
+Ap = Mns_vec[round(length(t_halfs)/2)] #peak antibody titer will be the same as Mns for 90 days - the middle value of all Mns
+
+```
+
+Below, we plot how the flux of specific antibody for a given concentration of $M_s$ in the mucosa changes as a function of the half-life of non-specific antibodies. In essence, the effective amount of $M_s$ required to reach half-maximal transport will increase by the concentration of non-specific antibody conferred by the increasing half-life (the effective $K_M = K_M + \hat M_{ns}$.) 
+
+```{r plot-MM-kinetics}
+#set concentrations of Ms for x axis
+concentrations = 10^seq(1, 10, by = 0.1) #range of concentrations M_s such that we span much less than and much greater than Ap
+
+### plot flux vs [Ms] given each Mns 
+flux_df = lapply(t_halfs, function(t_half){
+  # set d_mu and Mns 
+  d_mu = log(2)/t_half
+  Mns = c/d_mu
+  
+  #calculate flux using MM function in functions.R
+  flux = sapply(concentrations, function(Ms){
+  return(MM_function(Vmax = Vmax, KM = KM, M_s = Ms, M_ns = Mns))
+  }) %>% 
+    cbind("Ms" = concentrations, "flux" = ., "t_half" = t_half) %>% # add the concentrations of Ms correspond to each flux as a column, and label all observations with the thalf used to calculate
+    as.data.frame() #format as a dataframe
+}) %>% 
+  do.call(rbind, .) %>% as.data.frame() #combine all dataframes to make one long-from data frame with a column keeping track of thalf used for calculating each observation
+
+## plot
+plot = ggplot() + geom_line(data = flux_df, aes(x = (Ms), y = flux, group = factor(t_half), col = factor(t_half))) + #plot flux by thalf
+  geom_hline(yintercept = Vmax, linetype = "dashed") + #add vmax as horizontal line
+  geom_vline(xintercept = KM, color = "red") + #add half-saturation point in absence of competition as vertical line
+  geom_vline(xintercept = Ap, linetype= "dashed") + #add vertical line showing peak titer generated in mucosa
+geom_line(
+  aes(x = concentrations, y = sapply(concentrations, function(Ms){MM_function(Vmax = Vmax, KM = KM, M_s = Ms, M_ns = 0)})),
+  inherit.aes = FALSE,
+  color = "red"
+) + #add line showing how flux depends on Ms in the absence of competition
+  scale_x_continuous(trans = "log10") + #x axis as log scale
+  scale_color_manual(values = my_colors) + #set colors to my color scheme
+  labs(x = "[Ms]", y = "flux [Ms]", color = "Mucosal Ab Half Life, days", title = "Competitive inhibition of specific antibody transport by nonspecific antibodies") +  #label axes 
+  theme_bw() #changes background color and grid lines
+
+# print to viewer
+print(plot)
+```
+
+The horizontal dashed line shows the greatest possible transport rate, $V_{max}$; the red curve shows the MM kinetics given $[M_s]$ only; the vertical red line shows the 50% saturation concentration given $[M_s]$ only, $K_M$; and I have added a vertical dashed line to show the peak concentration of $M_s$ generated over an infection.
+
+Notice that I have chosen paramerters such that, in the absence of competition, the maximum flux is reached by the the maximum concentration of $M_s$ generated during a response. As nonspecific antibody is added, however, the flux achieved at the maximum specific antibody concentration drops. This is the core of the competitive effect. 
+
+
+# Factors that affect the flux of antibody into the lumen 
+
+The competitive affect can be reduced by increasing the rate of transport of antibody across the membrane, as well as increasing the maximum transport rate, $V_{max}$. Both of these will increase the flux of specific antibody as well as nonspecific antibody across. Below, I plot how both of these factors change the flux of $M_s$ in the presence of nonspecific antibody. I set the half life = 90 days for this example. 
+
+```{r define-parameters-vary-k2}
+# transport
+RT = 10^3/(1/(1/24)) #total number (concentration) of receptors, Vmax = k2RT
+k2_vec = 1/(c(0.25,0.5,0.75,1,2,3)/24)
+Vmax = k2_vec*RT #Vmax increases as well as KM when k2 increases
+k1 = k1 # use k1 defined earlier
+KM_vec = k2_vec/k1
+
+# steady state nonspecific antibodies
+c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
+t_half = 90 #half life of mucosal ab in days  
+  d_mu = log(2)/t_half #half life in days
+  Mns = c/d_mu #approximate ss solution
+ 
+# generation of new response
+Ap = Mns_vec[round(length(t_halfs)/2)] #peak antibody titer will be the same as Mns for 90 days - the middle value of all Mns
+
+```
+
+```{r plot-MM-kinetics-k2}
+#set concentrations of Ms for x axis
+concentrations = 10^seq(1, 10, by = 0.1) #range of concentrations M_s such that we span much less than and much greater than Ap
+
+### plot flux vs [Ms] given each Mns 
+flux_df = lapply(k2_vec, function(k2){
+  # set vmax and KM
+  Vmax = k2*RT
+  KM = k2/k1
+  
+  #calculate flux using MM function in functions.R
+  flux = sapply(concentrations, function(Ms){
+  return(MM_function(Vmax = Vmax, KM = KM, M_s = Ms, M_ns = Mns))
+  }) %>% 
+    cbind("Ms" = concentrations, "flux" = ., "k2" = k2) %>% # add the concentrations of Ms correspond to each flux as a column, and label all observations with the thalf used to calculate
+    as.data.frame() #format as a dataframe
+}) %>% 
+  do.call(rbind, .) %>% as.data.frame() #combine all dataframes to make one long-from data frame with a column keeping track of thalf used for calculating each observation
+
+## plot
+plot = ggplot() + geom_line(data = flux_df, aes(x = (Ms), y = flux, group = factor(k2), col = factor(k2))) + #plot flux by thalf
+  geom_vline(xintercept = KM, color = "red") + #add half-saturation point in absence of competition as vertical line
+  geom_vline(xintercept = Ap, linetype= "dashed") + #add vertical line showing peak titer generated in mucosa
+geom_line(
+  aes(x = concentrations, y = sapply(concentrations, function(Ms){MM_function(Vmax = Vmax, KM = KM, M_s = Ms, M_ns = 0)})),
+  inherit.aes = FALSE,
+  color = "red"
+) + #add line showing how flux depends on Ms in the absence of competition
+  scale_x_continuous(trans = "log10") + #x axis as log scale
+  scale_color_manual(values = my_colors) + #set colors to my color scheme
+  labs(x = "[Ms]", y = "flux [Ms]", color = "k2, days-1", title = "Competitive inhibition of specific antibody transport by nonspecific antibodies") +  #label axes 
+  theme_bw() #changes background color and grid lines
+
+# print to viewer
+print(plot)
+```
+

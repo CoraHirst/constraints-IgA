@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Simulations of specific IgA transport in the context of pre-existing immunity</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="1_primary_responses_MM_files/libs/clipboard/clipboard.min.js"></script>
+<script src="1_primary_responses_MM_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="1_primary_responses_MM_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="1_primary_responses_MM_files/libs/quarto-html/popper.min.js"></script>
+<script src="1_primary_responses_MM_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="1_primary_responses_MM_files/libs/quarto-html/anchor.min.js"></script>
+<link href="1_primary_responses_MM_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="1_primary_responses_MM_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="1_primary_responses_MM_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="1_primary_responses_MM_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="1_primary_responses_MM_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Simulations of specific IgA transport in the context of pre-existing immunity</h1>
+<p class="subtitle lead">Michaelis-Mentin Approximation</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.package("here")</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>here() starts at /Users/corahirst/Desktop/git/constraints-IgA</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.package("ggplot2")</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#install.package("gridExtra")</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages("tidyverse")</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.1     ✔ readr     2.2.0
+✔ forcats   1.0.1     ✔ stringr   1.6.0
+✔ lubridate 1.9.5     ✔ tibble    3.3.1
+✔ purrr     1.2.2     ✔ tidyr     1.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::combine() masks gridExtra::combine()
+✖ dplyr::filter()  masks stats::filter()
+✖ dplyr::lag()     masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages("deSolve")</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(deSolve)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#load functions</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"code"</span>, <span class="st">"functions"</span>, <span class="st">"functions.R"</span>))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">here</span>(<span class="st">"code"</span>, <span class="st">"functions"</span>, <span class="st">"functions.R"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "/Users/corahirst/Desktop/git/constraints-IgA/code/functions/functions.R"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#choose plotting colors</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>my_colors <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"darkred"</span>, <span class="st">"maroon"</span>, <span class="st">"darkblue"</span>, <span class="st">"forestgreen"</span>, <span class="st">"darkorange"</span>, <span class="st">"goldenrod"</span>) <span class="co">#choose color range</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>num_colors <span class="ot">=</span> <span class="fu">length</span>(my_colors) <span class="co">#set number of colors needed for plotting</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>my_colors <span class="ot">=</span> <span class="fu">colorRampPalette</span>(my_colors)(num_colors) <span class="co">#increase number of colors staying in color range</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="objective" class="level1">
+<h1>Objective</h1>
+<p>In this document, we evaluate how long-lived IgA antibody titers in the respiratory mucosa interfere with the transport of specific IgA antibodies to the site of infection. We assume that the concentration of <span class="math inline">\(M_{ns}\)</span> changes negligibly over the course of infection, and assume that the steady state concentration of <span class="math inline">\(M_{ns}\)</span> is proportional to <span class="math inline">\(\frac{c}{d_\mu}\)</span>. We use a Michaelis-Mentin approximation to estimate the flux of specific IgA across the mucosal membrane.</p>
+</section>
+<section id="outline" class="level1">
+<h1>Outline</h1>
+<p>I will review the kinetics inferred by the Michaelis-Mentin approximation before presenting the results of competitive inhibition by non-specific immunity during a specific response.</p>
+<p>The results in this document are organized as follows:</p>
+<ol type="1">
+<li><p>First, we will explore the effect of changing <span class="math inline">\(d_\mu\)</span>, <span class="math inline">\({k_2}\)</span>, and <span class="math inline">\(R_T\)</span> on the total flux of specific IgA, <span class="math inline">\(k_2R_S\)</span> (or <span class="math inline">\(\phi_S\)</span>) over time.</p></li>
+<li><p>We will then explore the effect of these two parameters, as well as <span class="math inline">\(V_{max}\)</span> on the <em>efficiency</em> of the response over time, which we define as <span class="math inline">\(\epsilon_S = \frac{k_2R_s}{M_s}\)</span>.</p></li>
+<li><p>Finally, we will explore the peak flux and integral of flux by the peak, as well as the peak efficiency of the response, as a function of both <span class="math inline">\(d_\mu\)</span> and <span class="math inline">\(\frac{k_2}{k_1}\)</span> and as a function of <span class="math inline">\(d_\mu\)</span> and <span class="math inline">\(V_{max}\)</span>, to explore which variable has the greatest effect of reducing the effect of pre-existing immunity on primary responses.</p></li>
+</ol>
+</section>
+<section id="michaelis-mentin-kinetics" class="level1">
+<h1>Michaelis-Mentin Kinetics</h1>
+<p>Below, we define our parameters:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># transport</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">3</span> <span class="co"># order of magnitude of peak response # we might vary this later</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>k2 <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>(<span class="dv">2</span><span class="sc">/</span><span class="dv">24</span>) <span class="co">#rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>RT <span class="ot">=</span> Vmax<span class="sc">/</span>k2 <span class="co">#total number (concentration) of receptors, Vmax = k2RT</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k2<span class="sc">/</span><span class="dv">10</span><span class="sc">^</span><span class="dv">3</span> <span class="co">#k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>KM <span class="ot">=</span> k2<span class="sc">/</span>k1 <span class="co">#checking KM</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># dynamics in the lumen </span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> <span class="dv">3</span> <span class="co">#half life of antibodies in the lumen, in days</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half_L <span class="co">#decay rate in the lumen</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># steady state nonspecific antibodies</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> <span class="dv">1</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span> <span class="co">#rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>t_halfs <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">14</span>,<span class="dv">30</span>,<span class="dv">90</span>,<span class="dv">400</span>, <span class="dv">4000</span>, <span class="dv">20000</span>) <span class="co">#half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years :) 69 </span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>d_mus <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_halfs <span class="co">#half lives in days</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(d_mus) <span class="ot">=</span> t_halfs</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>Mns_vec <span class="ot">=</span> c<span class="sc">/</span>d_mus <span class="co">#vecotr of approximate ss solutions</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(Mns_vec) <span class="ot">=</span> t_halfs</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># generation of new response</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Mns_vec[<span class="st">"90"</span>] <span class="co">#peak antibody titer will be the same as Mns for 90 days</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co">#initial ab titer</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> <span class="dv">1</span> <span class="co"># initial specific ab concentration</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> <span class="dv">5</span> <span class="co">#time of peak titer -- days</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># will be calculated when iterating through d_mu</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co">#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Below, we plot how the flux of specific antibody for a given concentration of <span class="math inline">\(M_s\)</span> in the mucosa changes as a function of the half-life of non-specific antibodies. In essence, the effective amount of <span class="math inline">\(M_s\)</span> required to reach half-maximal transport will increase by the concnetration of non-specific antibody conferred by the increasing half-life.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set concentrations of Ms for x axis</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>concentrations <span class="ot">=</span> <span class="dv">10</span><span class="sc">^</span><span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="at">by =</span> <span class="fl">0.1</span>) <span class="co">#range of concentrations M_s such that we span much less than and much greater than Ap</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="do">### plot flux vs [Ms] given each Mns </span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>flux_df <span class="ot">=</span> <span class="fu">lapply</span>(t_halfs, <span class="cf">function</span>(t_half){</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set d_mu and Mns </span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">#calculate flux</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  flux <span class="ot">=</span> <span class="fu">sapply</span>(concentrations, <span class="cf">function</span>(Ms){</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>   <span class="fu">return</span>(<span class="fu">MM_function</span>(<span class="at">M_s =</span> Ms, <span class="at">M_ns =</span> Mns))</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">%&gt;%</span> <span class="fu">cbind</span>(<span class="st">"Ms"</span> <span class="ot">=</span> concentrations, <span class="st">"flux"</span> <span class="ot">=</span> ., <span class="st">"t_half"</span> <span class="ot">=</span> t_half) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>() </span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>() </span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="do">## plot</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> flux_df, <span class="fu">aes</span>(<span class="at">x =</span> (Ms), <span class="at">y =</span> flux, <span class="at">group =</span> <span class="fu">factor</span>(t_half), <span class="at">col =</span> <span class="fu">factor</span>(t_half))) <span class="sc">+</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> Vmax, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> (KM), <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> (Ap), <span class="at">linetype=</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> concentrations, <span class="at">y =</span> <span class="fu">sapply</span>(concentrations, <span class="cf">function</span>(Ms){Vmax<span class="sc">*</span>Ms<span class="sc">/</span>(KM<span class="sc">+</span>Ms)})),</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="st">"red"</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans =</span> <span class="st">"log10"</span>) <span class="sc">+</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colors) <span class="sc">+</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"[Ms]"</span>, <span class="at">y =</span> <span class="st">"flux [Ms]"</span>, <span class="at">color =</span> <span class="st">"Mucosal Ab Half Life, days"</span>, <span class="at">title =</span> <span class="st">"Competitive inhibition of specific antibody transport by nonspecific antibodies"</span>) <span class="sc">+</span> </span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co"># print to viewer</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-MM-kinetics-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The horizontal dashed line shows the greatest possible transport rate, <span class="math inline">\(V_{max}\)</span>; the red curve shows the MM kinetics given <span class="math inline">\([M_s]\)</span> only; the vertical red line shows the 50% saturation concentration given <span class="math inline">\([M_s]\)</span> only, <span class="math inline">\(K_M\)</span>; and I have added a vertical dashed line to show the peak concentration of <span class="math inline">\(M_s\)</span> generated over an infection.</p>
+<p>Notice that I have chosen paramerters such that, in the absence of competition, the maximum flux is reached by the the maximum concentration of <span class="math inline">\(M_s\)</span> generated during a response. As nonspecific antibody is added, however, the flux achieved at the maximum specific antibody concentration drops. This is the core of the competitive effect.</p>
+<p>Below, I show the generation and decay of <span class="math inline">\(M_s\)</span> over the course of infection with respect to the steady-state concentration of <span class="math inline">\(M_{ns}\)</span> for increasing half-life of mucosal antibodies.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">### plot Ms vs Mns over time</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>Mab_titers <span class="ot">=</span> <span class="fu">lapply</span>(t_halfs, <span class="cf">function</span>(t_half){</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># setting t.half dependent parms for nonspecific population</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half <span class="co">#set d_mu</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu <span class="co"># steadys state nonspecific</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># setting t.half dependent parms for specific abs</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  r0 <span class="ot">=</span> (<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)<span class="sc">/</span>tp) <span class="sc">+</span> d_mu <span class="co">#initial/greatest exponential expansion rate</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  alpha <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>tp <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set time vector parms</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  Tmax <span class="ot">=</span> <span class="dv">30</span> <span class="co"># total days</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  points_per_day <span class="ot">=</span> <span class="dv">24</span> <span class="co"># every hour</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, Tmax, <span class="at">length.out =</span> Tmax<span class="sc">*</span>points_per_day) <span class="co">#generate time vector</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  soln <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"time"</span> <span class="ot">=</span> time, <span class="st">"Ms"</span> <span class="ot">=</span> <span class="fu">sapply</span>(time, <span class="cf">function</span>(t){</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t<span class="sc">&lt;=</span>tp){A0<span class="sc">*</span><span class="fu">exp</span>((r0 <span class="sc">-</span> d_mu)<span class="sc">*</span>t <span class="sc">-</span> (alpha<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>t<span class="sc">^</span><span class="dv">2</span>)}</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {Ap<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>(t<span class="sc">-</span>tp))}</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  }))</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># solve </span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>  soln <span class="ot">=</span> soln <span class="sc">%&gt;%</span> <span class="fu">cbind</span>(.,Mns, t_half)</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .) <span class="co">#concatenates all dfs from lapply list into a single df rowwise</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="do">### Plot</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> Mab_titers, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(Ms), <span class="at">group =</span> <span class="fu">factor</span>(t_half), <span class="at">col =</span> <span class="fu">factor</span>(t_half), <span class="at">linetype =</span> <span class="st">"Ms"</span>)) <span class="sc">+</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> Mab_titers, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(Mns), <span class="at">group =</span> <span class="fu">factor</span>(t_half), <span class="at">col =</span> <span class="fu">factor</span>(t_half), <span class="at">linetype =</span> <span class="st">"Mns"</span>)) <span class="sc">+</span> </span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colors) <span class="sc">+</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Ms"</span> <span class="ot">=</span> <span class="st">"solid"</span>, <span class="st">"Mns"</span> <span class="ot">=</span> <span class="st">"dashed"</span>)) <span class="sc">+</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time, days"</span>, <span class="at">y =</span> <span class="st">"log10[Ab], mg/dL"</span>, <span class="at">col =</span> <span class="st">"mucosal Ab half-life, days"</span>, <span class="at">linetype =</span> <span class="st">"Specificity"</span>, <span class="at">title =</span> <span class="st">"[Ms] and [Mns] over the course of infection"</span>) <span class="sc">+</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co">#print to viewer</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-Ms-and-Mns-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>I have chosen the peak of the response such that the peak titer matches the steady state of the nonspecific antibody for an intermediate half-life.</p>
+</section>
+<section id="results-1-flux-over-time-as-a-function-of-d_mu-or-frack_2k_1" class="level1">
+<h1>Results 1: Flux over time as a function of <span class="math inline">\(d_\mu\)</span> or <span class="math inline">\(\frac{k_2}{k_1}\)</span></h1>
+<p>The flux of specific IgA over time will depend on competition with pre-existing immunity. This competition changes according to i) the amount of non-specific pre-exisitng immunity, which is a function of the rate of decay of responses, and ii) the magnitude of the peak specific antibody titer with respect to the saturation of transport, which we can change as a funtion of <span class="math inline">\(K_M\)</span>, the half saturation point, which equals <span class="math inline">\(\frac{k_2}{k_1}\)</span>.</p>
+<section id="flux-over-time-as-a-function-of-d_mu" class="level2">
+<h2 class="anchored" data-anchor-id="flux-over-time-as-a-function-of-d_mu">Flux over time as a function of <span class="math inline">\(d_\mu\)</span></h2>
+<p>Below, we calculate the flux of specific IgA over time as a function of the decay rate of previously generated IgA:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set parms </span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#transport </span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> Vmax</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>k2 <span class="ot">=</span> k2</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>RT <span class="ot">=</span> RT</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k1</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>KM <span class="ot">=</span> KM</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">#lumen</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> t_half_L</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> d_L</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#steady state Ab</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> c</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>t_halfs <span class="ot">=</span> t_halfs</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>d_mus <span class="ot">=</span> d_mus</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>Mns_vec <span class="ot">=</span> Mns_vec</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Ap</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co"># generating new response</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Ap</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> A0</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> tp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>MM_soln <span class="ot">=</span> <span class="fu">lapply</span>(t_halfs, <span class="cf">function</span>(t_half){</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># setting t.half dependent parms for nonspecific population</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half <span class="co">#set d_mu</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu <span class="co"># steadys state nonspecific</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># setting t.half dependent parms for specific abs</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  r0 <span class="ot">=</span> (<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)<span class="sc">/</span>tp) <span class="sc">+</span> d_mu <span class="co">#initial/greatest exponential expansion rate</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  alpha <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>tp <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set time vector parms</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  Tmax <span class="ot">=</span> <span class="dv">30</span> <span class="co"># total days</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  points_per_day <span class="ot">=</span> <span class="dv">24</span> <span class="co"># every hour</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, Tmax, <span class="at">length.out =</span> Tmax<span class="sc">*</span>points_per_day) <span class="co">#generate time vector</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ms titers over time</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  Ms_soln <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"time"</span> <span class="ot">=</span> time, <span class="st">"t_half"</span> <span class="ot">=</span> t_half, <span class="st">"Ms"</span> <span class="ot">=</span> <span class="fu">sapply</span>(time, <span class="cf">function</span>(t){</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t<span class="sc">&lt;=</span>tp){A0<span class="sc">*</span><span class="fu">exp</span>((r0 <span class="sc">-</span> d_mu)<span class="sc">*</span>t <span class="sc">-</span> (alpha<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>t<span class="sc">^</span><span class="dv">2</span>)}</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {Ap<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>(t<span class="sc">-</span>tp))}</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  }), <span class="st">"Mns"</span> <span class="ot">=</span> Mns)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ls flux over time</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_s <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){<span class="fu">MM_function</span>(<span class="at">M_s =</span> Ms, <span class="at">M_ns =</span> Mns)})</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_ns <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){(Vmax<span class="sc">*</span>Mns)<span class="sc">/</span>(KM<span class="sc">+</span>Ms<span class="sc">+</span>Mns)})</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(Ms_soln)</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(phi_s), <span class="at">group =</span> <span class="fu">factor</span>(t_half), <span class="at">col =</span> <span class="fu">factor</span>(t_half), <span class="at">linetype =</span> <span class="st">"phi_s"</span>)) <span class="sc">+</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(phi_ns), <span class="at">group =</span> <span class="fu">factor</span>(t_half), <span class="at">col =</span> <span class="fu">factor</span>(t_half), <span class="at">linetype =</span> <span class="st">"phi_ns"</span>)) <span class="sc">+</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colors) <span class="sc">+</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"phi_s"</span> <span class="ot">=</span> <span class="st">"solid"</span>, <span class="st">"phi_ns"</span> <span class="ot">=</span> <span class="st">"dashed"</span>)) <span class="sc">+</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time, days"</span>, <span class="at">y =</span> <span class="st">"log10[R-Ab], mg/dL, over time"</span>, <span class="at">col =</span> <span class="st">"mucosal Ab half-life, days"</span>, <span class="at">linetype =</span> <span class="st">"Specificity"</span>, <span class="at">title =</span> <span class="st">"flux of s and ns into the lumen over the course of infection"</span>) <span class="sc">+</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-flux-decay-rate-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="flux-over-time-as-a-function-of-k_2" class="level2">
+<h2 class="anchored" data-anchor-id="flux-over-time-as-a-function-of-k_2">Flux over time as a function of <span class="math inline">\(k_2\)</span></h2>
+<p>Below we define the range of <span class="math inline">\(K_M\)</span> over which to calculate our antibody. We will set our half life to 5 years, which is still substantially faster than for systemic immunity.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set parms </span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#transport </span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>k2_vec <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>(<span class="fu">c</span>(<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)<span class="sc">/</span><span class="dv">24</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> k2_vec<span class="sc">*</span>RT <span class="co">#Vmax increases as well as KM when k2 increases</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k1</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>KM_vec <span class="ot">=</span> k2_vec<span class="sc">/</span>k1</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">#lumen</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> t_half_L</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> d_L</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">#steady state Ab</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> c</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>t_half <span class="ot">=</span> <span class="dv">4000</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># generating new response</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Ap</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> A0</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> tp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>MM_soln <span class="ot">=</span> <span class="fu">lapply</span>(k2_vec, <span class="cf">function</span>(k2.new){</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  KM <span class="ot">=</span> k2.new<span class="sc">/</span>k1</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  Vmax <span class="ot">=</span> k2.new<span class="sc">*</span>RT</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># setting t.half dependent parms for specific abs</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  r0 <span class="ot">=</span> (<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)<span class="sc">/</span>tp) <span class="sc">+</span> d_mu <span class="co">#initial/greatest exponential expansion rate</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  alpha <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>tp <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set time vector parms</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  Tmax <span class="ot">=</span> <span class="dv">30</span> <span class="co"># total days</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  points_per_day <span class="ot">=</span> <span class="dv">24</span> <span class="co"># every hour</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, Tmax, <span class="at">length.out =</span> Tmax<span class="sc">*</span>points_per_day) <span class="co">#generate time vector</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ms titers over time</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  Ms_soln <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"time"</span> <span class="ot">=</span> time, <span class="st">"k2"</span> <span class="ot">=</span> k2.new, <span class="st">"Ms"</span> <span class="ot">=</span> <span class="fu">sapply</span>(time, <span class="cf">function</span>(t){</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t<span class="sc">&lt;=</span>tp){A0<span class="sc">*</span><span class="fu">exp</span>((r0 <span class="sc">-</span> d_mu)<span class="sc">*</span>t <span class="sc">-</span> (alpha<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>t<span class="sc">^</span><span class="dv">2</span>)}</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {Ap<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>(t<span class="sc">-</span>tp))}</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  }), <span class="st">"Mns"</span> <span class="ot">=</span> Mns)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ls flux over time</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_s <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){(Vmax<span class="sc">*</span>Ms)<span class="sc">/</span>(KM<span class="sc">+</span>Ms<span class="sc">+</span>Mns)})</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_ns <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){(Vmax<span class="sc">*</span>Mns)<span class="sc">/</span>(KM<span class="sc">+</span>Ms<span class="sc">+</span>Mns)})</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(Ms_soln)</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(phi_s), <span class="at">group =</span> <span class="fu">factor</span>(k2), <span class="at">col =</span> <span class="fu">factor</span>(k2), <span class="at">linetype =</span> <span class="st">"phi_s"</span>)) <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(phi_ns), <span class="at">group =</span> <span class="fu">factor</span>(k2), <span class="at">col =</span> <span class="fu">factor</span>(k2), <span class="at">linetype =</span> <span class="st">"phi_ns"</span>)) <span class="sc">+</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"blue"</span>, my_colors)) <span class="sc">+</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"phi_s"</span> <span class="ot">=</span> <span class="st">"solid"</span>, <span class="st">"phi_ns"</span> <span class="ot">=</span> <span class="st">"dashed"</span>)) <span class="sc">+</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time, days"</span>, <span class="at">y =</span> <span class="st">"log10[R-Ab], mg/dL, over time"</span>, <span class="at">col =</span> <span class="st">"cellular transport rate, per day"</span>, <span class="at">linetype =</span> <span class="st">"Specificity"</span>, <span class="at">title =</span> <span class="st">"flux of s and ns into the lumen over the course of infection"</span>) <span class="sc">+</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-flux-KM-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The increase in the rate of transport increases the half-saturation titer <span class="math inline">\(K_M\)</span> as well as the maximum flux <span class="math inline">\(V_max\)</span>. I have varied <span class="math inline">\(k_2\)</span> such that the transport rate varies from 1 per 15 minutes to 1 per 3 hours. As a result of this small range of physiologically reasonable rates and the change in two conflicting increasing parameters, the effect of increasing <span class="math inline">\(k_2\)</span> is more muted.</p>
+<p><em>NOTE: The effect is likely to increase when we consider the full model, because higher rate of transport and Vmax will reduce the SS concentration of non-specific Ab</em></p>
+<p>Same with increasing <span class="math inline">\(V_{max}\)</span> alone, which is what I will explore below:</p>
+</section>
+<section id="flux-over-time-as-a-function-of-v_max" class="level2">
+<h2 class="anchored" data-anchor-id="flux-over-time-as-a-function-of-v_max">Flux over time as a function of <span class="math inline">\(V_{max}\)</span></h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set parms </span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">#transport </span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>k2 <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>(<span class="dv">2</span><span class="sc">/</span><span class="dv">24</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>Vmax_factors <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">8</span>,<span class="dv">16</span>,<span class="dv">20</span>,<span class="dv">50</span>,<span class="dv">100</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> k2<span class="sc">*</span>(RT<span class="sc">*</span>Vmax_factors) <span class="co">#Vmax increases as well as KM when k2 increases</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k1</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>KM <span class="ot">=</span> k2<span class="sc">/</span>k1</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co">#lumen</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> t_half_L</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> d_L</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co">#steady state Ab</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> c</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>t_half <span class="ot">=</span> <span class="dv">4000</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="co"># generating new response</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Ap</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> A0</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> tp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>MM_soln <span class="ot">=</span> <span class="fu">lapply</span>(Vmax_factors, <span class="cf">function</span>(Vmax_factor){</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  Vmax <span class="ot">=</span> k2<span class="sc">*</span>RT<span class="sc">*</span>Vmax_factor</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># setting t.half dependent parms for specific abs</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  r0 <span class="ot">=</span> (<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)<span class="sc">/</span>tp) <span class="sc">+</span> d_mu <span class="co">#initial/greatest exponential expansion rate</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  alpha <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>tp <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set time vector parms</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  Tmax <span class="ot">=</span> <span class="dv">30</span> <span class="co"># total days</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  points_per_day <span class="ot">=</span> <span class="dv">24</span> <span class="co"># every hour</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, Tmax, <span class="at">length.out =</span> Tmax<span class="sc">*</span>points_per_day) <span class="co">#generate time vector</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ms titers over time</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  Ms_soln <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"time"</span> <span class="ot">=</span> time, <span class="st">"Vmax_Factor"</span> <span class="ot">=</span> Vmax_factor, <span class="st">"Total_R"</span> <span class="ot">=</span> RT<span class="sc">*</span>Vmax_factor, <span class="st">"Ms"</span> <span class="ot">=</span> <span class="fu">sapply</span>(time, <span class="cf">function</span>(t){</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t<span class="sc">&lt;=</span>tp){A0<span class="sc">*</span><span class="fu">exp</span>((r0 <span class="sc">-</span> d_mu)<span class="sc">*</span>t <span class="sc">-</span> (alpha<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>t<span class="sc">^</span><span class="dv">2</span>)}</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {Ap<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>(t<span class="sc">-</span>tp))}</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  }), <span class="st">"Mns"</span> <span class="ot">=</span> Mns)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ls flux over time</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_s <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){(Vmax<span class="sc">*</span>Ms)<span class="sc">/</span>(KM<span class="sc">+</span>Ms<span class="sc">+</span>Mns)})</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_ns <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){(Vmax<span class="sc">*</span>Mns)<span class="sc">/</span>(KM<span class="sc">+</span>Ms<span class="sc">+</span>Mns)})</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(Ms_soln)</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(phi_s), <span class="at">group =</span> <span class="fu">factor</span>(Vmax_Factor), <span class="at">col =</span> <span class="fu">factor</span>(Vmax_Factor), <span class="at">linetype =</span> <span class="st">"phi_s"</span>)) <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">log10</span>(phi_ns), <span class="at">group =</span> <span class="fu">factor</span>(Vmax_Factor), <span class="at">col =</span> <span class="fu">factor</span>(Vmax_Factor), <span class="at">linetype =</span> <span class="st">"phi_ns"</span>)) <span class="sc">+</span> </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"blue"</span>, my_colors)) <span class="sc">+</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"phi_s"</span> <span class="ot">=</span> <span class="st">"solid"</span>, <span class="st">"phi_ns"</span> <span class="ot">=</span> <span class="st">"dashed"</span>)) <span class="sc">+</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time, days"</span>, <span class="at">y =</span> <span class="st">"log10[R-Ab], mg/dL, over time"</span>, <span class="at">col =</span> <span class="st">"Fold increase in Vmax"</span>, <span class="at">linetype =</span> <span class="st">"Specificity"</span>, <span class="at">title =</span> <span class="st">"flux of s and ns into the lumen over the course of infection"</span>) <span class="sc">+</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-flux-Vmax-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Again, the steady state nonspecific will change if Vmax is consistently high. So, the effect may be greater in the model considering transport in the SS calculation of the nonspecific titer. I’ll run that later to verify the extent to which the conclusions change in that context.</p>
+</section>
+</section>
+<section id="efficiency-over-time" class="level1">
+<h1>Efficiency over time</h1>
+<p>We can calculate/report efficiency according to a few metrics. I suggest two below:</p>
+<ol type="i">
+<li><p><span class="math inline">\(\frac{k_2R_s}{M_s}\)</span> - the flux of <span class="math inline">\(R_s\)</span> relative to <span class="math inline">\(M_s\)</span> or, in other words, the per-capita transport rate of <strong>specific antibody</strong> into the lumen relative to the existing pool of specific antibody in the mucosa, or in other words for each <span class="math inline">\(M_s\)</span> sitting in the mucosa, how much specific antibody is being transported to the lumen per unit time?</p></li>
+<li><p>the fraction of specific to nonspecific antibody either being delivered or in the lumen. should just reflect the fraction of specific to nonspecific in the mucosa.</p></li>
+</ol>
+<p>We are going to report the first measurement of efficiency for now.</p>
+<p>I will start by re-defining our basic parameters:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># transport</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">3</span> <span class="co"># order of magnitude of peak response # we might vary this later</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>k2 <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>(<span class="dv">2</span><span class="sc">/</span><span class="dv">24</span>) <span class="co">#rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>RT <span class="ot">=</span> Vmax<span class="sc">/</span>k2 <span class="co">#total number (concentration) of receptors, Vmax = k2RT</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k2<span class="sc">/</span><span class="dv">10</span><span class="sc">^</span><span class="dv">3</span> <span class="co">#k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10^3</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>KM <span class="ot">=</span> k2<span class="sc">/</span>k1 <span class="co">#checking KM</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co"># dynamics in the lumen </span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> <span class="dv">3</span> <span class="co">#half life of antibodies in the lumen, in days</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half_L <span class="co">#decay rate in the lumen</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co"># steady state nonspecific antibodies</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> <span class="dv">1</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span> <span class="co">#rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>t_halfs <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">14</span>,<span class="dv">30</span>,<span class="dv">90</span>,<span class="dv">400</span>, <span class="dv">4000</span>, <span class="dv">20000</span>) <span class="co">#half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">40000</span> <span class="co">#half lives in days</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu <span class="co">#vecotr of approximate ss solutions</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="co"># generation of new response</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Mns_vec[<span class="st">"90"</span>] <span class="co">#peak antibody titer will be the same as Mns for 90 days</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="co">#initial ab titer</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> <span class="dv">1</span> <span class="co"># initial specific ab concentration</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> <span class="dv">5</span> <span class="co">#time of peak titer -- days</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="co"># will be calculated when iterating through d_mu</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="co">#r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a><span class="co">#alpha = (r0 - d_mu)/tp # rate of decay of exponential growth rate</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="epsilon_s-by-decay-rate" class="level2">
+<h2 class="anchored" data-anchor-id="epsilon_s-by-decay-rate"><span class="math inline">\(/Epsilon_s\)</span> by decay rate</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set parms </span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">#transport </span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> Vmax</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>k2 <span class="ot">=</span> k2</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>RT <span class="ot">=</span> RT</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k1</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>KM <span class="ot">=</span> KM</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co">#lumen</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> t_half_L</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> d_L</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co">#steady state Ab</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> c</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>t_halfs <span class="ot">=</span> t_halfs</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>d_mus <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_halfs <span class="co">#half lives in days</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(d_mus) <span class="ot">=</span> t_halfs</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>Mns_vec <span class="ot">=</span> c<span class="sc">/</span>d_mus <span class="co">#vecotr of approximate ss solutions</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(Mns_vec) <span class="ot">=</span> t_halfs</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a><span class="co"># generating new response</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Ap</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> A0</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> tp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Because <span class="math inline">\(k_2R_s\)</span> = <span class="math inline">\(phi_s\)</span>, the efficiency <span class="math inline">\(\epsilon_s = \frac{k_2 R_s}{M_s}\)</span> can be calculated as <span class="math inline">\(\epsilon_s = \frac{\phi_s}{M_s}\)</span>.</p>
+<p>Really, this is the per-capita transport rate given by the Michaelis Mentin approximation, <span class="math inline">\(\frac{phi_s}{M_s} = \frac{V_{max}}{K_M + M_ns + M_s}\)</span>.</p>
+<p>We plot this over time over the course of infection.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>MM_soln <span class="ot">=</span> <span class="fu">lapply</span>(t_halfs, <span class="cf">function</span>(t_half){</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># setting t.half dependent parms for nonspecific population</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half <span class="co">#set d_mu</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu <span class="co"># steadys state nonspecific</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># setting t.half dependent parms for specific abs</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  r0 <span class="ot">=</span> (<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)<span class="sc">/</span>tp) <span class="sc">+</span> d_mu <span class="co">#initial/greatest exponential expansion rate</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  alpha <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>tp <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set time vector parms</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  Tmax <span class="ot">=</span> <span class="dv">30</span> <span class="co"># total days</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  points_per_day <span class="ot">=</span> <span class="dv">24</span> <span class="co"># every hour</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, Tmax, <span class="at">length.out =</span> Tmax<span class="sc">*</span>points_per_day) <span class="co">#generate time vector</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ms titers over time</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  Ms_soln <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"time"</span> <span class="ot">=</span> time, <span class="st">"t_half"</span> <span class="ot">=</span> t_half, <span class="st">"Ms"</span> <span class="ot">=</span> <span class="fu">sapply</span>(time, <span class="cf">function</span>(t){</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t<span class="sc">&lt;=</span>tp){A0<span class="sc">*</span><span class="fu">exp</span>((r0 <span class="sc">-</span> d_mu)<span class="sc">*</span>t <span class="sc">-</span> (alpha<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>t<span class="sc">^</span><span class="dv">2</span>)}</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {Ap<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>(t<span class="sc">-</span>tp))}</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  }), <span class="st">"Mns"</span> <span class="ot">=</span> Mns)</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ls flux over time</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>MM_s <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){<span class="fu">MM_function</span>(<span class="at">M_s =</span> Ms, <span class="at">M_ns =</span> Mns)<span class="sc">/</span>Ms})</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(Ms_soln)</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># --- rescale log10(Ms) onto the primary axis so it can share the panel ---</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>prim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">7</span>, <span class="sc">-</span><span class="dv">3</span>)                    <span class="co"># primary axis range (per-capita transport)</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>sec  <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">log10</span>(MM_soln<span class="sc">$</span>Ms))     <span class="co"># secondary data range (log10 Ms)</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>to_prim <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> sec[<span class="dv">1</span>]) <span class="sc">/</span> <span class="fu">diff</span>(sec) <span class="sc">*</span> <span class="fu">diff</span>(prim) <span class="sc">+</span> prim[<span class="dv">1</span>]</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>to_sec  <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> prim[<span class="dv">1</span>]) <span class="sc">/</span> <span class="fu">diff</span>(prim) <span class="sc">*</span> <span class="fu">diff</span>(sec) <span class="sc">+</span> sec[<span class="dv">1</span>]</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>(MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">col =</span> <span class="fu">factor</span>(t_half))) <span class="sc">+</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">log10</span>(MM_s), <span class="at">group =</span> <span class="fu">factor</span>(t_half))) <span class="sc">+</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">to_prim</span>(<span class="fu">log10</span>(Ms)), <span class="at">group =</span> <span class="fu">factor</span>(t_half)), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">name     =</span> <span class="st">"Per-capita specific antibody transport rate"</span>,</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits   =</span> prim,</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span> <span class="fu">to_sec</span>(.), <span class="at">name =</span> <span class="st">"log10 [Ms], mg/dL"</span>)</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colors) <span class="sc">+</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time, days"</span>, <span class="at">col =</span> <span class="st">"mucosal Ab half-life, days"</span>, <span class="at">title =</span> <span class="st">"Per capita transport rate of specific antibody into the lumen over the course of infection"</span>) <span class="sc">+</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-efficiecy-decay-rate-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="per-capita-specific-transport-over-time-as-a-function-of-k_2" class="level2">
+<h2 class="anchored" data-anchor-id="per-capita-specific-transport-over-time-as-a-function-of-k_2">Per-capita specific transport over time as a function of <span class="math inline">\(k_2\)</span></h2>
+<p>Below we define the range of <span class="math inline">\(k_2\)</span> over which to calculate our antibody. We will set our half life to 5 years, which is still substantially faster than for systemic immunity.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set parms </span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co">#transport </span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>k2_vec <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>(<span class="fu">c</span>(<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)<span class="sc">/</span><span class="dv">24</span>)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> k2_vec<span class="sc">*</span>RT <span class="co">#Vmax increases as well as KM when k2 increases</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k1</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>KM_vec <span class="ot">=</span> k2_vec<span class="sc">/</span>k1</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co">#lumen</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> t_half_L</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> d_L</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="co">#steady state Ab</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> c</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>t_half <span class="ot">=</span> <span class="dv">4000</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="co"># generating new response</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Ap</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> A0</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> tp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>MM_soln <span class="ot">=</span> <span class="fu">lapply</span>(k2_vec, <span class="cf">function</span>(k2.new){</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  KM <span class="ot">=</span> k2.new<span class="sc">/</span>k1</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  Vmax <span class="ot">=</span> k2.new<span class="sc">*</span>RT</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># setting t.half dependent parms for specific abs</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  r0 <span class="ot">=</span> (<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)<span class="sc">/</span>tp) <span class="sc">+</span> d_mu <span class="co">#initial/greatest exponential expansion rate</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  alpha <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>tp <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set time vector parms</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  Tmax <span class="ot">=</span> <span class="dv">30</span> <span class="co"># total days</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  points_per_day <span class="ot">=</span> <span class="dv">24</span> <span class="co"># every hour</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, Tmax, <span class="at">length.out =</span> Tmax<span class="sc">*</span>points_per_day) <span class="co">#generate time vector</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ms titers over time</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  Ms_soln <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"time"</span> <span class="ot">=</span> time, <span class="st">"k2"</span> <span class="ot">=</span> k2.new, <span class="st">"Ms"</span> <span class="ot">=</span> <span class="fu">sapply</span>(time, <span class="cf">function</span>(t){</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t<span class="sc">&lt;=</span>tp){A0<span class="sc">*</span><span class="fu">exp</span>((r0 <span class="sc">-</span> d_mu)<span class="sc">*</span>t <span class="sc">-</span> (alpha<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>t<span class="sc">^</span><span class="dv">2</span>)}</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {Ap<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>(t<span class="sc">-</span>tp))}</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  }), <span class="st">"Mns"</span> <span class="ot">=</span> Mns)</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ls flux over time</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_s <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){(Vmax)<span class="sc">/</span>(KM<span class="sc">+</span>Ms<span class="sc">+</span>Mns)})</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(Ms_soln)</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># --- rescale log10(Ms) onto the primary axis so it can share the panel ---</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>prim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">7</span>, <span class="sc">-</span><span class="dv">3</span>)                    <span class="co"># primary axis range (per-capita transport)</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>sec  <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">log10</span>(MM_soln<span class="sc">$</span>Ms))     <span class="co"># secondary data range (log10 Ms)</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>to_prim <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> sec[<span class="dv">1</span>]) <span class="sc">/</span> <span class="fu">diff</span>(sec) <span class="sc">*</span> <span class="fu">diff</span>(prim) <span class="sc">+</span> prim[<span class="dv">1</span>]</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>to_sec  <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> prim[<span class="dv">1</span>]) <span class="sc">/</span> <span class="fu">diff</span>(prim) <span class="sc">*</span> <span class="fu">diff</span>(sec) <span class="sc">+</span> sec[<span class="dv">1</span>]</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>(MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">col =</span> <span class="fu">factor</span>(k2))) <span class="sc">+</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">log10</span>(phi_s), <span class="at">group =</span> <span class="fu">factor</span>(k2))) <span class="sc">+</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">to_prim</span>(<span class="fu">log10</span>(Ms)), <span class="at">group =</span> <span class="fu">factor</span>(k2)), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">name     =</span> <span class="st">"per capita specific antibody transport rate"</span>,</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits   =</span> prim,</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span> <span class="fu">to_sec</span>(.), <span class="at">name =</span> <span class="st">"log10 [Ms], mg/dL"</span>)</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"blue"</span>, my_colors)) <span class="sc">+</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time, days"</span>, <span class="at">col =</span> <span class="st">"cellular transport rate, per day"</span>, <span class="at">title =</span> <span class="st">"Per capita transport rate of specific antibody into the lumen over the course of infection"</span>) <span class="sc">+</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-efficiency-KM-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="per-capita-specific-transport-over-time-as-a-function-of-v_max" class="level2">
+<h2 class="anchored" data-anchor-id="per-capita-specific-transport-over-time-as-a-function-of-v_max">Per-capita specific transport over time as a function of <span class="math inline">\(V_{max}\)</span></h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set parms </span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">#transport </span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>k2 <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>(<span class="dv">2</span><span class="sc">/</span><span class="dv">24</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>Vmax_factors <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">8</span>,<span class="dv">16</span>,<span class="dv">20</span>,<span class="dv">50</span>,<span class="dv">100</span>)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>Vmax <span class="ot">=</span> k2<span class="sc">*</span>(RT<span class="sc">*</span>Vmax_factors) <span class="co">#Vmax increases as well as KM when k2 increases</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">=</span> k1</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>KM <span class="ot">=</span> k2<span class="sc">/</span>k1</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="co">#lumen</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>t_half_L <span class="ot">=</span> t_half_L</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>d_L <span class="ot">=</span> d_L</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="co">#steady state Ab</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>c <span class="ot">=</span> c</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>t_half <span class="ot">=</span> <span class="dv">4000</span></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>d_mu <span class="ot">=</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>t_half</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>Mns <span class="ot">=</span> c<span class="sc">/</span>d_mu</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a><span class="co"># generating new response</span></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">=</span> Ap</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">=</span> A0</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>tp <span class="ot">=</span> tp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>MM_soln <span class="ot">=</span> <span class="fu">lapply</span>(Vmax_factors, <span class="cf">function</span>(Vmax_factor){</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  Vmax <span class="ot">=</span> k2<span class="sc">*</span>RT<span class="sc">*</span>Vmax_factor</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co"># setting t.half dependent parms for specific abs</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  r0 <span class="ot">=</span> (<span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(Ap<span class="sc">/</span>A0)<span class="sc">/</span>tp) <span class="sc">+</span> d_mu <span class="co">#initial/greatest exponential expansion rate</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  alpha <span class="ot">=</span> (r0 <span class="sc">-</span> d_mu)<span class="sc">/</span>tp <span class="co"># rate of decay of exponential growth rate</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set time vector parms</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  Tmax <span class="ot">=</span> <span class="dv">30</span> <span class="co"># total days</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  points_per_day <span class="ot">=</span> <span class="dv">24</span> <span class="co"># every hour</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">=</span> <span class="fu">seq</span>(<span class="dv">0</span>, Tmax, <span class="at">length.out =</span> Tmax<span class="sc">*</span>points_per_day) <span class="co">#generate time vector</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ms titers over time</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  Ms_soln <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"time"</span> <span class="ot">=</span> time, <span class="st">"Vmax_Factor"</span> <span class="ot">=</span> Vmax_factor, <span class="st">"Total_R"</span> <span class="ot">=</span> RT<span class="sc">*</span>Vmax_factor, <span class="st">"Ms"</span> <span class="ot">=</span> <span class="fu">sapply</span>(time, <span class="cf">function</span>(t){</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t<span class="sc">&lt;=</span>tp){A0<span class="sc">*</span><span class="fu">exp</span>((r0 <span class="sc">-</span> d_mu)<span class="sc">*</span>t <span class="sc">-</span> (alpha<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>t<span class="sc">^</span><span class="dv">2</span>)}</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {Ap<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>d_mu<span class="sc">*</span>(t<span class="sc">-</span>tp))}</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  }), <span class="st">"Mns"</span> <span class="ot">=</span> Mns)</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>  <span class="do">### apply to calculate Ls flux over time</span></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>  Ms_soln<span class="sc">$</span>phi_s <span class="ot">=</span> <span class="fu">sapply</span>(Ms_soln<span class="sc">$</span>Ms, <span class="cf">function</span>(Ms){(Vmax)<span class="sc">/</span>(KM<span class="sc">+</span>Ms<span class="sc">+</span>Mns)})</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(Ms_soln)</span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span> <span class="fu">do.call</span>(rbind, .)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># --- rescale log10(Ms) onto the primary axis so it can share the panel ---</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>prim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">7</span>, <span class="sc">-</span><span class="dv">3</span>)                    <span class="co"># primary axis range (per-capita transport)</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>sec  <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">log10</span>(MM_soln<span class="sc">$</span>Ms))     <span class="co"># secondary data range (log10 Ms)</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>to_prim <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> sec[<span class="dv">1</span>]) <span class="sc">/</span> <span class="fu">diff</span>(sec) <span class="sc">*</span> <span class="fu">diff</span>(prim) <span class="sc">+</span> prim[<span class="dv">1</span>]</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>to_sec  <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> prim[<span class="dv">1</span>]) <span class="sc">/</span> <span class="fu">diff</span>(prim) <span class="sc">*</span> <span class="fu">diff</span>(sec) <span class="sc">+</span> sec[<span class="dv">1</span>]</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">=</span> <span class="fu">ggplot</span>(MM_soln, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">col =</span> <span class="fu">factor</span>(Vmax_Factor))) <span class="sc">+</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">log10</span>(phi_s), <span class="at">group =</span> <span class="fu">factor</span>(Vmax_Factor))) <span class="sc">+</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">to_prim</span>(<span class="fu">log10</span>(Ms)), <span class="at">group =</span> <span class="fu">factor</span>(Vmax_Factor)), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">name     =</span> <span class="st">"Per capita specific antibody transport rate"</span>,</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits   =</span> prim,</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span> <span class="fu">to_sec</span>(.), <span class="at">name =</span> <span class="st">"log10 [Ms], mg/dL"</span>)</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"blue"</span>, my_colors)) <span class="sc">+</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time, days"</span>, <span class="at">col =</span> <span class="st">"fold increase in Receptors (Vmax)"</span>, <span class="at">title =</span> <span class="st">"Per capita transport rate of specific antibody into the lumen over the course of infection"</span>) <span class="sc">+</span></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="1_primary_responses_MM_files/figure-html/plot-efficiency-Vmax-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>At this point I just really don’t know what i am looking for…</p>
+<p>Maybe a better measurement is the integral of <span class="math inline">\(k_2 R_s(t)\)</span> over the integral of <span class="math inline">\(M_s(t)\)</span>, rather than an instantaneous rate over time. Let’s try:</p>
+</section>
+</section>
+<section id="efficiency-as-fracint_0infty-k_2-r_s-t-dtint_0infty-m_st" class="level1">
+<h1>Efficiency as <span class="math inline">\(\frac{\int_0^\infty k_2 R_s (t) dt}{\int_0^\infty M_s(t)}\)</span></h1>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

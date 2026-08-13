@@ -165,12 +165,12 @@ we showed $R_s = \frac{k_1}{k_2}M_sR_e$. So the left-hand side of the above equa
 $$
 k_2R_s = k_2\frac{k_1}{k_2}M_sR_e = k_1M_sR_e
 $$
+
 we also showed that $R_e = \frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_ns)}$. So, the above becomes: 
 
 $$
 \phi_S = k_1M_s\frac{R_T}{1+\frac{k_1}{k_2}(M_s + M_{ns})}
 $$
-
 This is looking seriously close to Michaelis-Mentin flux!
 
 we know that $V_{max} = k_2R_T$, that is, the rate of transcytosis and the total number of receptors in the system. We can multiply the numerator by $\frac{k_1}{k_2}$ to produce $V_{max}*M_s$. 

@@ -3,6 +3,9 @@
 #####################################################
 # Antibody concentrations in the lumen #
 #####################################################
+#define MM function
+MM_function = function(Vmax, KM, M_s, M_ns) {(Vmax*M_s)/(KM+M_ns+M_s)}
+
 # Antibody concentrations in the respiratory mucosa #
 primary_response.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
 {with(as.list(parms),	# allows the parameter file parms to be as a list

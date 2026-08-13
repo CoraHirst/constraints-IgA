@@ -1,6 +1,6 @@
 ---
 title: "Simulations of specific IgA transport in the context of pre-existing immunity"
-subtitle: "Simplified model: approximation, $M_{ns}$ constant"
+subtitle: "Simplified models: comparing approximations to ODE with transport at steady-state, $M_{ns}$ constant"
 format: html
 ---
 
@@ -33,7 +33,9 @@ my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors s
 
 # Objective 
 
-In this document, we evaluate how long-lived IgA antibody titers in the respiratory mucosa interfere with the transport of specific IgA antibodies to the site of infection. We assume that the concentration of $M_{ns}$ changes negligibly over the course of infection, and assume that the steady state concentration of $M_{ns}$ is proportional to $\frac{c}{d_\mu}$. steady state concentration of non-specific antibodies explicitly considering the flux of IgA out of the mucosa. 
+In this document, we evaluate how 2 different approximate models reflect how long-lived IgA antibody titers in the respiratory mucosa interfere with the transport of specific IgA antibodies to the site of infection. We will compare these models to the approximation developed in `code\simulations\1_primary_responses_dynamics.qmd`. 
+
+In both approximations we assume that the concentration of $M_{ns}$ changes negligibly over the course of infection, and assume that the steady state concentration of $M_{ns}$ is proportional to $\frac{c}{d_\mu}$. As a reminder, in the more compelx dynamics model, we calculate the steady state concentration of non-specific antibodies explicitly considering the flux of IgA out of the mucosa.
 
 # Outline
 
@@ -558,13 +560,13 @@ print(plot)
 
 ```{r plot-all}
 plot = ggplot() +
-  geom_line(data = ODE_solns %>% filter(population %in% c("Rns", "Rs")), aes(x = time, y = log10(k2*concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "simple_ODE")) +
-   geom_line(data = ss_solns %>% filter(population %in% c("Rns", "Rs")), aes(x = time, y = log10(k2*concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "full_ODE")) +
-  geom_line(data = MM_soln, aes(x = time, y = log10(phi_s), group = factor(t_half), col = factor(t_half), linetype = "MM")) +
+  geom_line(data = ODE_solns %>% filter(population %in% c("Rns", "Rs")), aes(x = time, y = log10(k2*concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "ODE without transport at steady-state")) +
+   geom_line(data = ss_solns %>% filter(population %in% c("Rns", "Rs")), aes(x = time, y = log10(k2*concentration), group = interaction(factor(t_half), population), color = factor(t_half), linetype = "ODE with transport at steady-state")) +
+  geom_line(data = MM_soln, aes(x = time, y = log10(phi_s), group = factor(t_half), col = factor(t_half), linetype = "Michaelis-Mentin approximation")) +
   geom_line(data = MM_soln, aes(x = time, y = log10(phi_ns), group = factor(t_half), col = factor(t_half), linetype = "MM")) + 
   scale_color_manual(values = my_colors) +
-  scale_linetype_manual(values = c("simple_ODE" = "solid", "MM" = "dashed", "full_ODE" = "dotted")) +
-  labs(x = "time, days", y = "log10[R-Ab], mg/dL, over time", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "flux of s and ns into the lumen over the course of infection") +
+  scale_linetype_manual(values = c("ODE without transport at steady-state" = "solid", "Michaelis-Mentin approximation" = "dashed", "ODE with transport at steady-state" = "dotted")) +
+  labs(x = "time, days", y = "log10[R-Ab], mg/dL, over time", col = "mucosal Ab half-life, days", linetype = "Model", title = "flux of S and NS into the lumen over the course of infection") +
   theme_bw() +
   scale_y_continuous(limits = c(-1,NA)) +
   theme_bw()
@@ -575,3 +577,14 @@ print(plot)
 
 
 Looks like the full ode predicts more flux of specific antibody than the approximations for high concentrations of $M_{ns}$. So if we want to be conservative about the effect, we might go with the full model?
+
+# Parking on the downhill 
+
+I will use the simple MM model for now to plot the heatmaps and the other three figures of time versus some output of transport. 
+
+```{r plot-Ls-peak-by-half-life}
+
+
+
+```
+
