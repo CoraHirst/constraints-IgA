@@ -51,7 +51,7 @@ The results in this document are organized as follows:
 
 Below, we define our parameters: 
 
-```{r define-parameters}
+```{r define-parameters-MM}
 # transport
 Vmax = 10^3 # order of magnitude of peak response # we might vary this later
 k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
@@ -439,9 +439,9 @@ tp = 5 #time of peak titer -- days
 ```
 
 
-## $/Epsilon_s$ by decay rate
+## $/epsilon_s$ by decay rate
 
-```{r parms-efficiency-decay-rate}
+```{r parms-efficiency-decay}
 # set parms 
 #transport 
 Vmax = Vmax
@@ -475,7 +475,7 @@ Really, this is the per-capita transport rate given by the Michaelis Mentin appr
 
 We plot this over time over the course of infection. 
 
-```{r calculate-efficiency-decay-rate}
+```{r calculate-efficiency-decay}
 MM_soln = lapply(t_halfs, function(t_half){
   # setting t.half dependent parms for nonspecific population
   d_mu = log(2)/t_half #set d_mu
@@ -504,7 +504,7 @@ MM_soln = lapply(t_halfs, function(t_half){
 
 ```
 
-```{r plot-efficiecy-decay-rate}
+```{r plot-efficiency-decay-rate}
 #ggplot
 # --- rescale log10(Ms) onto the primary axis so it can share the panel ---
 prim <- c(-7, -3)                    # primary axis range (per-capita transport)
@@ -532,7 +532,7 @@ print(plot)
 
 Below we define the range of $k_2$ over which to calculate our antibody. We will set our half life to 5 years, which is still substantially faster than for systemic immunity. 
 
-```{r parms-efficiency-KM}
+```{r parms-efficiency-K_M}
 # set parms 
 #transport 
 k2_vec = 1/(c(0.25,0.5,0.75,1,2,3)/24)
@@ -557,7 +557,7 @@ tp = tp
 
 ```
 
-```{r calculate-efficiency-KM}
+```{r calculate-efficiency-K}
 MM_soln = lapply(k2_vec, function(k2.new){
   KM = k2.new/k1
   Vmax = k2.new*RT
@@ -584,7 +584,7 @@ MM_soln = lapply(k2_vec, function(k2.new){
 
 ```
 
-```{r plot-efficiency-KM}
+```{r plot-efficiency-K}
 #ggplot
 # --- rescale log10(Ms) onto the primary axis so it can share the panel ---
 prim <- c(-7, -3)                    # primary axis range (per-capita transport)
@@ -610,7 +610,7 @@ print(plot)
 ## Per-capita specific transport over time as a function of $V_{max}$
 
 
-```{r parms-efficiency-Vmax}
+```{r parms-efficiency-V}
 # set parms 
 #transport 
 k2 = 1/(2/24)
@@ -636,7 +636,7 @@ tp = tp
 
 ```
 
-```{r calculate-efficiency-Vmax}
+```{r calculate-efficiency-V}
 
 MM_soln = lapply(Vmax_factors, function(Vmax_factor){
   Vmax = k2*RT*Vmax_factor
@@ -663,7 +663,7 @@ MM_soln = lapply(Vmax_factors, function(Vmax_factor){
 
 ```
 
-```{r plot-efficiency-Vmax}
+```{r plot-efficiency-V}
 #ggplot
 # --- rescale log10(Ms) onto the primary axis so it can share the panel ---
 prim <- c(-7, -3)                    # primary axis range (per-capita transport)
@@ -1133,7 +1133,7 @@ Lets try now with $V_{max}$
 
 ## effect of $d_\mu$ and $V_{max}$
 
-```{r redefine-parameters-heatmaps-}
+```{r redefine-parameters-heatmaps}
 # transport
 Vmax = 10^3 # order of magnitude of peak response # we might vary this later
 k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
