@@ -581,10 +581,3 @@ Looks like the full ode predicts more flux of specific antibody than the approxi
 # Parking on the downhill 
 
 I will use the simple MM model for now to plot the heatmaps and the other three figures of time versus some output of transport. 
-
-```{r plot-Ls-peak-by-half-life}
-
-
-
-```
-
