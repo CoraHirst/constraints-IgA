@@ -52,7 +52,7 @@ When $V = 0$, each cell population decays at some rate, and secretory plasma cel
 
 When $V = 1$, B cells proliferate and differentiate into secretory plasma cells. Secretory plasma cells differentiate into quiescent plasma cells at some rate. Quiescent plasma cells are recruited to differentiate into secretory plasma cells at some rate. Cell populations continue to decay according to their given death rate. 
 
-```{r ODE-Model-1}
+```{r define-ODE-Model-1}
 # Antibody concentrations in the respiratory mucosa #
 secondary_response.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
 {with(as.list(parms),	# allows the parameter file parms to be as a list
@@ -64,15 +64,12 @@ secondary_response.model <- function(t, y, parms)  # Single partial immune class
         P_s = y[2]       # Antibody secreting cells (specific)
         P_q = y[3]       # quiescent antibody secreting cells (specific)
         M_s = y[4]       # specific Ab in mucosa
-        L_s = y[5]       # specific Ab in lumen
-        
         
         # make empty variables for the derivatives
         dB = 0      # change in specific Ab in the lumen
         dP_s = 0    # change in specific ASCs
         dP_q = 0    # change in quiescent ASCs
         dM_s = 0    # change in specific antibodies in mucosa
-        dL_s = 0    # change in specific antibodies in the lumen
         
         #####################################
         # define V function 
@@ -86,22 +83,66 @@ secondary_response.model <- function(t, y, parms)  # Single partial immune class
         #####################################
         ## calculate the derivatives
         # cell populations
-        dB = r_b*(1-diff_frac)*B*V - diff_frac*B*V -d_B*B #B cells (memory and naive together)
-        dP_s = diff_frac*B*V - quiessence_k*P_s - d_mu*P_s + induction_k*P_q*V # specific ASCs
-        dP_q = quiessence_k*P_s - induction_k*P_q*V - d_q*P_q # quiescent sepecific ASCs
+        dB = r*(1-f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
+        dP_s = r*f*V*B - d_s*P_s + s*V*P_q #differentiation from B cells or P_q only when virus present
+        dP_q = q*P_s - d_q*P_q - s*V*P_q #P_s always differentiates to P_q with some rate q.
         # Specific antibodies        
-        dM_s = rho*P_s - (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_Ab*M_s #mucosal
-        dL_s = (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_l*L_s #lumenal
+        dM_s = a*P_s - d_a*M_s #P_s secretes antibody
         
         # output the derivatives
-        dy=c(dB, dP_s, dP_q, dM_s, dL_s) #vector of derivatives 
+        dy=c(dB, dP_s, dP_q, dM_s) #vector of derivatives 
         
         return(list(dy)) #lists vector and returns
       }
   ) 
-} 
+} # we will need to think about how to set M_ns if we want to track specific IgA in the lumen.
 
 ```
 
-S
+```{r set-parms-ODE-Model-1}
+# death rates
+d_B = # B cell death rate
+d_s = # secretory cell death rate
+d_q = # quiescent cell death rate
+d_a = # IgA molecular decay rate
+  
+# proliferation and differentiation
+r = # b cell proliferation rate
+f = # fraction of division that produce secretory cells
+q = # rate of secretory cells to quiescence
+s = # rate of quiescent cell recruitment to secretion
+
+# antibody dynamics
+a = # rate of IgA secretion by secretory cells
+d_a = # IgA molecular decay rate in mucosa
+
+# infection timing
+t_infection = c(1,14) #time range of antigen presence (V = 1 when t in t_infection)
+```
+
+```{r solve-ODE-Model-1}
+# parameters list for deSolve
+parms = list(
+  d_B = d_B, # B cell death rate
+  d_s = d_s, # secretory cell death rate
+  d_q = d_q, # quiescent cell death rate
+  d_a = d_a, # IgA molecular decay rate
+    
+  # proliferation and differentiation
+  r = r, # b cell proliferation rate
+  f = f, # fraction of division that produce secretory cells
+  q = q, # rate of secretory cells to quiescence
+  s = s, # rate of quiescent cell recruitment to secretion
+  
+  # antibody dynamics
+  a = a, # rate of IgA secretion by secretory cells
+  d_a = d_a, # IgA molecular decay rate in mucosa
+  
+  #infection timing
+  t_infection = t_infection #time range of antigen presence (V = 1 when t in t_infection)
+)
+# simulation Time parameters 
+Tmax   = 80                  #20       # max time in years
+points.per.year = 400                # output points per year
+```
 
