@@ -1,0 +1,107 @@
+---
+title: "Evolutionary Constraints on the Longevity of IgA Antibody Titers:"
+subtitle: "Outline Part 2: Inducible plasma cells rapidly recall IgA responses and control initial growth of viral infection"
+author: "Cora Hirst, Susi Linderman, Carl Davis, Hasan Ahmed, Rustom Antia..."
+output: html
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+#source(here("code", "functions", "functions.R"))
+
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
+```
+
+# Objective
+
+The goal of this document is to explore a biological mechanism of IgA recall responses in the respiratory tract - namely that, rather than constitutively secreting antibody, localized IgA plasma cells are inducible - through ODE models. 
+
+# Outline 
+
+I plan to formulate 2 models that both result in inducibility: 
+
+1) Once plasma cells are generated, they differentiate into "quiescent" plasma cells at some rate. On recall responses, they are recalled at some rate. 
+
+2) Once plasma cells are generated, they only secrete antibody in the presence of antigen. When antigen disappears, secretion stops. 
+
+I think the first will be more gradated/biological for a model with bianry "infection/non-infection". But, if we allow the rate of recruitment (1) or the rate of secretion (2) to be dependent on the density of antigen, then I'm not entirely sure how different the two models will be!
+
+# Model 1 - Plasma cell differentiation
+
+Below, we define an ode model in which there are 3 populations of cells: B cells, secretory plasma cells, and quiescent plasma cells. We include a fourth variable - "Virus" - which is either 0 (no infection present) or 1 (infection present). 
+
+When $V = 0$, each cell population decays at some rate, and secretory plasma cells differentiate into quiescent plasma cells. 
+
+When $V = 1$, B cells proliferate and differentiate into secretory plasma cells. Secretory plasma cells differentiate into quiescent plasma cells at some rate. Quiescent plasma cells are recruited to differentiate into secretory plasma cells at some rate. Cell populations continue to decay according to their given death rate. 
+
+```{r ODE-Model-1}
+# Antibody concentrations in the respiratory mucosa #
+secondary_response.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        B = y[1]         # B cells 
+        P_s = y[2]       # Antibody secreting cells (specific)
+        P_q = y[3]       # quiescent antibody secreting cells (specific)
+        M_s = y[4]       # specific Ab in mucosa
+        L_s = y[5]       # specific Ab in lumen
+        
+        
+        # make empty variables for the derivatives
+        dB = 0      # change in specific Ab in the lumen
+        dP_s = 0    # change in specific ASCs
+        dP_q = 0    # change in quiescent ASCs
+        dM_s = 0    # change in specific antibodies in mucosa
+        dL_s = 0    # change in specific antibodies in the lumen
+        
+        #####################################
+        # define V function 
+        V.function = function(t_infection, t) {
+          if(t>=min(t_infection) & t <= max(t_infection)){
+            V = 1}
+          else(V = 0)
+        return(V)}
+        # set V
+        V = V.function(t_infection, t)
+        #####################################
+        ## calculate the derivatives
+        # cell populations
+        dB = r_b*(1-diff_frac)*B*V - diff_frac*B*V -d_B*B #B cells (memory and naive together)
+        dP_s = diff_frac*B*V - quiessence_k*P_s - d_mu*P_s + induction_k*P_q*V # specific ASCs
+        dP_q = quiessence_k*P_s - induction_k*P_q*V - d_q*P_q # quiescent sepecific ASCs
+        # Specific antibodies        
+        dM_s = rho*P_s - (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_Ab*M_s #mucosal
+        dL_s = (Vmax/(K + M_s + M_ns(c = c, d = d_mu)))*M_s - d_l*L_s #lumenal
+        
+        # output the derivatives
+        dy=c(dB, dP_s, dP_q, dM_s, dL_s) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+  ) 
+} 
+
+```
+
+S
+
