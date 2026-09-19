@@ -54,7 +54,7 @@ When $V = 1$, B cells proliferate and differentiate into secretory plasma cells.
 
 ```{r define-ODE-Model-1}
 # Antibody concentrations in the respiratory mucosa #
-secondary_response.model <- function(t, y, parms)  # Single partial immune class (RPS)                       
+secondary_response.model1 <- function(t, y, parms)  # Single partial immune class (RPS)                       
 {with(as.list(parms),	# allows the parameter file parms to be as a list
       {  
         y = pmax(y,0)         # avoid negative values (not ideal but ok)
@@ -141,8 +141,151 @@ parms = list(
   #infection timing
   t_infection = t_infection #time range of antigen presence (V = 1 when t in t_infection)
 )
+
 # simulation Time parameters 
-Tmax   = 80                  #20       # max time in years
-points.per.year = 400                # output points per year
+Tmax   = 90                         # max time in days
+points.per.day = 24*60              # output points per day
+
+#initial conditions
+init_cond = c("B" = 10, "P_s" = 0, "P_q" = 0, "M_s" = 0)
+
+# solve 
+soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model1, parms = params)) 
 ```
+
+```{r plot-ODE-Model-1}
+# long form ode 
+soln_long = soln %>% pivot_longer(
+  cols = !c(time),
+  names_to = "population",
+  values_to = "number"
+)
+
+# ggplot
+plot = ggplot +
+  geom_point(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
+  geom_line(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
+  theme_bw() + #removes grey background and changes aesthetics
+  scale_color_manual(values = my_colors) #changes colors to defined vector
+
+```
+
+# Model 2 - Plasma cell tunable secretion
+
+Below, we define an ode model in which there are 2 populations of cells: B cells and plasma cells. We include a third variable - "Virus" - which is either 0 (no infection present) or 1 (infection present). 
+
+When $V = 0$, each cell population decays at some rate, and plasma cells do not secrete antibody. 
+
+When $V = 1$, B cells proliferate and differentiate into plasma cells. Plasma cells secrete antibody. Cell populations continue to decay according to their given death rate. 
+
+```{r define-ODE-Model-2}
+# Antibody concentrations in the respiratory mucosa #
+secondary_response.model2 <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        B = y[1]         # B cells 
+        P = y[2]       # Antibody secreting cells (specific)
+        M_s = y[4]       # specific Ab in mucosa
+        
+        # make empty variables for the derivatives
+        dB = 0      # change in specific Ab in the lumen
+        dP = 0    # change in specific ASCs
+        dM_s = 0    # change in specific antibodies in mucosa
+        
+        #####################################
+        # define V function 
+        V.function = function(t_infection, t) {
+          if(t>=min(t_infection) & t <= max(t_infection)){
+            V = 1}
+          else(V = 0)
+        return(V)}
+        # set V
+        V = V.function(t_infection, t)
+        #####################################
+        ## calculate the derivatives
+        # cell populations
+        dB = r*(1-f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P
+        dP = r*f*V*B - d_p*P  #differentiation from B cells only when virus present
+        
+        # Specific antibodies        
+        dM_s = a*V*P - d_a*M_s #P secretes antibody only in the presence of virus
+        
+        # output the derivatives
+        dy=c(dB, dP, dM_s) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+  ) 
+} # we will need to think about how to set M_ns if we want to track specific IgA in the lumen.
+
+```
+
+```{r set-parms-ODE-Model-2}
+# death rates
+d_B = # B cell death rate
+d_p = # plasma cell death rate
+d_a = # IgA molecular decay rate
+  
+# proliferation and differentiation
+r = # b cell proliferation rate
+f = # fraction of division that produce secretory cells
+  
+# antibody dynamics
+a = # rate of IgA secretion by secretory cells
+d_a = # IgA molecular decay rate in mucosa
+
+# infection timing
+t_infection = c(1,14) #time range of antigen presence (V = 1 when t in t_infection)
+```
+
+```{r solve-ODE-Model-2}
+# parameters list for deSolve
+params = list(
+  d_B = d_B, # B cell death rate
+  d_p = d_p, # plasma cell death rate
+  d_a = d_a, # IgA molecular decay rate
+    
+  # proliferation and differentiation
+  r = r, # b cell proliferation rate
+  f = f, # fraction of division that produce secretory cells
+  
+  # antibody dynamics
+  a = a, # rate of IgA secretion by secretory cells
+  d_a = d_a, # IgA molecular decay rate in mucosa
+  
+  #infection timing
+  t_infection = t_infection #time range of antigen presence (V = 1 when t in t_infection)
+)
+
+# simulation Time parameters 
+Tmax   = 90                         # max time in days
+points.per.day = 24*60              # output points per day
+
+#initial conditions
+init_cond = c("B" = 10, "P" = 0, "M_s" = 0)
+
+# solve 
+soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model2, parms = params)) 
+```
+
+```{r plot-ODE-model-2}
+# long form ode 
+soln_long = soln %>% pivot_longer(
+  cols = !c(time),
+  names_to = "population",
+  values_to = "number"
+)
+
+# ggplot
+plot = ggplot +
+  geom_point(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
+  geom_line(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
+  theme_bw() + #removes grey background and changes aesthetics
+  scale_color_manual(values = my_colors) #changes colors to defined vector
+
+```
+
 
