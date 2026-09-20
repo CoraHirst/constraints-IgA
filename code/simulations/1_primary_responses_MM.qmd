@@ -65,17 +65,17 @@ d_L = log(2)/t_half_L #decay rate in the lumen
 
 # steady state nonspecific antibodies
 c = 1*10^5 #rate of influx of nonspecific IgA, Ab/time - comes from pb/dA - in mg/dl per day
-t_halfs = c(14,30,90,400, 4000, 20000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years :) 69 
+t_halfs = c(7, 14,30,90,400, 4000) #half lives of mucosal ab in days - 2 weeks, 1 month, 3 months, 1 year, 10 years, 50 years :) 69 
 d_mus = log(2)/t_halfs #half lives in days
   names(d_mus) = t_halfs
 Mns_vec = c/d_mus #vecotr of approximate ss solutions
   names(Mns_vec) = t_halfs
 
 # generation of new response
-Ap = Mns_vec["90"] #peak antibody titer will be the same as Mns for 90 days
+Ap = Mns_vec["7"] #peak antibody titer will be the same as Mns for 90 days
 #initial ab titer
 A0 = 1 # initial specific ab concentration
-tp = 5 #time of peak titer -- days
+tp = 10 #time of peak titer -- days
 
 # will be calculated when iterating through d_mu
 #r0 = (2*log(Ap/A0)/tp) + d_mu #initial/greatest exponential expansion rate
@@ -239,11 +239,12 @@ MM_soln = lapply(t_halfs, function(t_half){
 
 ```{r plot-flux-decay-rate}
 #ggplot
-plot = ggplot() + geom_line(data = MM_soln, aes(x = time, y = log10(phi_s), group = factor(t_half), col = factor(t_half), linetype = "phi_s")) +
-  geom_line(data = MM_soln, aes(x = time, y = log10(phi_ns), group = factor(t_half), col = factor(t_half), linetype = "phi_ns")) + 
+plot = ggplot() + geom_line(data = MM_soln, aes(x = time, y = (phi_s), group = factor(t_half), col = factor(t_half), linetype = "phi_s"), lwd = 1.5) +
+  geom_line(data = MM_soln, aes(x = time, y = (phi_ns), group = factor(t_half), col = factor(t_half), linetype = "phi_ns"), lwd = 1.5) + 
   scale_color_manual(values = my_colors) +
+  #coord_cartesian(ylim = c(0, 3), xlim = c(0, 15)) +
   scale_linetype_manual(values = c("phi_s" = "solid", "phi_ns" = "dashed")) +
-  labs(x = "time, days", y = "log10[R-Ab], mg/dL, over time", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "flux of s and ns into the lumen over the course of infection") +
+  labs(x = "time, days", y = "[R-Ab], mg/dL, over time", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "flux of s and ns into the lumen over the course of infection") +
   theme_bw()
 
 print(plot)
