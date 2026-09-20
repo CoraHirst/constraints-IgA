@@ -804,7 +804,8 @@ MM_soln = MM_soln %>%
 
 ```{r plot-efficiecy-decay-rate}
 # plot 
-plot = ggplot() + geom_line(data = MM_soln, aes(x = t_half, y = log10(efficiency))) + geom_point(data = MM_soln, aes(x = t_half, y = log10(efficiency)))
+plot = ggplot() + geom_line(data = MM_soln, aes(x = t_half, y = log10(efficiency))) + geom_point(data = MM_soln, aes(x = t_half, y = log10(efficiency))) +
+  labs(x = "half-life of mucosal antibody titers", y = bquote("log"[10] ~"efficiency")) + theme_classic()
 
 # print to system viewer
 print(plot)
