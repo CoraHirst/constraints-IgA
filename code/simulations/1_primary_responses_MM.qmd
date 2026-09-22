@@ -691,7 +691,7 @@ At this point I just really don't know what i am looking for...
 
 Maybe a better measurement is the integral of $k_2 R_s(t)$ over the integral of $M_s(t)$, rather than an instantaneous rate over time. Let's try: 
 
-# Efficiency as $\frac{\int_0^\infty k_2 R_s (t) dt}{\int_0^\infty M_s(t)}$
+# Efficiency as $\frac{\int_0^\infty k_2 R_s (t) dt}{\int_0^\infty M_s(t)}$ 
 
 ```{r define-parameters}
 # transport
