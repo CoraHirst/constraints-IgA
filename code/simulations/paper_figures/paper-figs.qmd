@@ -248,12 +248,21 @@ plot = ggplot() + geom_line(data = MM_soln, aes(x = time, y = (phi_s), group = f
   geom_line(data = MM_soln, aes(x = time, y = (phi_ns), group = factor(t_half), col = factor(t_half), linetype = "phi_ns"), lwd = 1.5) + 
   scale_color_manual(values = my_colors) +
   #coord_cartesian(ylim = c(0, 3), xlim = c(0, 15)) +
-  scale_linetype_manual(values = c("phi_s" = "solid", "phi_ns" = "dashed")) +
-  labs(x = "time, days", y = "[R-Ab], mg/dL, over time", col = "mucosal Ab half-life, days", linetype = "Specificity", title = "flux of s and ns into the lumen over the course of infection") +
-  theme_bw()
+  scale_linetype_manual(values = c("phi_s" = "solid", "phi_ns" = "dashed"), labels = c("phi_s" = expression(phi[s]), "phi_ns" = expression( phi[ns]))) +
+  labs(x = "time, days", y = bquote(phi[Ab] ~ "day"^-1), col = bquote("T"[1/2] ~ ", days"^-1), linetype = "Specificity", title = "flux of specific and non-specific antibody into the lumen over the course of infection") +
+  theme_bw()+
+  theme(axis.text = element_text(size = 25),
+        axis.title = element_text(size = 25),
+        legend.title = element_text(size = 25),
+        legend.text = element_text(size = 25, hjust = 0),
+        legend.key.width = unit(0.06, "npc")) 
 
+#print to system viewer
 print(plot)
 
+#save
+file = here("results", "competition", "fig-flux_over_time.png")
+ggsave(plot, file = file)
 ```
 
 yay

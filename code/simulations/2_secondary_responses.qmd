@@ -84,8 +84,9 @@ secondary_response.model1 <- function(t, y, parms)  # Single partial immune clas
         ## calculate the derivatives
         # cell populations
         dB = r*(1-f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
-        dP_s = r*f*V*B - d_s*P_s + s*V*P_q - q*P_s #differentiation from B cells or P_q only when virus present
+        dP_s = r*f*V*B + s*V*P_q - d_s*P_s - q*P_s #differentiation from B cells or P_q only when virus present
         dP_q = q*P_s - d_q*P_q - s*V*P_q #P_s always differentiates to P_q with some rate q.
+        
         # Specific antibodies        
         dM_s = a*P_s - d_a*M_s #P_s secretes antibody
         
@@ -101,14 +102,14 @@ secondary_response.model1 <- function(t, y, parms)  # Single partial immune clas
 
 ```{r set-parms-ODE-Model-1}
 # death rates
-d_B = log(2)/(14) # B cell death rate, 50 years half life
-d_s = 0 # secretory cell death rate #don't consider for now
+d_B = log(2)/(90) # B cell death rate, x days half life
+d_s = log(2)/90 # secretory cell death rate #don't consider for now
 d_q = log(2)/(365*2) # quiescent cell death rate long lived like bm
   
 # proliferation and differentiation
-r = 3 # b cell proliferation rate - doubling time is 1/2 day
+r = 0.3 # b cell proliferation rate - doubling time is 1/2 day
 f = 1/3 # fraction of division that produce secretory cells
-q = log(2)/14 # rate of secretory cells to quiescence #should equal d_mu
+q = log(2)/30 # rate of secretory cells to quiescence #should equal d_mu
 s = 0.01 # rate of quiescent cell recruitment to secretion #should be very fast, like a percentage per hour
 
 # antibody dynamics
@@ -142,7 +143,7 @@ params = list(
 )
 
 # simulation Time parameters 
-Tmax   = 365*3                         # max time in days
+Tmax   = 365*2                         # max time in days
 points.per.day = 24              # output points per day
 
 #initial conditions
@@ -162,6 +163,7 @@ soln_long = soln %>% pivot_longer(
  plot = ggplot() +
   geom_point(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
   geom_line(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
+   coord_cartesian(ylim = c(0,3)) +
    labs(x = "days",, y = bquote("log"[10] ~ "number"), title = "primary infection, inducible response") +
   theme_bw() + #removes grey background and changes aesthetics
   scale_color_manual(values = my_colors) #changes colors to defined vector
@@ -174,10 +176,8 @@ print(plot)
 # set initial conditions
 init_cond = soln %>% select(!(time)) %>% slice(nrow(soln)) %>% unlist()
 
-params$s = 0.0001
-
 # simulation Time parameters 
-Tmax   = 3                         # max time in days
+Tmax   = 30                         # max time in days
 points.per.day = 24              # output points per day
 
 # solve 
@@ -196,6 +196,7 @@ soln2_long = soln_secondary %>% pivot_longer(
  plot = ggplot() +
   geom_point(data = soln2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
   geom_line(data = soln2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
+   coord_cartesian(ylim = c(0,3)) +
   labs(x = "days",, y = bquote("log"[10] ~ "number"), title = "secondary infection, inducible response") +
   theme_bw() + #removes grey background and changes aesthetics
   scale_color_manual(values = my_colors) #changes colors to defined vector
@@ -252,15 +253,15 @@ secondary_response.model_notinducible <- function(t, y, parms)  # Single partial
 
 ```{r set-parms-ODE-Model-1-noinducible}
 # death rates
-d_B = log(2)/(14) # B cell death rate, 50 years half life
-d_s = log(2)/14 # rate of secretory cells to death #should equal d_mu
+d_B = log(2)/(90) # B cell death rate, 2 years half life
+d_s = log(2)/30 # rate of secretory cells to death #should equal d_mu
  
 # proliferation and differentiation
-r = log(2)/1 # b cell proliferation rate - doubling time is 1 day
-f = .2 # fraction of division that produce secretory cells
+r = 0.3 # b cell proliferation rate - doubling time is 1 day
+f = 1/3 # fraction of division that produce secretory cells
 
 # antibody dynamics
-a = 10^6/10^3 # rate of IgA secretion by secretory cells # not dealing with density but total number now
+a = 10 # rate of IgA secretion by secretory cells # not dealing with density but total number now
 d_a = log(2)/3 # IgA molecular decay rate, 3 days half life
 
 # infection timing
@@ -287,17 +288,17 @@ params = list(
 )
 
 # simulation Time parameters 
-Tmax   = 365*3                         # max time in days
+Tmax   = 365*2                         # max time in days
 points.per.day = 24              # output points per day
 
 #initial conditions
-init_cond = c("B" = 10^4/10^3, "P_s" = 0, "M_s" = 0)
+init_cond = c("B" = 10, "P_s" = 0, "M_s" = 0)
 
 # solve 
 soln_notinducible = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model_notinducible, parms = params)) 
 
 # long form ode 
-soln_notinducible_long = soln %>% pivot_longer(
+soln_notinducible_long = soln_notinducible %>% pivot_longer(
   cols = !c(time),
   names_to = "population",
   values_to = "number"
@@ -307,12 +308,14 @@ soln_notinducible_long = soln %>% pivot_longer(
  plot = ggplot() +
   geom_point(data = soln_notinducible_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
   geom_line(data = soln_notinducible_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
+   coord_cartesian(ylim = c(0,3)) +
    labs(x = "days", y = bquote("log"[10] ~ "number"), title = "primary infection, not inducible response") +
   theme_bw() + #removes grey background and changes aesthetics
   scale_color_manual(values = my_colors) #changes colors to defined vector
 
 # print
 print(plot)
+
 ```
 
 ```{r plot-ODE-Model-1-secondary-infection-noinducible}
@@ -320,7 +323,7 @@ print(plot)
 init_cond = soln_notinducible %>% select(!(time)) %>% slice(nrow(soln_notinducible)) %>% unlist()
 
 # simulation Time parameters 
-Tmax   = 3                         # max time in days
+Tmax   = 30                         # max time in days
 points.per.day = 24              # output points per day
 
 # solve 
@@ -350,10 +353,10 @@ print(plot)
 plotting $M_s$ together: 
 
 ```{r plot-together}
-plot = ggplot() + geom_line(data = soln2_long %>% filter(population == "M_s"), aes(x = time, y = log10(number), linetype = "inducible"), lwd = 1.5) + 
-  geom_line(data = soln_notinducible2_long %>% filter(population == "M_s"), aes(x = time, y = log10(number), linetype = "not inducible"), lwd = 1.5) +
+plot = ggplot() + geom_line(data = soln2_long %>% filter(population == "M_s"), aes(x = time, y = (number), linetype = "inducible"), lwd = 1.5) + 
+  geom_line(data = soln_notinducible2_long %>% filter(population == "M_s"), aes(x = time, y = (number), linetype = "not inducible"), lwd = 1.5) +
   scale_linetype_manual(values = c("inducible" = "solid", "not inducible" = "dashed")) +
-  labs(x = "days", y = bquote("log"[10] ~ "number"), title = "secondary infection, antibody response") +
+  labs(x = "days", y = bquote("number"), title = "secondary infection, antibody response") +
   theme_bw() #removes grey background and changes aesthetics
 
 #print to viewer
