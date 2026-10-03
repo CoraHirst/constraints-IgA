@@ -379,7 +379,7 @@ heatmap_matrix = sapply(Aps, function(Ap){ #columns
 
 ### plot
 #plot AICs
-filled.contour(x = log10(t_halfs), y = log10(Aps), z=heatmap_matrix, lwd = 2, ylab = expression(paste("peak response")), xlab = expression(paste(log[10], " exponential half life, ", days)), main = "Peak Flux of Specific Antibody")
+filled.contour(x = log10(t_halfs), y = log10(Aps), z=log10(heatmap_matrix), lwd = 2, ylab = expression(paste("peak response")), xlab = expression(paste(log[10], " exponential half life, ", days)), main = "Peak Flux of Specific Antibody")
 
 
 
