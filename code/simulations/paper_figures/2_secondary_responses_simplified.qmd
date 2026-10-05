@@ -1,0 +1,297 @@
+---
+title: "2_secondary_responses_simplified"
+format: html
+editor: visual
+---
+
+```{r setup}
+#install.package("here")
+library(here)
+
+#install.package("ggplot2")
+library(ggplot2)
+
+#install.package("gridExtra")
+library(gridExtra)
+
+#install.packages("tidyverse")
+library(tidyverse)
+
+#install.packages("deSolve")
+library(deSolve)
+
+#load functions
+#source(here("code", "functions", "functions.R"))
+
+#choose plotting colors
+my_colors = c("darkred", "maroon", "darkblue", "forestgreen", "darkorange", "goldenrod") #choose color range
+num_colors = length(my_colors) #set number of colors needed for plotting
+my_colors = colorRampPalette(my_colors)(num_colors) #increase number of colors staying in color range
+```
+
+# Objective
+
+The goal of this document is to explore a biological mechanism of IgA recall responses in the respiratory tract - namely that, rather than constitutively secreting antibody, localized IgA plasma cells are inducible - through ODE models. 
+
+# Outline 
+
+I plan to formulate 2 models that both result in inducibility: 
+
+1) Once plasma cells are generated, they differentiate into "quiescent" plasma cells at some rate. On recall responses, they are recalled at some rate. 
+
+2) Once plasma cells are generated, they only secrete antibody in the presence of antigen. When antigen disappears, secretion stops. 
+
+I think the first will be more gradated/biological for a model with bianry "infection/non-infection". But, if we allow the rate of recruitment (1) or the rate of secretion (2) to be dependent on the density of antigen, then I'm not entirely sure how different the two models will be!
+
+# Model 1 - Plasma cell differentiation
+
+Below, we define an ode model in which there are 3 populations of cells: B cells, secretory plasma cells, and quiescent plasma cells. We include a fourth variable - "Virus" - which is either 0 (no infection present) or 1 (infection present). 
+
+When $V = 0$, each cell population decays at some rate, and secretory plasma cells differentiate into quiescent plasma cells. 
+
+When $V = 1$, B cells proliferate and differentiate into secretory plasma cells. Secretory plasma cells differentiate into quiescent plasma cells at some rate. Quiescent plasma cells are recruited to differentiate into secretory plasma cells at some rate. Cell populations continue to decay according to their given death rate. 
+
+```{r define-ODE-Model-1}
+# Antibody concentrations in the respiratory mucosa #
+secondary_response.model1 <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        B = y[1]         # B cells 
+        P_s = y[2]       # Antibody secreting cells (specific)
+        P_q = y[3]       # quiescent antibody secreting cells (specific)
+        M_s = y[4]       # specific Ab in mucosa
+        
+        # make empty variables for the derivatives
+        dB = 0      # change in specific Ab in the lumen
+        dP_s = 0    # change in specific ASCs
+        dP_q = 0    # change in quiescent ASCs
+        dM_s = 0    # change in specific antibodies in mucosa
+        
+        #####################################
+        # define V function 
+        V.function = function(t_infection, t) {
+          if(t>=min(t_infection) & t <= max(t_infection)){
+            V = 1}
+          else(V = 0)
+        return(V)}
+        # set V
+        V = V.function(t_infection, t)
+        #####################################
+        ## calculate the derivatives
+        # cell populations
+        dB = r*(1-f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
+        dP_s = r*f*V*B + s*V*P_q - d_s*P_s - q*P_s #differentiation from B cells or P_q only when virus present
+        dP_q = q*P_s - d_q*P_q - s*V*P_q #P_s always differentiates to P_q with some rate q.
+        
+        # Specific antibodies        
+        dM_s = a*P_s - d_a*M_s #P_s secretes antibody
+        
+        # output the derivatives
+        dy=c(dB, dP_s, dP_q, dM_s) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+  ) 
+} # we will need to think about how to set M_ns if we want to track specific IgA in the lumen.
+
+```
+
+Instead of simulating a primary infection followed by a secondary infection - because we really don't know what the "rules" are for feedback between antibody and control of infection/antigen load, and subsequently generated responses - we will instead initiate a secondary response with some ratio of B cells to quiescenet cells/ B cells to inducible plasma cells. This ratio will be set by fraction of B cell divisions that give rise to plasma cells; we assume that the quiescent cells decay with the same rate as the memory B cells, and so their ratio should stay the same over time. 
+
+### Model 1 - quiescent cell differentiation
+
+```{r set-parms-ODE-Model-1}
+# death rates
+d_B = log(10)/(365) # B cell death rate, x days half life
+d_s = 0 # secretory cell death rate #don't consider for now
+d_q = log(10)/(365) # quiescent cell death rate long lived like bm
+  
+# proliferation and differentiation
+r = 3 # b cell proliferation rate - doubling time is 1/2 day
+f = 1/3 # fraction of division that produce secretory cells
+q = log(2)/14 # rate of secretory cells to quiescence #should be dmu 
+s = 3 # rate of quiescent cell recruitment to secretion #should be very fast, like a percentage per hour
+
+# antibody dynamics
+a = 10 # rate of IgA secretion by secretory cells # not dealing with density but total number now
+d_a = log(2)/3 # IgA molecular decay rate, 3 days half life
+
+# infection timing
+t_infection = c(0,14) #time range of antigen presence (V = 1 when t in t_infection)
+```
+
+
+```{r plot-ODE-Model-1-secondary-infection}
+# parms list 
+# parameters list for deSolve
+params = list(
+  d_B = d_B, # B cell death rate
+  d_s = d_s, # secretory cell death rate
+  d_q = d_q, # quiescent cell death rate
+  d_a = d_a, # IgA molecular decay rate
+    
+  # proliferation and differentiation
+  r = r, # b cell proliferation rate
+  f = f, # fraction of division that produce secretory cells
+  q = q, # rate of secretory cells to quiescence
+  s = s, # rate of quiescent cell recruitment to secretion
+  
+  # antibody dynamics
+  a = a, # rate of IgA secretion by secretory cells
+  d_a = d_a, # IgA molecular decay rate in mucosa
+  
+  #infection timing
+  t_infection = t_infection #time range of antigen presence (V = 1 when t in t_infection)
+)
+
+# set initial conditions
+#initial conditions
+init_cond = c("B" = 3, "P_s" = 0, "P_q" = 1, "M_s" = 0)
+
+# simulation Time parameters 
+Tmax   = 3                       # max time in days
+points.per.day = 24              # output points per day
+
+# solve 
+soln_secondary = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model1, parms = params)) 
+
+
+
+# long form ode 
+soln2_long = soln_secondary %>% pivot_longer(
+  cols = !c(time),
+  names_to = "population",
+  values_to = "number"
+)
+
+# ggplot
+ plot = ggplot() +
+  geom_point(data = soln2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
+  geom_line(data = soln2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
+  coord_cartesian(ylim = c(0,4)) +
+  labs(x = "days",, y = bquote("log"[10] ~ "number"), title = "secondary infection, inducible response") +
+  theme_bw() + #removes grey background and changes aesthetics
+  scale_color_manual(values = my_colors) #changes colors to defined vector
+
+# print
+print(plot)
+```
+
+compare to if $d_\mu$ was actual death rate
+
+```{r ODE-model-no-inducible}
+# Antibody concentrations in the respiratory mucosa #
+secondary_response.model_notinducible <- function(t, y, parms)  # Single partial immune class (RPS)                       
+{with(as.list(parms),	# allows the parameter file parms to be as a list
+      {  
+        y = pmax(y,0)         # avoid negative values (not ideal but ok)
+        
+        # map the state variables
+        B = y[1]         # B cells 
+        P_s = y[2]       # Antibody secreting cells (specific)
+        M_s = y[3]       # specific Ab in mucosa
+        
+        # make empty variables for the derivatives
+        dB = 0      # change in specific Ab in the lumen
+        dP_s = 0    # change in specific ASCs
+        dM_s = 0    # change in specific antibodies in mucosa
+        
+        #####################################
+        # define V function 
+        V.function = function(t_infection, t) {
+          if(t>=min(t_infection) & t <= max(t_infection)){
+            V = 1}
+          else(V = 0)
+        return(V)}
+        # set V
+        V = V.function(t_infection, t)
+        #####################################
+        ## calculate the derivatives
+        # cell populations
+        dB = r*(1-f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
+        dP_s = r*f*V*B - d_s*P_s #differentiation from B cells or P_q only when virus present
+        
+        # Specific antibodies        
+        dM_s = a*P_s - d_a*M_s #P_s secretes antibody
+        
+        # output the derivatives
+        dy=c(dB, dP_s, dM_s) #vector of derivatives 
+        
+        return(list(dy)) #lists vector and returns
+      }
+  ) 
+} # we will need to think about how to set M_ns if we want to track specific IgA in the lumen.
+```
+
+```{r set-parms-ODE-Model-1-noinducible}
+# death rates
+d_B = log(2)/(365) # B cell death rate, 2 years half life
+d_s = q # rate of secretory cells to death #should equal d_mu
+ 
+# proliferation and differentiation
+r = 3 # b cell proliferation rate - doubling time is 1 day
+f = 1/3 # fraction of division that produce secretory cells
+
+# antibody dynamics
+a = 10 # rate of IgA secretion by secretory cells # not dealing with density but total number now
+d_a = log(2)/3 # IgA molecular decay rate, 3 days half life
+
+# infection timing
+t_infection = c(0,14) #time range of antigen presence (V = 1 when t in t_infection)
+```
+
+```{r solve-ODE-Model-1-first-infection-noinducible}
+# parameters list for deSolve
+params = list(
+  d_B = d_B, # B cell death rate
+  d_s = d_s, # secretory cell death rate
+
+    
+  # proliferation and differentiation
+  r = r, # b cell proliferation rate
+  f = f, # fraction of division that produce secretory cells
+
+  # antibody dynamics
+  a = a, # rate of IgA secretion by secretory cells
+  d_a = d_a, # IgA molecular decay rate in mucosa
+  
+  #infection timing
+  t_infection = t_infection #time range of antigen presence (V = 1 when t in t_infection)
+)
+```
+
+```{r plot-ODE-Model-1-secondary-infection-noinducible}
+# set initial conditions
+init_cond = soln_notinducible %>% select(!(time)) %>% slice(nrow(soln_notinducible)) %>% unlist()
+
+# simulation Time parameters 
+Tmax   = 30                       # max time in days
+points.per.day = 24              # output points per day
+
+# solve 
+soln_notinducible_secondary = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model_notinducible, parms = params)) 
+
+
+
+# long form ode 
+soln_notinducible2_long = soln_notinducible_secondary %>% pivot_longer(
+  cols = !c(time),
+  names_to = "population",
+  values_to = "number"
+)
+
+# ggplot
+ plot = ggplot() +
+  geom_point(data = soln_notinducible2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
+  geom_line(data = soln_notinducible2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
+   labs(x = "days", y = bquote("log"[10] ~ "number"), title = "secondary infection, not inducible response") +
+   coord_cartesian(ylim = c(0,3)) +
+  theme_bw() + #removes grey background and changes aesthetics
+  scale_color_manual(values = my_colors) #changes colors to defined vector
+
+# print
+print(plot)
+```

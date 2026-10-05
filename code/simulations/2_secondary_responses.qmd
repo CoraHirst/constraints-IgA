@@ -107,7 +107,7 @@ d_s = 0 # secretory cell death rate #don't consider for now
 d_q = log(2)/(365) # quiescent cell death rate long lived like bm
   
 # proliferation and differentiation
-r = 0.3 # b cell proliferation rate - doubling time is 1/2 day
+r = 3 # b cell proliferation rate - doubling time is 1/2 day
 f = 1/3 # fraction of division that produce secretory cells
 q = log(2)/14 # rate of secretory cells to quiescence #should equal d_mu
 s = 3 # rate of quiescent cell recruitment to secretion #should be very fast, like a percentage per hour
@@ -147,7 +147,7 @@ Tmax   = 365*2                         # max time in days
 points.per.day = 24              # output points per day
 
 #initial conditions
-init_cond = c("B" = 10, "P_s" = 0, "P_q" = 0, "M_s" = 0)
+init_cond = c("B" = 1, "P_s" = 0, "P_q" = 0, "M_s" = 0)
 
 # solve 
 soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model1, parms = params)) 
@@ -163,7 +163,7 @@ soln_long = soln %>% pivot_longer(
  plot = ggplot() +
   geom_point(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
   geom_line(data = soln_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
-   coord_cartesian(ylim = c(0,3)) +
+   #coord_cartesian(ylim = c(0,3)) +
    labs(x = "days",, y = bquote("log"[10] ~ "number"), title = "primary infection, inducible response") +
   theme_bw() + #removes grey background and changes aesthetics
   scale_color_manual(values = my_colors) #changes colors to defined vector
@@ -196,7 +196,7 @@ soln2_long = soln_secondary %>% pivot_longer(
  plot = ggplot() +
   geom_point(data = soln2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time 
   geom_line(data = soln2_long, aes(x = time, y = log10(number), group = population, col = population)) + #plots each population seperately over time
-   coord_cartesian(ylim = c(0,3)) +
+   #coord_cartesian(ylim = c(0,3)) +
   labs(x = "days",, y = bquote("log"[10] ~ "number"), title = "secondary infection, inducible response") +
   theme_bw() + #removes grey background and changes aesthetics
   scale_color_manual(values = my_colors) #changes colors to defined vector
@@ -253,11 +253,11 @@ secondary_response.model_notinducible <- function(t, y, parms)  # Single partial
 
 ```{r set-parms-ODE-Model-1-noinducible}
 # death rates
-d_B = log(2)/(90) # B cell death rate, 2 years half life
+d_B = log(2)/(365) # B cell death rate, 2 years half life
 d_s = log(2)/14 # rate of secretory cells to death #should equal d_mu
  
 # proliferation and differentiation
-r = 0.3 # b cell proliferation rate - doubling time is 1 day
+r = 3 # b cell proliferation rate - doubling time is 1 day
 f = 1/3 # fraction of division that produce secretory cells
 
 # antibody dynamics
