@@ -362,7 +362,7 @@ KM = Ap/3 #choosing KM such that at peak in the absence of Mns, Ms would achieve
 k1 = k2/KM #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10
 
 ### parms for heatmap 
-Aps = 10^seq(1, 3, by = 0.01) #peak antibody titer will be the same as Mns for 90 days
+Aps = seq(10, 1000, by = 1) #peak antibody titer will be the same as Mns for 90 days
 
 t_halfs = 3*10^seq(1,3.1, by = 0.01) #half lives of mucosal ab in days - 1 month, 3 months, 1 year, 10 years :) 
  
@@ -379,9 +379,59 @@ heatmap_matrix = sapply(Aps, function(Ap){ #columns
 
 ### plot
 #plot AICs
-filled.contour(x = log10(t_halfs), y = log10(Aps), z=log10(heatmap_matrix), lwd = 2, ylab = expression(paste("peak response")), xlab = expression(paste(log[10], " exponential half life, ", days)), main = "Peak Flux of Specific Antibody")
+filled.contour(x = log10(t_halfs), y = (Aps), z=log10(heatmap_matrix), lwd = 2, ylab = expression(paste("peak response")), xlab = expression(paste(log[10], " exponential half life, ", days)), main = bquote("log"[10] ~ "Peak Flux of Specific Antibody"))
 
+### add lines for different peak flux
+filled.contour(
+  x = log10(t_halfs),
+  y = (Aps),
+  z = log10(heatmap_matrix),
+  xlab = expression(paste(log[10], " exponential half life, ", days)),
+  ylab = "peak antibody titer",
+  main = "Peak Flux of Specific Antibody",
+  plot.axes = {
+    axis(1, at = log10(x_ticks), labels = x_ticks)
+    axis(2, at = (seq(100, 1000, by = 100)), labels = seq(100, 1000, by = 100))
+    contour(
+      x = log10(t_halfs),
+      y = (Aps),
+      z = heatmap_matrix,
+      levels = (seq(100,800, by = 200)),   # the flux value(s) where you want lines
+      add = TRUE,
+      lwd = 2,
+      col = "black",
+      drawlabels = TRUE
+    )
+  },
+  key.title = title(main = "peak flux", cex.main = 1)
+)
 
+## compute the colour-band breaks explicitly, on the log10 scale
+zlog <- log10(heatmap_matrix)
+lev  <- pretty(range(zlog, finite = TRUE), 20)   # 20 = filled.contour's default nlevels
+
+filled.contour(
+  x = log10(t_halfs),
+  y = Aps,
+  z = zlog,
+  levels = lev,                                  # <- bands use these breaks
+  xlab = expression(paste(log[10], " exponential half life, ", days)),
+  ylab = "peak antibody titer",
+  main = "Peak Flux of Specific Antibody",
+  plot.axes = {
+    axis(1, at = log10(x_ticks), labels = x_ticks)
+    axis(2, at = seq(100, 1000, by = 100), labels = seq(100, 1000, by = 100))
+    contour(
+      x = log10(t_halfs),
+      y = Aps,
+      z = zlog,                                  # <- same z as the fill
+      levels = lev[seq(1, length(lev), by = 4)],,                              # <- same breaks as the fill
+      add = TRUE, lwd = 2, col = "black",
+      drawlabels = TRUE
+    )
+  },
+  key.title = title(main = "peak flux", cex.main = 1)
+)
 
 ```
 
