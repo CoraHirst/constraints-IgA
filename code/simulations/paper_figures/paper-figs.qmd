@@ -459,8 +459,8 @@ secondary_response.model1 <- function(t, y, parms)  # Single partial immune clas
         #####################################
         ## calculate the derivatives
         # cell populations
-        dB = r*(1-f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
-        dP_s = r*f*V*B + s*V*P_q - d_s*P_s - q*P_s #differentiation from B cells or P_q only when virus present
+        dB = r*(1-2*f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
+        dP_s = r*2*f*V*B + s*V*P_q - d_s*P_s - q*P_s #differentiation from B cells or P_q only when virus present
         dP_q = q*P_s - d_q*P_q - s*V*P_q #P_s always differentiates to P_q with some rate q.
         
         # Specific antibodies        
@@ -489,7 +489,7 @@ q = log(2)/14 # rate of secretory cells to quiescence #should equal d_mu
 s = 10 # rate of quiescent cell recruitment to secretion #should be very fast, like a percentage per hour
 
 # antibody dynamics
-a = 100 # rate of IgA secretion by secretory cells # not dealing with density but total number now
+a = 10 # rate of IgA secretion by secretory cells # not dealing with density but total number now
 d_a = log(2)/3 # IgA molecular decay rate, 3 days half life
 
 # infection timing
@@ -523,7 +523,7 @@ Tmax   = 30                         # max time in days
 points.per.day = 24              # output points per day
 
 #initial conditions
-init_cond = c("B" = 3, "P_s" = 0, "P_q" = 1, "M_s" = 0)
+init_cond = c("B" = 6, "P_s" = 0, "P_q" = 3, "M_s" = 0)
 
 # solve 
 soln = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model1, parms = params)) 
@@ -581,8 +581,8 @@ secondary_response.model_notinducible <- function(t, y, parms)  # Single partial
         #####################################
         ## calculate the derivatives
         # cell populations
-        dB = r*(1-f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
-        dP_s = r*f*V*B - d_s*P_s #differentiation from B cells or P_q only when virus present
+        dB = r*(1-2*f)*V*B - d_B*B #proliferation only when virus present, some fraction f differentiates to P_s
+        dP_s = r*2*f*V*B - d_s*P_s #differentiation from B cells or P_q only when virus present
         
         # Specific antibodies        
         dM_s = a*P_s - d_a*M_s #P_s secretes antibody
@@ -637,7 +637,7 @@ Tmax   = 30                         # max time in days
 points.per.day = 24              # output points per day
 
 #initial conditions
-init_cond = c("B" = 3, "P_s" = 0, "M_s" = 0)
+init_cond = c("B" = 6, "P_s" = 0, "M_s" = 0)
 
 # solve 
 soln_notinducible = as.data.frame(ode(y = init_cond, times = seq(0, Tmax, length.out = Tmax*points.per.day), secondary_response.model_notinducible, parms = params)) 
@@ -666,20 +666,22 @@ print(plot)
 To compare the two, we plot the changes in $P_s$ and $M_s$ for both models over the first three daysL 
 
 ```{r plot-together}
-plot = ggplot() + geom_line(data = soln_long %>% filter(population %in% c("P_s", "M_s")), aes(x = time, y = (number), linetype = "inducible", group = population, color = population), lwd = 1.5) + 
-  geom_line(data = soln_notinducible_long %>% filter(population %in% c("P_s", "M_s")), aes(x = time, y = (number), linetype = "not inducible", group = population, color = population), lwd = 1.5) +
-  coord_cartesian(xlim = c(0,30), ylim = 10^c(0,3)) +
+plot = ggplot() + geom_line(data = soln_long %>% filter(population %in% c("M_s")), aes(x = time, y = (number), linetype = "inducible"), color = "darkmagenta", lwd = 1.5) + 
+  geom_line(data = soln_notinducible_long %>% filter(population %in% c("M_s")), aes(x = time, y = (number), linetype = "not inducible"), color = "darkmagenta", lwd = 1.5) +
+ #coord_cartesian(xlim = c(0,3), ylim = c(0,100)) +
   scale_linetype_manual(values = c("inducible" = "solid", "not inducible" = "dashed")) +
-  labs(x = "days", y = bquote("Ms"), linetype = "model", title = "secondary infection, antibody response") +
+  labs(x = "days", y = bquote("Ms"), linetype = "") +
   theme_bw() + #removes grey background and changes aesthetics
   theme(axis.text = element_text(size = 25),
         axis.title = element_text(size = 25),
         legend.title = element_text(size = 25),
         legend.text = element_text(size = 25, hjust = 0),
-        legend.key.width = unit(0.06, "npc")
-  )
+        legend.key.width = unit(0.1, "npc"))
+  
 #print to viewer
 print(plot)
 
-
+# save plot
+file = here("results", "induction", "recall_response.png")
+ggsave(plot, file = file)
 ```
