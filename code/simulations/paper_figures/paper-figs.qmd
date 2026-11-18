@@ -69,7 +69,7 @@ Mns_vec = c/d_mus #vector of approximate ss solutions
 Vmax = 10^3 # order of magnitude of peak response # we might vary this later
 k2 = 1/(2/24) #rate of transport - 1/T of transport which is 1/2hours or 1/2/24ths of a day
 RT = Vmax/k2 #total number (concentration) of receptors, Vmax = k2RT
-KM = Ap/3 #choosing KM such that at peak in the absence of Mns, Ms would achieve 75% of max flux at peak
+KM = Ap #choosing KM such that at peak in the absence of Mns, Ms would achieve 75% of max flux at peak
 k1 = k2/KM #k2/min(Mns_vec) #rate of antibody binding such that KM is on the order of 10
 
 # dynamics in the lumen 
@@ -341,6 +341,32 @@ filled.contour(
 )
 dev.off()
 
+print(filled.contour(
+  x = log10(t_halfs),
+  y = log10(Aps),
+  z = log10(heatmap_matrix),
+  xlab = expression(paste("Plasma cell half-life, ", days)),
+  ylab = "Peak specific antibody response in mucosa",
+  main = "Peak Flux of Specific Antibody into Lumen",
+  levels = lev,
+  plot.axes = {
+    axis(1, at = log10(x_ticks), labels = x_ticks)
+    axis(2, at = log10(y_ticks), labels = y_ticks)
+    contour(
+      x = log10(t_halfs),
+      y = log10(Aps),
+      z = log10(heatmap_matrix),
+      levels = lev,   # the flux value(s) where you want lines
+      add = TRUE, lwd = 2, col = "black",
+      drawlabels = TRUE,
+      method = "flattest",
+      vfont = c("sans serif", "bold"),
+  labcex = 0.8                      # optional: bigger labels
+    )
+  },
+  key.title = title(main = bquote(atop("log"[10], "peak flux")), cex.main = 1)
+))
+
 ```
 
 ```{r parms-peak-decay-flux}
@@ -418,6 +444,29 @@ filled.contour(
   key.title = title(main = bquote(atop("log"[10], "peak flux")), cex.main = 1)
 )
 dev.off()
+
+print(filled.contour(
+  x = log10(t_halfs),
+  y = Aps,
+  z = zlog,
+  levels = lev,
+  xlab = expression(paste("Plasma cell half life, ", days)),
+  ylab = "Peak specific antibody response in mucosa",
+  main = "Peak Flux of Specific Antibody into Lumen",
+  plot.axes = {
+    axis(1, at = log10(x_ticks), labels = x_ticks)
+    axis(2, at = seq(200, 1000, by = 200), labels = seq(200, 1000, by = 200), cex.axis = 0.8)
+    contour(
+      x = log10(t_halfs), y = Aps, z = zlog,
+      levels = c(0.5,1,1.5,2,2.5,3),
+      add = TRUE, lwd = 2, col = "black",
+      drawlabels = TRUE,
+      method = "edge",
+      vfont = c("sans serif", "bold"),
+  labcex = 0.8                      # optional: bigger labels
+    )
+  },
+  key.title = title(main = bquote(atop("log"[10], "peak flux")), cex.main = 1)))
 ```
 
 # Part 2 - Inducible Plasma Cells
@@ -685,3 +734,9 @@ print(plot)
 file = here("results", "induction", "recall_response.png")
 ggsave(plot, file = file)
 ```
+
+# November 2026 - "Sensitivity Analysis" 
+
+We have very limited information regarding the percentage of receptors that are bound to IgA at steady state. One observation states 50%, which is how we calibrate our models. (I think)
+
+We would like to see how the peak flux of specific antibody (or later, peak titer) changes as a function of the longevity of plasma cells as well as the number of receptors occupied at steady state (so, really, the number of receptors will change along one axis and the longevity will change along the other.)

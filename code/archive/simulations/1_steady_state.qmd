@@ -151,7 +151,8 @@ plotting_mutliple_constant = function(parms){
 #plot
 plot = plotting_mutliple_constant(parameters)
 
-
+#show
+print(plot)
 
 ```
 
